@@ -119,7 +119,7 @@ All 73 plugins across 12 categories, exactly as listed for sale on the BIMFlow s
 
 ## 2. Work List — For Sharing With the Team (Architects & BIM Coordination)
 
-Same catalog minus the **MEP** category — 68 plugins. We're architects doing BIM coordination and don't run MEP in-house, so the 5 MEP-only tools (ConnectorAlign, EquipmentScheduler, InsulationManager, MEPClashPrecheck, SystemColorCoder) are left off this list.
+Same catalog minus the **MEP** category and **DimensionAuto** — 67 plugins. We're architects doing BIM coordination and don't run MEP in-house, so the 5 MEP-only tools (ConnectorAlign, EquipmentScheduler, InsulationManager, MEPClashPrecheck, SystemColorCoder) are left off this list. DimensionAuto is also dropped — it only auto-*places* new dimension strings, not what's needed (see the wanted tool below).
 
 
 ### Sheets & Documentation (8)
@@ -133,10 +133,9 @@ Same catalog minus the **MEP** category — 68 plugins. We're architects doing B
 - **TitleBlockUpdater** — $39 — Batch-update title block info across sheets and linked projects.
 - **ViewSync** — $39 — Reassign view templates across hundreds of views at once.
 
-### Views & Annotation (7)
+### Views & Annotation (6)
 
 - **CropSync** — $25 — Copy crop region and view range from the active view to a batch of views.
-- **DimensionAuto** — $59 — Auto-place dimension strings on walls, grids, and openings.
 - **GridBubbleManager** — $19 — Batch toggle grid and level bubble visibility per sheet standards.
 - **ScopeBoxSync** — $19 — Apply one scope box to many views in a single action.
 - **TagAll+** — $45 — Smart batch tagging with collision avoidance.
@@ -222,4 +221,8 @@ Same catalog minus the **MEP** category — 68 plugins. We're architects doing B
 - **HighlightWalls** — $19 — Toggle an interior/exterior color highlight on every wall in the active view.
 - **OverrideByParam** — $29 — Color-code any category by any parameter value in the active view.
 - **PointCloudColorizer** — $29 — Color-tint point cloud links so multiple scans are visually distinguishable.
+
+### Wanted — Not in the Catalog Yet
+
+- **DimensionOverride** (idea) — Edit an existing dimension's displayed value directly — pick a dimension (or a batch of them) and swap its shown number for another, without moving the geometry it's measuring. Different from what's already there: **DimensionAuto** only auto-*places* new dimension strings, and **OverriddenDimensions** only *finds* dimensions that already have a manual override — neither lets you actually set one. This would need Revit's `Dimension.ValueOverride`/segment override API; worth checking whether it should be single-element (like the native double-click override, just faster to reach) or batch (find every dimension currently reading X and override it to Y in one pass).
 
