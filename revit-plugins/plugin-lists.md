@@ -4,7 +4,7 @@ Pulled from the BIMFlow plugin catalog (`data/plugins.json`) for reference only 
 
 ## 1. Full Catalog — For the Website
 
-All 73 plugins across 12 categories, exactly as listed for sale on the BIMFlow storefront (MEP included).
+All 74 plugins across 12 categories, exactly as listed for sale on the BIMFlow storefront (MEP included).
 
 
 ### Sheets & Documentation (8)
@@ -100,14 +100,15 @@ All 73 plugins across 12 categories, exactly as listed for sale on the BIMFlow s
 - **SelectByCategory** — $15 — One-click select every element of a category, in the view or the whole project.
 - **SelectExteriorInterior** — $25 — Select every exterior or interior wall, door, or window in one click.
 
-### Rooms & Spatial (7)
+### Rooms & Spatial (8)
 
 - **ModelCeilings** — $39 — Auto-create drop ceilings from room boundaries in the active floor plan.
 - **PlansPerRoom** — $45 — Generate a cropped floor plan view for every room in one pass.
 - **RoomColorFillPlan** — $39 — Color-fill the active plan view by any room parameter.
-- **RoomFinishSchedule** — $25 — Generate a room finish schedule and export it to CSV.
+- **RoomFinishSchedule** — $25 — Generate a room finish schedule and export it to Excel.
 - **RoomHeightSync** — $35 — Batch-set room computation heights from a CSV.
 - **RoomInventory** — $35 — List every element inside each room, with a category breakdown.
+- **RoomTagger** — $35 — Write each room's number/name onto every element found inside it (RoomInventory's write-back sibling — for MEP equipment, fixtures, ducts, pipes, cable trays, conduits that don't get Revit's automatic Room field).
 - **SlabHeightSync** — $35 — Batch-set Height Offset From Level across a set of floors.
 
 ### Highlight & Visualization (3)
@@ -119,7 +120,7 @@ All 73 plugins across 12 categories, exactly as listed for sale on the BIMFlow s
 
 ## 2. Work List — For Sharing With the Team (Architects & BIM Coordination)
 
-Same catalog minus the **MEP** category and **DimensionAuto** — 67 plugins. We're architects doing BIM coordination and don't run MEP in-house, so the 5 MEP-only tools (ConnectorAlign, EquipmentScheduler, InsulationManager, MEPClashPrecheck, SystemColorCoder) are left off this list. DimensionAuto is also dropped — it only auto-*places* new dimension strings, not what's needed (see the wanted tool below).
+Same catalog minus the **MEP** category and **DimensionAuto** — 68 plugins. We're architects doing BIM coordination and don't run MEP in-house, so the 5 MEP-only tools (ConnectorAlign, EquipmentScheduler, InsulationManager, MEPClashPrecheck, SystemColorCoder) are left off this list. DimensionAuto is also dropped — it only auto-*places* new dimension strings, not what's needed (see the wanted tool below). **RoomTagger** is new — added straight from the MEP team's request at today's BIM meeting (LP8 room/element tracking).
 
 
 ### Sheets & Documentation (8)
@@ -206,14 +207,15 @@ Same catalog minus the **MEP** category and **DimensionAuto** — 67 plugins. We
 - **SelectByCategory** — $15 — One-click select every element of a category, in the view or the whole project.
 - **SelectExteriorInterior** — $25 — Select every exterior or interior wall, door, or window in one click.
 
-### Rooms & Spatial (7)
+### Rooms & Spatial (8)
 
 - **ModelCeilings** — $39 — Auto-create drop ceilings from room boundaries in the active floor plan.
 - **PlansPerRoom** — $45 — Generate a cropped floor plan view for every room in one pass.
 - **RoomColorFillPlan** — $39 — Color-fill the active plan view by any room parameter.
-- **RoomFinishSchedule** — $25 — Generate a room finish schedule and export it to CSV.
+- **RoomFinishSchedule** — $25 — Generate a room finish schedule and export it to Excel.
 - **RoomHeightSync** — $35 — Batch-set room computation heights from a CSV.
 - **RoomInventory** — $35 — List every element inside each room, with a category breakdown.
+- **RoomTagger** — $35 — Write each room's number/name onto every element found inside it (RoomInventory's write-back sibling — for MEP equipment, fixtures, ducts, pipes, cable trays, conduits that don't get Revit's automatic Room field).
 - **SlabHeightSync** — $35 — Batch-set Height Offset From Level across a set of floors.
 
 ### Highlight & Visualization (3)
