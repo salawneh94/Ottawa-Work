@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>BIMFlow.SlabHeightSync</RootNamespace>
+    <AssemblyName>BIMFlow.SlabHeightSync</AssemblyName>
+    <!-- WPF for SimplePickerDialog, now in BIMFlow.Shared as WPF; see BIMFlow.Shared's csproj comment. -->
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\BIMFlow.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="SlabHeightSync.addin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

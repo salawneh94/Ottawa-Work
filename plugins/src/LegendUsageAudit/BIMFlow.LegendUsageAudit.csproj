@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>BIMFlow.LegendUsageAudit</RootNamespace>
+    <AssemblyName>BIMFlow.LegendUsageAudit</AssemblyName>
+    <!-- WPF for the shared ResultsListForm (now BIMFlow.Shared, WPF); see BIMFlow.Shared's csproj comment. -->
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\BIMFlow.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="LegendUsageAudit.addin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

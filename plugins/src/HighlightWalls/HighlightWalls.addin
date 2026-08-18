@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — HighlightWalls</Name>
+    <Assembly>BIMFlow.HighlightWalls.dll</Assembly>
+    <AddInId>{f29a7f65-3d95-445a-bd98-1bc23463b749}</AddInId>
+    <FullClassName>BIMFlow.HighlightWalls.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

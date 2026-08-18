@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>BIMFlow.DimensionAuto</RootNamespace>
+    <AssemblyName>BIMFlow.DimensionAuto</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\BIMFlow.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="DimensionAuto.addin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

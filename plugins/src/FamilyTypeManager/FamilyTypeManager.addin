@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — FamilyTypeManager</Name>
+    <Assembly>BIMFlow.FamilyTypeManager.dll</Assembly>
+    <AddInId>{54747366-3e52-4a58-aebf-207e7977fe45}</AddInId>
+    <FullClassName>BIMFlow.FamilyTypeManager.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

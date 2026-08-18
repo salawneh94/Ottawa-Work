@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — StandardsChecker</Name>
+    <Assembly>BIMFlow.StandardsChecker.dll</Assembly>
+    <AddInId>{deefc4ed-aefd-422f-93a8-7798bcbd8f39}</AddInId>
+    <FullClassName>BIMFlow.StandardsChecker.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

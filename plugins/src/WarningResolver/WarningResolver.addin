@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — WarningResolver</Name>
+    <Assembly>BIMFlow.WarningResolver.dll</Assembly>
+    <AddInId>{526b3229-5c21-4e38-abe5-190a27167dbf}</AddInId>
+    <FullClassName>BIMFlow.WarningResolver.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

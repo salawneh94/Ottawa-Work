@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>BIMFlow.ElementXRay</RootNamespace>
+    <AssemblyName>BIMFlow.ElementXRay</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\BIMFlow.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="ElementXRay.addin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

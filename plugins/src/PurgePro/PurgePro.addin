@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — Purge Pro</Name>
+    <Assembly>BIMFlow.PurgePro.dll</Assembly>
+    <AddInId>{65fafe39-d0c9-46de-9063-f77dac3dbbbd}</AddInId>
+    <FullClassName>BIMFlow.PurgePro.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

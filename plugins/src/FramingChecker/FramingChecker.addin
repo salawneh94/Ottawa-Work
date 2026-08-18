@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — FramingChecker</Name>
+    <Assembly>BIMFlow.FramingChecker.dll</Assembly>
+    <AddInId>{10b3f8a4-e6ad-458e-a87d-0d645b7e6e6c}</AddInId>
+    <FullClassName>BIMFlow.FramingChecker.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

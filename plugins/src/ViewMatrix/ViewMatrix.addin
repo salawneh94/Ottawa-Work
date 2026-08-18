@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — ViewMatrix</Name>
+    <Assembly>BIMFlow.ViewMatrix.dll</Assembly>
+    <AddInId>{f9f33654-dfa6-4054-b3b3-326573bd78ab}</AddInId>
+    <FullClassName>BIMFlow.ViewMatrix.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

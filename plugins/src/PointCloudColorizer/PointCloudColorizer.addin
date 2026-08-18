@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — PointCloudColorizer</Name>
+    <Assembly>BIMFlow.PointCloudColorizer.dll</Assembly>
+    <AddInId>{e7f55a13-c3d8-4df4-80de-6b1365ba822a}</AddInId>
+    <FullClassName>BIMFlow.PointCloudColorizer.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

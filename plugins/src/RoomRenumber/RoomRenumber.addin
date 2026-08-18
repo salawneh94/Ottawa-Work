@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — Room Renumber</Name>
+    <Assembly>BIMFlow.RoomRenumber.dll</Assembly>
+    <AddInId>{aaba7c7a-009b-485f-8e9d-5676da708cea}</AddInId>
+    <FullClassName>BIMFlow.RoomRenumber.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

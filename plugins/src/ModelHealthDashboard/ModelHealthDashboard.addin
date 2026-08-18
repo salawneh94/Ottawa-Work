@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — ModelHealthDashboard</Name>
+    <Assembly>BIMFlow.ModelHealthDashboard.dll</Assembly>
+    <AddInId>{0a9320a4-798e-40fe-8c92-63dc8428b912}</AddInId>
+    <FullClassName>BIMFlow.ModelHealthDashboard.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — IFCExportQA</Name>
+    <Assembly>BIMFlow.IFCExportQA.dll</Assembly>
+    <AddInId>{8fdf0e1c-c22c-4168-8069-31f7ea6cd81e}</AddInId>
+    <FullClassName>BIMFlow.IFCExportQA.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

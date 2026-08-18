@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — NamingConventionAudit</Name>
+    <Assembly>BIMFlow.NamingConventionAudit.dll</Assembly>
+    <AddInId>{380b43d2-8091-49c0-9576-5cdff9c48392}</AddInId>
+    <FullClassName>BIMFlow.NamingConventionAudit.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

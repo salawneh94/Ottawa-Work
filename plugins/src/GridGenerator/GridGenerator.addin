@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — GridGenerator</Name>
+    <Assembly>BIMFlow.GridGenerator.dll</Assembly>
+    <AddInId>{60ac80d9-7d98-4d7e-8272-134d41d51e31}</AddInId>
+    <FullClassName>BIMFlow.GridGenerator.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

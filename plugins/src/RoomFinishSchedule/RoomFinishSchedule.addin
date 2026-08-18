@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — RoomFinishSchedule</Name>
+    <Assembly>BIMFlow.RoomFinishSchedule.dll</Assembly>
+    <AddInId>{e73dff7a-dfd3-4bff-b852-650fe233904e}</AddInId>
+    <FullClassName>BIMFlow.RoomFinishSchedule.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

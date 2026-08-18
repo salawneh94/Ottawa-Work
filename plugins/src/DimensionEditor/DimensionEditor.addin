@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — DimensionEditor</Name>
+    <Assembly>BIMFlow.DimensionEditor.dll</Assembly>
+    <AddInId>{45e9e388-8482-4b67-8adf-aa8b626f97a2}</AddInId>
+    <FullClassName>BIMFlow.DimensionEditor.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

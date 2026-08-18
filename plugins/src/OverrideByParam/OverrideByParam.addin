@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — OverrideByParam</Name>
+    <Assembly>BIMFlow.OverrideByParam.dll</Assembly>
+    <AddInId>{3dbaa4b5-7794-47a7-97c0-2a5989497abb}</AddInId>
+    <FullClassName>BIMFlow.OverrideByParam.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

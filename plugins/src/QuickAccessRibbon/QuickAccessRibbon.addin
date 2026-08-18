@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — Quick Access Ribbon</Name>
+    <Assembly>BIMFlow.QuickAccessRibbon.dll</Assembly>
+    <AddInId>{63ec1530-7d94-4031-9d8f-ea1cf9f2e7e8}</AddInId>
+    <FullClassName>BIMFlow.QuickAccessRibbon.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

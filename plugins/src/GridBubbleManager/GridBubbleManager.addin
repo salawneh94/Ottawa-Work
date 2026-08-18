@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — Grid Bubbles</Name>
+    <Assembly>BIMFlow.GridBubbleManager.dll</Assembly>
+    <AddInId>{797136e5-8728-4236-aeda-0bd896d50a94}</AddInId>
+    <FullClassName>BIMFlow.GridBubbleManager.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

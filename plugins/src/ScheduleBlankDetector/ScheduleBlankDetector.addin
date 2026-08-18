@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — ScheduleBlankDetector</Name>
+    <Assembly>BIMFlow.ScheduleBlankDetector.dll</Assembly>
+    <AddInId>{febad165-4566-4388-ac96-611da7a785ab}</AddInId>
+    <FullClassName>BIMFlow.ScheduleBlankDetector.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

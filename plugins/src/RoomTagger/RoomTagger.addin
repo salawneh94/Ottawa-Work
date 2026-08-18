@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — RoomTagger</Name>
+    <Assembly>BIMFlow.RoomTagger.dll</Assembly>
+    <AddInId>{e2eae7ea-4562-4c68-967a-1263eb5d1c0f}</AddInId>
+    <FullClassName>BIMFlow.RoomTagger.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

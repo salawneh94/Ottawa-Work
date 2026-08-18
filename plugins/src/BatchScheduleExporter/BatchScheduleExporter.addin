@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — BatchScheduleExporter</Name>
+    <Assembly>BIMFlow.BatchScheduleExporter.dll</Assembly>
+    <AddInId>{17f78968-890b-493e-b9a4-81a2d1bcb63c}</AddInId>
+    <FullClassName>BIMFlow.BatchScheduleExporter.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — Crop Sync</Name>
+    <Assembly>BIMFlow.CropSync.dll</Assembly>
+    <AddInId>{fdd9e8c6-cde4-462e-9e73-cfcb5a7ae889}</AddInId>
+    <FullClassName>BIMFlow.CropSync.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

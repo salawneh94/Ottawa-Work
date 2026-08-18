@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>BIMFlow.RoomInventory</RootNamespace>
+    <AssemblyName>BIMFlow.RoomInventory</AssemblyName>
+    <!--
+      WPF for the dark-themed dialog (RoomInventoryWindow), matching
+      BIMFlow.Dashboard/BIMFlow.Shared. This project has no remaining
+      WinForms dialog files of its own, so there's no Button/Label-style
+      bare-name collision risk from turning this on (see BIMFlow.Shared's
+      csproj comment for the general reasoning).
+    -->
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\BIMFlow.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="RoomInventory.addin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

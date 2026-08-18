@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — Duplicate Finder</Name>
+    <Assembly>BIMFlow.DuplicateFinder.dll</Assembly>
+    <AddInId>{ef752450-2833-421e-826f-8feec0bb7968}</AddInId>
+    <FullClassName>BIMFlow.DuplicateFinder.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — QCSummary</Name>
+    <Assembly>BIMFlow.QCSummary.dll</Assembly>
+    <AddInId>{db404f9b-622e-43f2-a92d-43472a31905c}</AddInId>
+    <FullClassName>BIMFlow.QCSummary.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

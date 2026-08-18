@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — Text Style Audit</Name>
+    <Assembly>BIMFlow.TextStyleAudit.dll</Assembly>
+    <AddInId>{9e0514b8-8ccc-422f-b032-d3a24598ca3f}</AddInId>
+    <FullClassName>BIMFlow.TextStyleAudit.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

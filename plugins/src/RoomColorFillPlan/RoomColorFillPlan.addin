@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — RoomColorFillPlan</Name>
+    <Assembly>BIMFlow.RoomColorFillPlan.dll</Assembly>
+    <AddInId>{29a591d9-f80f-4383-aa73-5b241840175b}</AddInId>
+    <FullClassName>BIMFlow.RoomColorFillPlan.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

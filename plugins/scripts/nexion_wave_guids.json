@@ -1,0 +1,20 @@
+{
+  "legendplacer": "5b8f02c3-3926-4969-827e-b193f6b96662",
+  "autolegendbuilder": "668f72b0-a7fe-4d62-acb7-6a783171dbb3",
+  "overridebyparam": "3dbaa4b5-7794-47a7-97c0-2a5989497abb",
+  "highlightwalls": "f29a7f65-3d95-445a-bd98-1bc23463b749",
+  "selectbycategory": "7ee1360e-7473-465b-b37e-812399e20e63",
+  "viewmatrix": "f9f33654-dfa6-4054-b3b3-326573bd78ab",
+  "parameterformulapropagator": "5c4fac2f-f77e-44fa-8a7e-ab472cc0b334",
+  "scheduleblankdetector": "febad165-4566-4388-ac96-611da7a785ab",
+  "excelasdraft": "f528b9e6-ca59-41f0-a45d-663f6f343dcd",
+  "roominventory": "9b1fca2e-2ba1-476f-891f-2ec2572dd750",
+  "roomfinishschedule": "e73dff7a-dfd3-4bff-b852-650fe233904e",
+  "modelceilings": "2942cd5c-d55b-46f3-bb94-8d0d3eae5a2c",
+  "uniquenumbering": "4aeab2aa-663c-4bf7-92c5-980f059f98a3",
+  "plansperroom": "62f00c18-1612-4294-827d-65e0c6f53a10",
+  "autoheights": "4f4ae714-2e9d-4ea0-a679-6aaed48ee044",
+  "roomclearheight": "dce89317-742a-46e4-bfb0-b2144aee9a68",
+  "pointcloudcolors": "09de6520-7a22-49ae-9b5e-d875b3897660",
+  "pointcloudheatmap": "7a15cd5c-0810-44ac-aa6f-0b01a6d660cc"
+}

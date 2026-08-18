@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — ConnectorAlign</Name>
+    <Assembly>BIMFlow.ConnectorAlign.dll</Assembly>
+    <AddInId>{b4bf0d5e-102f-404f-b729-e4075c3e6001}</AddInId>
+    <FullClassName>BIMFlow.ConnectorAlign.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

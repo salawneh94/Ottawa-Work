@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — TagAll+</Name>
+    <Assembly>BIMFlow.TagAll.dll</Assembly>
+    <AddInId>{98cd9a13-848e-4f4f-a0d5-44f07b277320}</AddInId>
+    <FullClassName>BIMFlow.TagAll.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

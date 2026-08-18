@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — FamilyAuditor</Name>
+    <Assembly>BIMFlow.FamilyAuditor.dll</Assembly>
+    <AddInId>{0908b106-a0ee-424c-a63b-2e2f705e3d35}</AddInId>
+    <FullClassName>BIMFlow.FamilyAuditor.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

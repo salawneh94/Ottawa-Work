@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — RoomInventory</Name>
+    <Assembly>BIMFlow.RoomInventory.dll</Assembly>
+    <AddInId>{9b1fca2e-2ba1-476f-891f-2ec2572dd750}</AddInId>
+    <FullClassName>BIMFlow.RoomInventory.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

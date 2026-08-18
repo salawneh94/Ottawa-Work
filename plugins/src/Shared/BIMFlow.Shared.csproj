@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>BIMFlow.Shared</RootNamespace>
+    <AssemblyName>BIMFlow.Shared</AssemblyName>
+    <!--
+      BimFlowUi.cs (the shared dark design system) is WPF. Enabled here
+      rather than in Directory.Build.props for the same reason as
+      BIMFlow.Dashboard: WinForms/WPF share many bare type names (Button,
+      Label, ...), so turning this on for every plugin project would make
+      those ambiguous across each plugin's existing WinForms dialogs.
+      Referencing this project does NOT force WPF ambiguity onto a
+      consumer — that only happens if the consumer's own file also adds
+      `using System.Windows.Controls;` etc. alongside `using
+      System.Windows.Forms;`, which no existing plugin file does.
+    -->
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Used by BrandedXlsx.cs to write real .xlsx reports (logo, colors,
+         banded rows) instead of plain CSV. Pure .NET, no Revit/Windows
+         dependency, so it doesn't affect any project's buildability. -->
+    <PackageReference Include="ClosedXML" Version="0.105.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Ships next to BIMFlow.Shared.dll in the packaged add-in folder
+         (see .github/workflows/build-plugins.yml), same convention as
+         Icons — BrandedXlsx.cs looks it up relative to its own assembly
+         location at runtime, not as a build-time embedded resource. -->
+    <None Include="Branding\ottawa-logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

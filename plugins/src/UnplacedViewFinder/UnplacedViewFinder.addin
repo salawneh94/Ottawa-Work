@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — UnplacedViewFinder</Name>
+    <Assembly>BIMFlow.UnplacedViewFinder.dll</Assembly>
+    <AddInId>{5abcf69d-056e-49dc-9875-db995371a8d0}</AddInId>
+    <FullClassName>BIMFlow.UnplacedViewFinder.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>
