@@ -1,0 +1,134 @@
+name: Build Revit Plugins
+
+on:
+  push:
+    paths:
+      - "plugins/**"
+      - ".github/workflows/build-plugins.yml"
+  pull_request:
+    paths:
+      - "plugins/**"
+      - ".github/workflows/build-plugins.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    # WinForms (UseWindowsForms) needs the Windows Desktop SDK, which only
+    # ships on Windows-hosted runners — this can't build on Linux/macOS.
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      # Revit API assemblies come from the community-maintained
+      # Nice3point.Revit.Api NuGet packages (see plugins/Directory.Build.props)
+      # instead of a local Revit install, so this needs no Revit license.
+      - name: Restore
+        run: dotnet restore plugins/BIMFlow.sln
+
+      - name: Build
+        run: dotnet build plugins/BIMFlow.sln --no-restore --configuration Debug
+
+      # Flat-folder layout: every plugin's .addin manifest references its
+      # own DLL by bare filename, resolved relative to the manifest's own
+      # directory — so the manifest and every DLL it needs (including the
+      # shared BIMFlow.Shared.dll dependency) have to land in the same
+      # folder for Revit to find them. This is a compile-verified build
+      # only — it hasn't been run inside Revit, see plugins/README.md.
+      - name: Package built add-ins
+        if: success()
+        shell: pwsh
+        run: |
+          $dist = "dist/BIMFlow-Addins-2025"
+          New-Item -ItemType Directory -Path $dist -Force | Out-Null
+
+          # Search recursively rather than assuming bin/Debug directly —
+          # Platforms/PlatformTarget=x64 in Directory.Build.props can add an
+          # extra bin\x64\Debug\ segment MSBuild doesn't document loudly.
+          Get-ChildItem -Path plugins/src -Directory | ForEach-Object {
+            $binDir = Join-Path $_.FullName "bin"
+            if (Test-Path $binDir) {
+              Get-ChildItem -Path $binDir -Filter "BIMFlow.*.dll" -Recurse | Copy-Item -Destination $dist -Force
+              Get-ChildItem -Path $binDir -Filter "*.addin" -Recurse | Copy-Item -Destination $dist -Force
+            }
+          }
+
+          # Ribbon icons are pre-baked PNGs (plugins/src/Shared/RibbonBuilder.cs
+          # loads them from an "Icons" subfolder next to each add-in's own DLL,
+          # not rendered at runtime), so they ship from source rather than any
+          # single project's build output.
+          $iconsDist = Join-Path $dist "Icons"
+          New-Item -ItemType Directory -Path $iconsDist -Force | Out-Null
+          Copy-Item -Path plugins/src/Shared/Icons/*.png -Destination $iconsDist -Force
+
+          # Same deal for the branded-export logo (BrandedXlsx.cs loads it
+          # from a "Branding" subfolder next to BIMFlow.Shared.dll).
+          $brandingDist = Join-Path $dist "Branding"
+          New-Item -ItemType Directory -Path $brandingDist -Force | Out-Null
+          Copy-Item -Path plugins/src/Shared/Branding/*.png -Destination $brandingDist -Force
+
+          $dllCount = (Get-ChildItem -Path $dist -Filter "*.dll").Count
+          $addinCount = (Get-ChildItem -Path $dist -Filter "*.addin").Count
+          Write-Host "Packaged $dllCount DLL(s) and $addinCount .addin manifest(s)."
+
+          if ($dllCount -eq 0) {
+            Write-Host "No DLLs found — listing plugins/src/QCSummary/bin for diagnosis:"
+            Get-ChildItem -Path "plugins/src/QCSummary/bin" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
+          }
+
+          Set-Content -Path "$dist/README.txt" -Value @"
+          BIMFlow Revit add-ins — Revit 2025 build (commit $env:GITHUB_SHA)
+
+          Easiest install: run BIMFlow-Setup-2025.exe (next to this folder
+          in the same CI artifact set, or the bimflow-installer-2025
+          artifact) and restart Revit.
+
+          Manual install, if you'd rather not run the installer:
+          1. Copy every file in this folder into:
+             %AppData%\Autodesk\Revit\Addins\2025\
+          2. Restart Revit. All plugins appear under one BIMFlow ribbon tab.
+
+          This is a compile-verified build only (CI is green) — none of
+          these add-ins have been functionally tested by running them
+          inside Revit yet. See plugins/README.md for details.
+          "@
+
+      - name: Upload add-ins artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bimflow-addins-2025
+          path: dist/BIMFlow-Addins-2025
+          retention-days: 30
+
+      # windows-latest normally ships Inno Setup already, but installing it
+      # explicitly (a no-op if it's already there) keeps this from silently
+      # breaking if a future runner image drops it.
+      - name: Install Inno Setup
+        if: success()
+        shell: pwsh
+        run: choco install --no-progress -y innosetup
+
+      # Packages dist/BIMFlow-Addins-2025 into a single one-click installer
+      # (see plugins/installer/BIMFlow.iss) — the "one-installer, many-tools"
+      # model the top-level README describes, instead of the manual
+      # copy-into-AddIns-folder step README.txt above still documents as a
+      # fallback.
+      - name: Build installer
+        if: success()
+        shell: pwsh
+        run: |
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" plugins\installer\BIMFlow.iss
+
+      - name: Upload installer artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bimflow-installer-2025
+          path: dist/BIMFlow-Setup-2025.exe
+          retention-days: 30
