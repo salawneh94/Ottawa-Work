@@ -4,46 +4,53 @@ namespace BIMFlow.Shared;
 
 /// <summary>
 /// Exports a schedule to CSV the same way ViewSchedule.Export always has,
-/// but first guarantees an Element ID column is present — added
-/// temporarily if the schedule doesn't already have one, via a transaction
-/// that's rolled back immediately after export, so the schedule's own
-/// field list is never permanently changed. Revit's native schedule export
-/// only ever includes whatever fields the schedule already displays, so
-/// without this, Excel2Revit's import mode (which matches edited rows back
-/// to elements by an ElementId column) has nothing to match on for a
-/// schedule nobody set one up on — which in practice is most of them
-/// (confirmed against a real project: none of its schedules had one).
+/// but first guarantees an Element ID column with a known, literal
+/// "ElementId" heading is present — added temporarily if the schedule
+/// doesn't already have that field, and its heading force-set either way,
+/// via a transaction that's rolled back immediately after export, so the
+/// schedule's own field list/headings are never permanently changed.
+///
+/// Two real-world problems this works around, both confirmed against a
+/// real project: (1) Revit's native schedule export only ever includes
+/// whatever fields the schedule already displays, and none of this
+/// project's schedules had an Element ID field, so Excel2Revit's import
+/// mode (which matches edited rows back to elements by an ElementId
+/// column) had nothing to match on. (2) Even after adding the field,
+/// Revit's own default column heading for it isn't the literal string
+/// "ElementId" BrandedXlsx.ReadTable's anchor match looks for — it's
+/// whatever Revit itself calls that field, which is locale-dependent
+/// (this project's Revit UI is German) and not something to rely on
+/// staying constant. Forcing ColumnHeading ourselves sidesteps both the
+/// localization and the "what does Revit call this today" guesswork.
 /// </summary>
 public static class ScheduleExportHelper
 {
+    private const string ElementIdHeading = "ElementId";
+
     public static void ExportWithElementId(Document doc, ViewSchedule schedule, string folder, string fileName, ViewScheduleExportOptions options)
     {
         var definition = schedule.Definition;
         var idParameterId = new ElementId(BuiltInParameter.ID_PARAM);
 
-        var alreadyHasElementId = Enumerable.Range(0, definition.GetFieldCount())
-            .Select(definition.GetField)
-            .Any(f => f.HasSchedulableField && f.ParameterId == idParameterId);
-
-        if (alreadyHasElementId)
-        {
-            schedule.Export(folder, fileName, options);
-            return;
-        }
-
-        var idField = definition.GetSchedulableFields().FirstOrDefault(f => f.ParameterId == idParameterId);
-        if (idField is null)
-        {
-            // This category doesn't expose Element ID as a schedulable field at all — export as-is.
-            schedule.Export(folder, fileName, options);
-            return;
-        }
-
         using var transaction = new Transaction(doc, "BIMFlow: Temporary Element ID column for export");
         transaction.Start();
         try
         {
-            definition.AddField(idField);
+            var field = Enumerable.Range(0, definition.GetFieldCount())
+                .Select(definition.GetField)
+                .FirstOrDefault(f => f.HasSchedulableField && f.ParameterId == idParameterId);
+
+            if (field is null)
+            {
+                var idField = definition.GetSchedulableFields().FirstOrDefault(f => f.ParameterId == idParameterId);
+                if (idField is not null) field = definition.AddField(idField);
+            }
+
+            // Force our own literal heading, overwriting whatever Revit's
+            // own default (or a pre-existing custom rename) says — the
+            // import side matches on this exact string.
+            if (field is not null) field.ColumnHeading = ElementIdHeading;
+
             schedule.Export(folder, fileName, options);
         }
         finally
