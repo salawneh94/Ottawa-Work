@@ -50,10 +50,27 @@ jobs:
           # Search recursively rather than assuming bin/Debug directly —
           # Platforms/PlatformTarget=x64 in Directory.Build.props can add an
           # extra bin\x64\Debug\ segment MSBuild doesn't document loudly.
+          #
+          # "*.dll" (not just "BIMFlow.*.dll") on purpose: BIMFlow.Shared
+          # pulls in ClosedXML (BrandedXlsx.cs) plus ClosedXML's own runtime
+          # dependencies (DocumentFormat.OpenXml[.Framework], ExcelNumberFormat,
+          # RBush, SixLabors.Fonts, System.IO.Packaging, ClosedXML.Parser) —
+          # those copy-local into every plugin's own bin output alongside
+          # BIMFlow.Shared.dll (via CopyLocalLockFileAssemblies on Shared's
+          # csproj — see that file's comment for why that flag is the part
+          # that actually makes them exist on disk). Filtering to
+          # "BIMFlow.*.dll" silently dropped all of them from the shipped
+          # add-in folder, so any plugin calling BrandedXlsx would find no
+          # ClosedXML.dll at all, or fall back to whatever unrelated
+          # same-named DLL happened to already be in the user's shared
+          # Addins folder — producing a version-mismatch TypeLoadException
+          # instead of a clean "file not found". The Nice3point.Revit.Api
+          # packages are ExcludeAssets="runtime", so they never land in
+          # bin/ in the first place and this can't re-ship them.
           Get-ChildItem -Path plugins/src -Directory | ForEach-Object {
             $binDir = Join-Path $_.FullName "bin"
             if (Test-Path $binDir) {
-              Get-ChildItem -Path $binDir -Filter "BIMFlow.*.dll" -Recurse | Copy-Item -Destination $dist -Force
+              Get-ChildItem -Path $binDir -Filter "*.dll" -Recurse | Copy-Item -Destination $dist -Force
               Get-ChildItem -Path $binDir -Filter "*.addin" -Recurse | Copy-Item -Destination $dist -Force
             }
           }

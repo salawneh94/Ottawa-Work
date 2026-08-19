@@ -68,10 +68,27 @@ public static class BrandedXlsx
     public static string ReplaceCsvWithBrandedXlsx(string csvPath, string sheetTitle, string? subtitle)
     {
         var xlsxPath = Path.ChangeExtension(csvPath, ".xlsx");
-        var lines = File.ReadAllLines(csvPath);
+        var parsedLines = File.ReadAllLines(csvPath)
+            .Where(l => !string.IsNullOrWhiteSpace(l))
+            .Select(Csv.ParseLine)
+            .ToList();
 
-        var headers = lines.Length > 0 ? Csv.ParseLine(lines[0]) : new List<string>();
-        var rows = lines.Skip(1).Where(l => !string.IsNullOrWhiteSpace(l)).Select(Csv.ParseLine).ToList();
+        // Revit's schedule export can still prepend a decorative title row
+        // (just the schedule's name in the first field, every other field
+        // empty) even with ViewScheduleExportOptions.Title set to false —
+        // confirmed against a real export (Title=false made no difference to
+        // this row, though it did suppress the blank separator line below
+        // it). Treating that row as the header row put the schedule's name
+        // where the real column headers belong, and the real headers
+        // ("Kennzeichen", "Ebene", ...) ended up looking like a data row
+        // instead. A real header row has every column populated; a
+        // decorative title row has exactly one. Skip past any row(s) like
+        // that to find the real header row instead of assuming line 1 is it.
+        var headerIndex = parsedLines.FindIndex(fields => fields.Count(f => !string.IsNullOrWhiteSpace(f)) > 1);
+        if (headerIndex < 0) headerIndex = 0;
+
+        var headers = parsedLines.Count > headerIndex ? parsedLines[headerIndex] : new List<string>();
+        var rows = parsedLines.Skip(headerIndex + 1).ToList();
 
         using (var workbook = Build(sheetTitle, subtitle, headers, rows))
             workbook.SaveAs(xlsxPath);
