@@ -76,7 +76,7 @@ public class Command : BimFlowCommand
         };
         if (dialog.ShowDialog() != DialogResult.OK) return Result.Cancelled;
 
-        var table = BrandedXlsx.ReadTable(dialog.FileName, "ElementId");
+        var table = BrandedXlsx.ReadTable(dialog.FileName);
         if (table is null)
         {
             TaskDialog.Show("BIMFlow — Sheet List Exporter", "This file doesn't look like a BIMFlow sheet list export.");
