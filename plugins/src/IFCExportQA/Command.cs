@@ -11,11 +11,14 @@ namespace BIMFlow.IFCExportQA;
 
 /// <summary>
 /// Runs Revit's own IFC export with a chosen version, after showing a
-/// pre-flight summary of what's about to be exported by category. Deep
-/// validation (checking specific IFC property-set completeness per
-/// element) needs the same schema knowledge a full IFC QA tool would — this
-/// covers the "know what you're about to export, then export it cleanly"
-/// half confidently.
+/// pre-flight summary of what's about to be exported by category and an
+/// optional IFC class mapping step (family/type name → IfcExportAs, e.g.
+/// "Steckdose" → "IfcOutlet") for families Revit's default category
+/// mapping can't distinguish between on its own. Deep validation (checking
+/// specific IFC property-set completeness per element) needs the same
+/// schema knowledge a full IFC QA tool would — this covers the "know what
+/// you're about to export, map families that need it, then export
+/// cleanly" half confidently.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
 public class Command : BimFlowCommand
@@ -38,6 +41,34 @@ public class Command : BimFlowCommand
         {
             TaskDialog.Show("BIMFlow — IFCExportQA", "No model elements were found to export.");
             return Result.Succeeded;
+        }
+
+        var mappingWindow = new IfcClassMappingWindow();
+        if (mappingWindow.ShowDialog() != true)
+            return Result.Cancelled;
+
+        if (mappingWindow.Applied)
+        {
+            using var mappingTransaction = new Transaction(doc, "BIMFlow: Apply IFC Class Mapping");
+            mappingTransaction.Start();
+            try
+            {
+                IfcClassMapper.EnsureParameterExists(commandData.Application.Application, doc);
+                var results = IfcClassMapper.Apply(doc, mappingWindow.Rules);
+                mappingTransaction.Commit();
+
+                var unmatched = results.Where(r => r.Value == 0).Select(r => r.Key.NameContains).ToList();
+                var summary = $"Set IfcExportAs on {results.Values.Sum()} type(s) across {results.Count(r => r.Value > 0)} rule(s).";
+                if (unmatched.Count > 0)
+                    summary += $"\n\nNo matching family/type name found for: {string.Join(", ", unmatched)}";
+                TaskDialog.Show("BIMFlow — IFCExportQA", summary);
+            }
+            catch (Exception ex)
+            {
+                mappingTransaction.RollBack();
+                TaskDialog.Show("BIMFlow — IFCExportQA", $"Couldn't apply IFC class mapping: {ex.Message}");
+                return Result.Failed;
+            }
         }
 
         var window = new IFCExportWindow(categorySummary);
