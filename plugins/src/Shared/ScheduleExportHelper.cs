@@ -51,6 +51,14 @@ public static class ScheduleExportHelper
             // import side matches on this exact string.
             if (field is not null) field.ColumnHeading = ElementIdHeading;
 
+            // Schedules recompute their cell text lazily. Without forcing a
+            // regenerate here, Export() can still serialize the schedule's
+            // pre-change cached body — the field/heading edits above are
+            // visible to the API but not yet baked into the exported text.
+            // Confirmed as the real cause of "ElementId" never showing up in
+            // the export even though ColumnHeading was set successfully.
+            doc.Regenerate();
+
             schedule.Export(folder, fileName, options);
         }
         finally
