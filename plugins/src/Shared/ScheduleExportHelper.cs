@@ -8,29 +8,17 @@ namespace BIMFlow.Shared;
 /// "ElementId" heading is present — added temporarily if the schedule
 /// doesn't already have that field, and its heading force-set either way.
 ///
-/// Three real-world problems this works around, all confirmed against a
-/// real project: (1) Revit's native schedule export only ever includes
-/// whatever fields the schedule already displays, and none of this
-/// project's schedules had an Element ID field, so Excel2Revit's import
-/// mode (which matches edited rows back to elements by an ElementId
-/// column) had nothing to match on. (2) Even after adding the field,
-/// Revit's own default column heading for it isn't the literal string
-/// "ElementId" BrandedXlsx.ReadTable's anchor match looks for — it's
-/// whatever Revit itself calls that field, which is locale-dependent
-/// (this project's Revit UI is German) and not something to rely on
-/// staying constant. (3) The big one: Export() reads the schedule's
-/// committed, regenerated state — a field added and a heading set inside
-/// a transaction that's still open (even after Document.Regenerate())
-/// never showed up in the exported file at all, confirmed by testing:
-/// the export came back byte-identical to the schedule's original
-/// columns. Export() simply doesn't see uncommitted transaction state.
-///
-/// So this commits the change for real (inside a TransactionGroup) so
-/// Export() has something to see, then rolls the whole group back
-/// afterward. TransactionGroup.RollBack() discards every transaction
-/// assimilated into it as a single unit — the schedule's field list and
-/// headings end up exactly as they started, with nothing left over in
-/// the model or the undo stack.
+/// This has failed silently — same "no ElementId column" outcome — across
+/// several different attempts (adding the field, forcing ColumnHeading,
+/// forcing Document.Regenerate(), committing via a TransactionGroup
+/// instead of rolling back a plain transaction). Since every attempt
+/// produced the identical symptom regardless of what changed later in the
+/// method, the field lookup below may simply be failing (returning null)
+/// every time, silently skipping everything after it. Each step that used
+/// to continue silently on failure now throws a specific exception
+/// instead, so BimFlowCommand's error dialog reports exactly which step
+/// broke instead of masking it behind a generic downstream "no ElementId
+/// column" message from the import side.
 /// </summary>
 public static class ScheduleExportHelper
 {
@@ -56,13 +44,24 @@ public static class ScheduleExportHelper
                 if (field is null)
                 {
                     var idField = definition.GetSchedulableFields().FirstOrDefault(f => f.ParameterId == idParameterId);
-                    if (idField is not null) field = definition.AddField(idField);
+                    if (idField is null)
+                        throw new InvalidOperationException(
+                            "BIMFlow diagnostic: this schedule's category doesn't expose an Element ID schedulable field " +
+                            "(GetSchedulableFields() had none with ParameterId == BuiltInParameter.ID_PARAM).");
+
+                    field = definition.AddField(idField);
+                    if (field is null)
+                        throw new InvalidOperationException("BIMFlow diagnostic: ScheduleDefinition.AddField returned null for the Element ID field.");
                 }
 
                 // Force our own literal heading, overwriting whatever Revit's
                 // own default (or a pre-existing custom rename) says — the
                 // import side matches on this exact string.
-                if (field is not null) field.ColumnHeading = ElementIdHeading;
+                field.ColumnHeading = ElementIdHeading;
+                if (field.ColumnHeading != ElementIdHeading)
+                    throw new InvalidOperationException(
+                        $"BIMFlow diagnostic: ColumnHeading didn't stick — Revit reports it as \"{field.ColumnHeading}\" " +
+                        $"right after setting it to \"{ElementIdHeading}\".");
 
                 transaction.Commit();
             }
