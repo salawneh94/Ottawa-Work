@@ -48,19 +48,27 @@ public static class ScheduleExportHelper
 
                         if (idField is null)
                         {
-                            var dump = new StringBuilder();
-                            foreach (var sf in schedulableFields)
+                            // 1000+ fields is too many to scan by eye — narrow to
+                            // ones whose name could plausibly be "Element ID"
+                            // (German Revit keeps "Element" as a loanword, e.g.
+                            // "Element-ID"), instead of dumping everything.
+                            var named = schedulableFields.Select(sf =>
                             {
                                 string name;
                                 try { name = sf.GetName(doc); }
                                 catch (Exception ex) { name = $"<GetName failed: {ex.Message}>"; }
-                                dump.AppendLine($"{name} | ParameterId={sf.ParameterId.Value} | FieldType={sf.FieldType}");
-                            }
+                                return (Field: sf, Name: name);
+                            }).ToList();
+
+                            var candidates = named
+                                .Where(t => t.Name.Contains("element", StringComparison.OrdinalIgnoreCase))
+                                .Select(t => $"{t.Name} | ParameterId={t.Field.ParameterId.Value} | FieldType={t.Field.FieldType}")
+                                .ToList();
 
                             throw new InvalidOperationException(
                                 "BIMFlow diagnostic: no schedulable field matched BuiltInParameter.ID_PARAM " +
-                                $"(value {idParameterId.Value}). All {schedulableFields.Count} schedulable field(s) " +
-                                $"this schedule's category offers:\n{dump}");
+                                $"(value {idParameterId.Value}). {schedulableFields.Count} total fields exist; " +
+                                $"{candidates.Count} contain \"element\":\n{string.Join("\n", candidates)}");
                         }
 
                         field = definition.AddField(idField);
