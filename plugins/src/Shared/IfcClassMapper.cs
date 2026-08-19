@@ -80,49 +80,71 @@ public static class IfcClassMapper
         }
     }
 
-    public record ApplyResult(int Updated, int SkippedNotOwned);
-
     /// <summary>
-    /// Applies each rule to every element type whose family or type name
-    /// contains the rule's text (case-insensitive), setting IfcExportAs on
-    /// that type. Must run inside an open transaction (same one as
-    /// <see cref="EnsureParameterExists"/> is fine).
-    ///
-    /// In a workshared (central) model, a matched type can be owned by
-    /// another user's session — confirmed against a real project, where
-    /// several switch/outlet types were rejected mid-transaction with
-    /// Revit's own "no permission to edit" failure dialog. Proactively
-    /// requesting ownership via WorksharingUtils.CheckoutElements first
-    /// turns that into a clean per-rule skip count instead of aborting the
-    /// whole operation, and lets every type that IS available still get
-    /// updated in the same run.
+    /// Finds every element type matching each rule's name text, without
+    /// modifying anything. Deliberately separate from <see cref="Apply"/> —
+    /// call this and <see cref="RequestOwnership"/> BEFORE starting a
+    /// transaction; WorksharingUtils.CheckoutElements is a round-trip
+    /// against the central model's ownership bookkeeping, not a local
+    /// document edit, and calling it from inside an already-open
+    /// transaction produced consistently wrong results when tested against
+    /// a real project (every matched type reported as owned by another
+    /// user, even on a file detached from central with no other session
+    /// open at all).
     /// </summary>
-    public static Dictionary<Rule, ApplyResult> Apply(Document doc, IEnumerable<Rule> rules)
+    public static Dictionary<Rule, List<ElementType>> Match(Document doc, IEnumerable<Rule> rules)
     {
         var types = new FilteredElementCollector(doc)
             .WhereElementIsElementType()
             .OfType<ElementType>()
             .ToList();
 
-        var rulesList = rules.ToList();
-        var matchesByRule = rulesList.ToDictionary(rule => rule, rule => types.Where(t =>
+        return rules.ToDictionary(rule => rule, rule => types.Where(t =>
             t.Name.Contains(rule.NameContains, StringComparison.OrdinalIgnoreCase) ||
             t.FamilyName.Contains(rule.NameContains, StringComparison.OrdinalIgnoreCase)).ToList());
+    }
 
-        var notOwned = new HashSet<ElementId>();
-        if (doc.IsWorkshared)
+    /// <summary>
+    /// Requests ownership of every matched type up front, in a workshared
+    /// model, before any transaction is open — see <see cref="Match"/> for
+    /// why this must run outside a transaction. Returns the ids that
+    /// couldn't be checked out (owned by someone else). Best-effort: any
+    /// failure from the API itself (e.g. no live central connection) is
+    /// swallowed and treated as "nothing blocked," since Apply()'s own
+    /// per-type Set() is what actually determines success either way.
+    /// </summary>
+    public static HashSet<ElementId> RequestOwnership(Document doc, Dictionary<Rule, List<ElementType>> matchesByRule)
+    {
+        if (!doc.IsWorkshared) return new HashSet<ElementId>();
+
+        var allIds = matchesByRule.Values.SelectMany(list => list.Select(t => t.Id)).Distinct().ToList();
+        if (allIds.Count == 0) return new HashSet<ElementId>();
+
+        try
         {
-            var allMatchedIds = matchesByRule.Values.SelectMany(list => list.Select(t => t.Id)).Distinct().ToList();
-            if (allMatchedIds.Count > 0)
-                notOwned = new HashSet<ElementId>(WorksharingUtils.CheckoutElements(doc, allMatchedIds));
+            return new HashSet<ElementId>(WorksharingUtils.CheckoutElements(doc, allIds));
         }
+        catch
+        {
+            return new HashSet<ElementId>();
+        }
+    }
 
+    public record ApplyResult(int Updated, int SkippedNotOwned);
+
+    /// <summary>
+    /// Sets IfcExportAs on every matched type not in <paramref
+    /// name="notOwned"/>. Must run inside an open transaction (same one as
+    /// <see cref="EnsureParameterExists"/> is fine).
+    /// </summary>
+    public static Dictionary<Rule, ApplyResult> Apply(Dictionary<Rule, List<ElementType>> matchesByRule, ISet<ElementId> notOwned)
+    {
         var results = new Dictionary<Rule, ApplyResult>();
-        foreach (var rule in rulesList)
+        foreach (var (rule, matches) in matchesByRule)
         {
             var updated = 0;
             var skipped = 0;
-            foreach (var type in matchesByRule[rule])
+            foreach (var type in matches)
             {
                 if (notOwned.Contains(type.Id)) { skipped++; continue; }
 

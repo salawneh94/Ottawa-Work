@@ -49,12 +49,22 @@ public class Command : BimFlowCommand
 
         if (mappingWindow.Applied)
         {
+            // Match + ownership request both happen before the transaction
+            // opens — WorksharingUtils.CheckoutElements is a round-trip
+            // against the central model's ownership bookkeeping, not a
+            // local edit, and calling it from inside an open transaction
+            // produced consistently wrong results when tested for real
+            // (every matched type reported as owned by someone else, even
+            // on a solo, detached-from-central file).
+            var matchesByRule = IfcClassMapper.Match(doc, mappingWindow.Rules);
+            var notOwned = IfcClassMapper.RequestOwnership(doc, matchesByRule);
+
             using var mappingTransaction = new Transaction(doc, "BIMFlow: Apply IFC Class Mapping");
             mappingTransaction.Start();
             try
             {
                 IfcClassMapper.EnsureParameterExists(commandData.Application.Application, doc);
-                var results = IfcClassMapper.Apply(doc, mappingWindow.Rules);
+                var results = IfcClassMapper.Apply(matchesByRule, notOwned);
                 mappingTransaction.Commit();
 
                 var unmatched = results.Where(r => r.Value.Updated == 0 && r.Value.SkippedNotOwned == 0).Select(r => r.Key.NameContains).ToList();
