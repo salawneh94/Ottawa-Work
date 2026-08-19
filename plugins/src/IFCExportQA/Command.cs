@@ -57,8 +57,11 @@ public class Command : BimFlowCommand
                 var results = IfcClassMapper.Apply(doc, mappingWindow.Rules);
                 mappingTransaction.Commit();
 
-                var unmatched = results.Where(r => r.Value == 0).Select(r => r.Key.NameContains).ToList();
-                var summary = $"Set IfcExportAs on {results.Values.Sum()} type(s) across {results.Count(r => r.Value > 0)} rule(s).";
+                var unmatched = results.Where(r => r.Value.Updated == 0 && r.Value.SkippedNotOwned == 0).Select(r => r.Key.NameContains).ToList();
+                var skippedTotal = results.Values.Sum(r => r.SkippedNotOwned);
+                var summary = $"Set IfcExportAs on {results.Values.Sum(r => r.Updated)} type(s) across {results.Count(r => r.Value.Updated > 0)} rule(s).";
+                if (skippedTotal > 0)
+                    summary += $"\n\n{skippedTotal} matching type(s) are checked out by another user right now and were skipped — re-run once they're synced and relinquished.";
                 if (unmatched.Count > 0)
                     summary += $"\n\nNo matching family/type name found for: {string.Join(", ", unmatched)}";
                 TaskDialog.Show("BIMFlow — IFCExportQA", summary);
@@ -66,7 +69,10 @@ public class Command : BimFlowCommand
             catch (Exception ex)
             {
                 mappingTransaction.RollBack();
-                TaskDialog.Show("BIMFlow — IFCExportQA", $"Couldn't apply IFC class mapping: {ex.Message}");
+                var hint = doc.IsWorkshared
+                    ? "\n\nThis is a shared model — creating the IfcExportAs parameter needs edit access to project standards. Make sure no one else is currently editing this model, sync, and try again."
+                    : string.Empty;
+                TaskDialog.Show("BIMFlow — IFCExportQA", $"Couldn't apply IFC class mapping: {ex.Message}{hint}");
                 return Result.Failed;
             }
         }

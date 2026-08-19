@@ -80,38 +80,58 @@ public static class IfcClassMapper
         }
     }
 
+    public record ApplyResult(int Updated, int SkippedNotOwned);
+
     /// <summary>
     /// Applies each rule to every element type whose family or type name
     /// contains the rule's text (case-insensitive), setting IfcExportAs on
     /// that type. Must run inside an open transaction (same one as
-    /// <see cref="EnsureParameterExists"/> is fine). Returns how many types
-    /// were updated per rule, so a rule that matched nothing — a naming
-    /// assumption that didn't fit this project — is visible instead of
-    /// silently doing nothing.
+    /// <see cref="EnsureParameterExists"/> is fine).
+    ///
+    /// In a workshared (central) model, a matched type can be owned by
+    /// another user's session — confirmed against a real project, where
+    /// several switch/outlet types were rejected mid-transaction with
+    /// Revit's own "no permission to edit" failure dialog. Proactively
+    /// requesting ownership via WorksharingUtils.CheckoutElements first
+    /// turns that into a clean per-rule skip count instead of aborting the
+    /// whole operation, and lets every type that IS available still get
+    /// updated in the same run.
     /// </summary>
-    public static Dictionary<Rule, int> Apply(Document doc, IEnumerable<Rule> rules)
+    public static Dictionary<Rule, ApplyResult> Apply(Document doc, IEnumerable<Rule> rules)
     {
         var types = new FilteredElementCollector(doc)
             .WhereElementIsElementType()
             .OfType<ElementType>()
             .ToList();
 
-        var results = new Dictionary<Rule, int>();
-        foreach (var rule in rules)
-        {
-            var matches = types.Where(t =>
-                t.Name.Contains(rule.NameContains, StringComparison.OrdinalIgnoreCase) ||
-                t.FamilyName.Contains(rule.NameContains, StringComparison.OrdinalIgnoreCase));
+        var rulesList = rules.ToList();
+        var matchesByRule = rulesList.ToDictionary(rule => rule, rule => types.Where(t =>
+            t.Name.Contains(rule.NameContains, StringComparison.OrdinalIgnoreCase) ||
+            t.FamilyName.Contains(rule.NameContains, StringComparison.OrdinalIgnoreCase)).ToList());
 
+        var notOwned = new HashSet<ElementId>();
+        if (doc.IsWorkshared)
+        {
+            var allMatchedIds = matchesByRule.Values.SelectMany(list => list.Select(t => t.Id)).Distinct().ToList();
+            if (allMatchedIds.Count > 0)
+                notOwned = new HashSet<ElementId>(WorksharingUtils.CheckoutElements(doc, allMatchedIds));
+        }
+
+        var results = new Dictionary<Rule, ApplyResult>();
+        foreach (var rule in rulesList)
+        {
             var updated = 0;
-            foreach (var type in matches)
+            var skipped = 0;
+            foreach (var type in matchesByRule[rule])
             {
+                if (notOwned.Contains(type.Id)) { skipped++; continue; }
+
                 var p = type.LookupParameter(ParameterName);
                 if (p is not { IsReadOnly: false }) continue;
                 p.Set(rule.IfcClass);
                 updated++;
             }
-            results[rule] = updated;
+            results[rule] = new ApplyResult(updated, skipped);
         }
         return results;
     }
