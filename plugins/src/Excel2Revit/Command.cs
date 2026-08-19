@@ -4,18 +4,21 @@ using Autodesk.Revit.UI;
 using BIMFlow.Shared;
 using System.Windows.Forms;
 // UseWPF+UseWindowsForms together drops System.IO from implicit global
-// usings (see Shared/LicenseStore.cs) — needed here for Path/File.
+// usings (see Shared/LicenseStore.cs) — needed here for Path.
 using Path = System.IO.Path;
-using File = System.IO.File;
 
 namespace BIMFlow.Excel2Revit;
 
 /// <summary>
 /// Export mode: dumps a chosen schedule to a branded Excel workbook via
 /// Revit's own schedule export. Import mode: drives arbitrary parameter
-/// values on elements from a CSV (ElementId column + one column per
-/// parameter name), generalizing the ElementId-matched import pattern
-/// SheetListExporter uses for sheets to any category.
+/// values on elements from that same workbook shape (ElementId column
+/// + one column per parameter name), generalizing the ElementId-matched
+/// import pattern SheetListExporter uses for sheets to any category.
+/// Only works if the exported schedule itself has an ElementId (or
+/// "Element ID") field added to it in Revit — export doesn't add one
+/// automatically, since Revit's native schedule export only ever
+/// includes whatever fields the schedule already displays.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
 public class Command : BimFlowCommand
@@ -28,7 +31,7 @@ public class Command : BimFlowCommand
         var doc = uiDoc.Document;
 
         var choice = MessageBox.Show(
-            "Export a schedule to Excel?\n\nChoose \"No\" to import parameter values from a CSV file instead.",
+            "Export a schedule to Excel?\n\nChoose \"No\" to import parameter values from an edited export instead.",
             "BIMFlow — Excel2Revit",
             MessageBoxButtons.YesNoCancel);
 
@@ -89,25 +92,19 @@ public class Command : BimFlowCommand
         using var openDialog = new OpenFileDialog
         {
             Title = "Import parameter values (columns: ElementId, then one column per parameter name)",
-            Filter = "CSV files (*.csv)|*.csv",
+            Filter = "Excel Workbook (*.xlsx)|*.xlsx",
         };
         if (openDialog.ShowDialog() != DialogResult.OK) return Result.Cancelled;
 
-        var lines = File.ReadAllLines(openDialog.FileName);
-        if (lines.Length < 2)
+        var table = BrandedXlsx.ReadTable(openDialog.FileName, "ElementId");
+        if (table is null)
         {
-            TaskDialog.Show("BIMFlow — Excel2Revit", "That file has no data rows.");
+            TaskDialog.Show("BIMFlow — Excel2Revit", "The workbook needs an ElementId column.");
             return Result.Cancelled;
         }
 
-        var header = Csv.ParseLine(lines[0]);
+        var (header, dataRows) = table.Value;
         var idIndex = header.IndexOf("ElementId");
-        if (idIndex < 0)
-        {
-            TaskDialog.Show("BIMFlow — Excel2Revit", "The CSV needs an ElementId column.");
-            return Result.Cancelled;
-        }
-
         var paramColumns = header.Select((h, i) => (Header: h, Index: i)).Where(t => t.Index != idIndex).ToList();
         var updatedRows = 0;
         var updatedFields = 0;
@@ -116,10 +113,8 @@ public class Command : BimFlowCommand
         transaction.Start();
         try
         {
-            for (var i = 1; i < lines.Length; i++)
+            foreach (var fields in dataRows)
             {
-                if (string.IsNullOrWhiteSpace(lines[i])) continue;
-                var fields = Csv.ParseLine(lines[i]);
                 if (!long.TryParse(fields.ElementAtOrDefault(idIndex), out var rawId)) continue;
 
                 var element = doc.GetElement(new ElementId(rawId));
