@@ -48,27 +48,28 @@ public static class ScheduleExportHelper
 
                         if (idField is null)
                         {
-                            // 1000+ fields is too many to scan by eye — narrow to
-                            // ones whose name could plausibly be "Element ID"
-                            // (German Revit keeps "Element" as a loanword, e.g.
-                            // "Element-ID"), instead of dumping everything.
-                            var named = schedulableFields.Select(sf =>
+                            // Neither BuiltInParameter.ID_PARAM nor a name
+                            // containing "element" turned up a match — narrowing
+                            // by guessed substrings has run out of road. Dump
+                            // every field, unfiltered, to a text file next to
+                            // the export so it can be searched directly instead
+                            // of guessed at through more screenshot round trips.
+                            var dumpPath = System.IO.Path.Combine(folder, "bimflow-schedulable-fields-diagnostic.txt");
+                            var lines = schedulableFields.Select(sf =>
                             {
                                 string name;
                                 try { name = sf.GetName(doc); }
                                 catch (Exception ex) { name = $"<GetName failed: {ex.Message}>"; }
-                                return (Field: sf, Name: name);
-                            }).ToList();
-
-                            var candidates = named
-                                .Where(t => t.Name.Contains("element", StringComparison.OrdinalIgnoreCase))
-                                .Select(t => $"{t.Name} | ParameterId={t.Field.ParameterId.Value} | FieldType={t.Field.FieldType}")
-                                .ToList();
+                                return $"{name} | ParameterId={sf.ParameterId.Value} | FieldType={sf.FieldType}";
+                            });
+                            System.IO.File.WriteAllLines(dumpPath, lines);
 
                             throw new InvalidOperationException(
                                 "BIMFlow diagnostic: no schedulable field matched BuiltInParameter.ID_PARAM " +
-                                $"(value {idParameterId.Value}). {schedulableFields.Count} total fields exist; " +
-                                $"{candidates.Count} contain \"element\":\n{string.Join("\n", candidates)}");
+                                $"(value {idParameterId.Value}), and none of the {schedulableFields.Count} fields' " +
+                                "names contain \"element\" either. Every field this schedule's category offers " +
+                                $"(name, ParameterId, field type) has been written to:\n{dumpPath}\n\n" +
+                                "Open that file and search it for whatever this schedule actually calls its own row identifier.");
                         }
 
                         field = definition.AddField(idField);
