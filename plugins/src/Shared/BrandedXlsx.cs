@@ -100,20 +100,26 @@ public static class BrandedXlsx
     /// <summary>
     /// Reads a workbook this class previously saved back into a header row
     /// plus data rows, for plugins that re-import their own export (e.g.
-    /// SheetListExporter). Scans for the row containing <paramref
-    /// name="headerAnchor"/> (e.g. "ElementId") rather than assuming row 1,
-    /// since the branded layout has logo/title rows above the real header.
-    /// Returns null if no row contains the anchor.
+    /// SheetListExporter, Excel2Revit). Finds the header row structurally —
+    /// the first row with more than one populated cell — rather than
+    /// searching for a specific column's text, since the branded layout
+    /// has logo/title rows above the real header and callers can't always
+    /// guarantee a specific column name is present (a schedule exported
+    /// via Revit's own ViewSchedule.Export only ever has whatever columns
+    /// that schedule happened to be showing). Returns null if no row has
+    /// more than one populated cell.
     /// </summary>
-    public static (List<string> Headers, List<List<string>> Rows)? ReadTable(string xlsxPath, string headerAnchor)
+    public static (List<string> Headers, List<List<string>> Rows)? ReadTable(string xlsxPath)
     {
         using var workbook = new XLWorkbook(xlsxPath);
         var ws = workbook.Worksheets.First();
+        var lastCol = ws.LastColumnUsed()?.ColumnNumber() ?? 0;
+        if (lastCol == 0) return null;
 
-        var headerRow = ws.RowsUsed().FirstOrDefault(r => r.Cells().Any(c => c.GetString() == headerAnchor));
+        var headerRow = ws.RowsUsed()
+            .FirstOrDefault(r => Enumerable.Range(1, lastCol).Count(c => !string.IsNullOrWhiteSpace(r.Cell(c).GetString())) > 1);
         if (headerRow is null) return null;
 
-        var lastCol = ws.LastColumnUsed()?.ColumnNumber() ?? 0;
         var headers = Enumerable.Range(1, lastCol).Select(c => headerRow.Cell(c).GetString()).ToList();
 
         var rows = ws.RowsUsed()

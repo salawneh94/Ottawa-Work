@@ -11,13 +11,17 @@ namespace BIMFlow.Excel2Revit;
 
 /// <summary>
 /// Export mode: dumps a chosen schedule to a branded Excel workbook via
-/// Revit's own schedule export — via ScheduleExportHelper, which
-/// guarantees an Element ID column is present even if the schedule
-/// wasn't set up with one, so the round trip below always has something
-/// to match rows on. Import mode: drives arbitrary parameter values on
-/// elements from that same workbook shape (ElementId column + one column
-/// per parameter name), generalizing the ElementId-matched import
-/// pattern SheetListExporter uses for sheets to any category.
+/// Revit's own schedule export, completely unmodified — Revit's schedule
+/// API doesn't reliably let a plugin add an Element ID column to every
+/// category's schedule (confirmed against a real project: no schedulable
+/// field for BuiltInParameter.ID_PARAM, or with "element" anywhere in its
+/// name, existed for that schedule's category at all), so this doesn't
+/// try. Import mode instead matches rows back to elements by the
+/// schedule's own first column — whatever that schedule happens to be
+/// showing as its leftmost field (e.g. "Kennzeichen"/Mark for a door or
+/// window schedule) — via LookupParameter on that same column name,
+/// since firms already rely on that column being unique per row (that's
+/// the whole point of Mark numbering) rather than via Element ID.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
 public class Command : BimFlowCommand
@@ -79,7 +83,7 @@ public class Command : BimFlowCommand
             HeadersFootersBlanks = false,
         };
 
-        ScheduleExportHelper.ExportWithElementId(doc, pickerWindow.SelectedSchedule, folder, fileNameOnly + ".csv", options);
+        pickerWindow.SelectedSchedule.Export(folder, fileNameOnly + ".csv", options);
         var xlsxPath = BrandedXlsx.ReplaceCsvWithBrandedXlsx(csvPath, pickerWindow.SelectedSchedule.Name, doc.Title);
 
         TaskDialog.Show("BIMFlow — Excel2Revit", $"Exported \"{pickerWindow.SelectedSchedule.Name}\" to:\n{xlsxPath}");
@@ -90,21 +94,22 @@ public class Command : BimFlowCommand
     {
         using var openDialog = new OpenFileDialog
         {
-            Title = "Import parameter values (columns: ElementId, then one column per parameter name)",
+            Title = "Import parameter values (matched by the first column, e.g. Mark; other columns are parameter names)",
             Filter = "Excel Workbook (*.xlsx)|*.xlsx",
         };
         if (openDialog.ShowDialog() != DialogResult.OK) return Result.Cancelled;
 
-        var table = BrandedXlsx.ReadTable(openDialog.FileName, "ElementId");
-        if (table is null)
+        var table = BrandedXlsx.ReadTable(openDialog.FileName);
+        if (table is null || table.Value.Headers.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — Excel2Revit", "The workbook needs an ElementId column.");
+            TaskDialog.Show("BIMFlow — Excel2Revit", "This file doesn't look like a BIMFlow export — no header row was found.");
             return Result.Cancelled;
         }
 
         var (header, dataRows) = table.Value;
-        var idIndex = header.IndexOf("ElementId");
-        var paramColumns = header.Select((h, i) => (Header: h, Index: i)).Where(t => t.Index != idIndex).ToList();
+        const int keyIndex = 0;
+        var keyHeader = header[keyIndex];
+        var paramColumns = header.Select((h, i) => (Header: h, Index: i)).Where(t => t.Index != keyIndex).ToList();
         var updatedRows = 0;
         var updatedFields = 0;
 
@@ -114,9 +119,10 @@ public class Command : BimFlowCommand
         {
             foreach (var fields in dataRows)
             {
-                if (!long.TryParse(fields.ElementAtOrDefault(idIndex), out var rawId)) continue;
+                var keyValue = fields.ElementAtOrDefault(keyIndex);
+                if (string.IsNullOrWhiteSpace(keyValue)) continue;
 
-                var element = doc.GetElement(new ElementId(rawId));
+                var element = FindElementByParameterValue(doc, keyHeader, keyValue);
                 if (element is null) continue;
 
                 var rowChanged = false;
@@ -159,5 +165,18 @@ public class Command : BimFlowCommand
 
         TaskDialog.Show("BIMFlow — Excel2Revit", $"Updated {updatedFields} field(s) across {updatedRows} element(s).");
         return Result.Succeeded;
+    }
+
+    private static Element? FindElementByParameterValue(Document doc, string paramName, string value)
+    {
+        return new FilteredElementCollector(doc)
+            .WhereElementIsNotElementType()
+            .FirstOrDefault(e =>
+            {
+                var p = e.LookupParameter(paramName);
+                if (p is null) return false;
+                var text = p.StorageType == StorageType.String ? p.AsString() : p.AsValueString();
+                return text == value;
+            });
     }
 }
