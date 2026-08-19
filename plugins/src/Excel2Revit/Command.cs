@@ -11,14 +11,13 @@ namespace BIMFlow.Excel2Revit;
 
 /// <summary>
 /// Export mode: dumps a chosen schedule to a branded Excel workbook via
-/// Revit's own schedule export. Import mode: drives arbitrary parameter
-/// values on elements from that same workbook shape (ElementId column
-/// + one column per parameter name), generalizing the ElementId-matched
-/// import pattern SheetListExporter uses for sheets to any category.
-/// Only works if the exported schedule itself has an ElementId (or
-/// "Element ID") field added to it in Revit — export doesn't add one
-/// automatically, since Revit's native schedule export only ever
-/// includes whatever fields the schedule already displays.
+/// Revit's own schedule export — via ScheduleExportHelper, which
+/// guarantees an Element ID column is present even if the schedule
+/// wasn't set up with one, so the round trip below always has something
+/// to match rows on. Import mode: drives arbitrary parameter values on
+/// elements from that same workbook shape (ElementId column + one column
+/// per parameter name), generalizing the ElementId-matched import
+/// pattern SheetListExporter uses for sheets to any category.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
 public class Command : BimFlowCommand
@@ -80,7 +79,7 @@ public class Command : BimFlowCommand
             HeadersFootersBlanks = false,
         };
 
-        pickerWindow.SelectedSchedule.Export(folder, fileNameOnly + ".csv", options);
+        ScheduleExportHelper.ExportWithElementId(doc, pickerWindow.SelectedSchedule, folder, fileNameOnly + ".csv", options);
         var xlsxPath = BrandedXlsx.ReplaceCsvWithBrandedXlsx(csvPath, pickerWindow.SelectedSchedule.Name, doc.Title);
 
         TaskDialog.Show("BIMFlow — Excel2Revit", $"Exported \"{pickerWindow.SelectedSchedule.Name}\" to:\n{xlsxPath}");
