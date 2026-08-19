@@ -10,7 +10,10 @@ namespace BIMFlow.BatchScheduleExporter;
 /// Exports every schedule view in the project to its own branded Excel
 /// workbook via Revit's native schedule export (re-formatted from the CSV
 /// Revit writes, since Revit controls the column list) — the batch version
-/// of the single-schedule export Excel2Revit already does.
+/// of the single-schedule export Excel2Revit already does. Also goes
+/// through ScheduleExportHelper so every export has an Element ID column
+/// even if the schedule wasn't set up with one, so Excel2Revit's import
+/// mode has something to match edited rows back to elements on later.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
 public class Command : BimFlowCommand
@@ -62,7 +65,7 @@ public class Command : BimFlowCommand
             try
             {
                 var csvPath = Path.Combine(folderDialog.SelectedPath, uniqueName + ".csv");
-                schedule.Export(folderDialog.SelectedPath, uniqueName + ".csv", options);
+                ScheduleExportHelper.ExportWithElementId(doc, schedule, folderDialog.SelectedPath, uniqueName + ".csv", options);
                 BrandedXlsx.ReplaceCsvWithBrandedXlsx(csvPath, schedule.Name, doc.Title);
                 exported++;
             }
