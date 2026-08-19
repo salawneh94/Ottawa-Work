@@ -3,17 +3,25 @@ using Autodesk.Revit.DB;
 namespace BIMFlow.Shared;
 
 /// <summary>
-/// Overrides Revit's default category-to-IFC-class mapping per family/type
-/// via the "IfcExportAs" shared parameter Revit's own IFC exporter already
-/// reads — the standard, intended way to do this (not a workaround), since
-/// the exporter's category-level default can't tell two families in the
-/// same category apart (e.g. a smoke alarm and a light switch both filed
-/// under Specialty Equipment need different IFC classes).
+/// Overrides Revit's default category-to-IFC-class mapping per family/type,
+/// since the exporter's category-level default can't tell two families in
+/// the same category apart (e.g. a smoke alarm and a light switch both
+/// filed under Specialty Equipment need different IFC classes).
+///
+/// Sets the built-in "Export Type to IFC As" parameter
+/// (BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS) — NOT a custom shared
+/// parameter named "IfcExportAs". That older shared-parameter mechanism
+/// (still what most blog posts and forum answers describe) was replaced by
+/// this built-in parameter starting Revit 2023.1
+/// (github.com/Autodesk/revit-ifc issue #614) — confirmed against a real
+/// project, where a custom "IfcExportAs" shared parameter set successfully
+/// on every matched type had zero effect on a fresh export. The built-in
+/// parameter already exists on every type by default, so unlike the old
+/// approach this needs no shared-parameter-file creation or project-wide
+/// binding step at all — setting it is an ordinary type parameter edit.
 /// </summary>
 public static class IfcClassMapper
 {
-    public const string ParameterName = "IfcExportAs";
-
     public record Rule(string NameContains, string IfcClass);
 
     /// <summary>Seeded from a real client mapping table handed over in a coordination meeting.</summary>
@@ -33,52 +41,6 @@ public static class IfcClassMapper
         new("Lüftungsklappe", "IfcDamper"),
         new("Ventilator", "IfcFan"),
     };
-
-    /// <summary>
-    /// Ensures the "IfcExportAs" shared parameter is bound at the type
-    /// level across every model category, so it can be set once per
-    /// family type and inherited by every instance. Must run inside an
-    /// open transaction. Safe to call repeatedly — Insert/ReInsert are
-    /// no-ops (or a scope widening) if the binding already exists.
-    /// </summary>
-    public static void EnsureParameterExists(Autodesk.Revit.ApplicationServices.Application app, Document doc)
-    {
-        var sharedParamPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "BIMFlow_SharedParameters.txt");
-        if (!System.IO.File.Exists(sharedParamPath))
-            System.IO.File.WriteAllText(sharedParamPath, string.Empty);
-
-        // OpenSharedParameterFile() reads whatever file SharedParametersFilename
-        // currently points at — switching it to our own file just for this call
-        // would clobber the user's own shared parameter file setting for the
-        // rest of the Revit session, so restore it afterward either way.
-        var previousFilename = app.SharedParametersFilename;
-        try
-        {
-            app.SharedParametersFilename = sharedParamPath;
-            var defFile = app.OpenSharedParameterFile()
-                ?? throw new InvalidOperationException("Could not open or create the shared parameter file.");
-
-            var group = defFile.Groups.get_Item("BIMFlow") ?? defFile.Groups.Create("BIMFlow");
-            var definition = group.Definitions.get_Item(ParameterName)
-                ?? group.Definitions.Create(new ExternalDefinitionCreationOptions(ParameterName, SpecTypeId.String.Text));
-
-            var categorySet = app.Create.NewCategorySet();
-            foreach (Category category in doc.Settings.Categories)
-            {
-                if (category.CategoryType == CategoryType.Model && category.AllowsBoundParameters)
-                    categorySet.Insert(category);
-            }
-
-            var binding = app.Create.NewTypeBinding(categorySet);
-            var bindings = doc.ParameterBindings;
-            if (!bindings.Insert(definition, binding, GroupTypeId.Ifc))
-                bindings.ReInsert(definition, binding, GroupTypeId.Ifc);
-        }
-        finally
-        {
-            app.SharedParametersFilename = previousFilename;
-        }
-    }
 
     /// <summary>
     /// Finds every element type matching each rule's name text, without
@@ -133,9 +95,8 @@ public static class IfcClassMapper
     public record ApplyResult(int Updated, int SkippedNotOwned);
 
     /// <summary>
-    /// Sets IfcExportAs on every matched type not in <paramref
-    /// name="notOwned"/>. Must run inside an open transaction (same one as
-    /// <see cref="EnsureParameterExists"/> is fine).
+    /// Sets "Export Type to IFC As" on every matched type not in <paramref
+    /// name="notOwned"/>. Must run inside an open transaction.
     /// </summary>
     public static Dictionary<Rule, ApplyResult> Apply(Dictionary<Rule, List<ElementType>> matchesByRule, ISet<ElementId> notOwned)
     {
@@ -148,8 +109,8 @@ public static class IfcClassMapper
             {
                 if (notOwned.Contains(type.Id)) { skipped++; continue; }
 
-                var p = type.LookupParameter(ParameterName);
-                if (p is not { IsReadOnly: false }) continue;
+                var p = type.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS);
+                if (p is not { IsReadOnly: false, StorageType: StorageType.String }) continue;
                 p.Set(rule.IfcClass);
                 updated++;
             }

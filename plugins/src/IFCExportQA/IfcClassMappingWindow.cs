@@ -12,10 +12,11 @@ namespace BIMFlow.IFCExportQA;
 
 /// <summary>
 /// Editable rule table (family/type name contains → IFC class) applied to
-/// the project's IfcExportAs parameter before export — seeded with a real
-/// client mapping table so most projects just need to confirm rather than
-/// build the list from scratch. "Skip" bypasses mapping entirely for
-/// projects that don't need it, leaving today's plain export unchanged.
+/// the built-in "Export Type to IFC As" parameter before export — seeded
+/// with a real client mapping table so most projects just need to confirm
+/// rather than build the list from scratch. "Skip" bypasses mapping
+/// entirely for projects that don't need it, leaving today's plain export
+/// unchanged.
 /// </summary>
 public class IfcClassMappingWindow : BimFlowWindow
 {
@@ -33,7 +34,7 @@ public class IfcClassMappingWindow : BimFlowWindow
     {
         var root = new StackPanel();
         root.Children.Add(BimFlowUi.TitleBar("🏷️", "IFC Class Mapping",
-            "Family/type names containing the left text get their IfcExportAs parameter set to the class on the right, overriding Revit's default category mapping."));
+            "Family/type names containing the left text get their \"Export Type to IFC As\" parameter set to the class on the right, overriding Revit's default category mapping."));
 
         var headerRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 4) };
         headerRow.Children.Add(new TextBlock { Text = "NAME CONTAINS", FontSize = 10, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), Width = 200 });

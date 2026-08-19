@@ -12,12 +12,12 @@ namespace BIMFlow.IFCExportQA;
 /// <summary>
 /// Runs Revit's own IFC export with a chosen version, after showing a
 /// pre-flight summary of what's about to be exported by category and an
-/// optional IFC class mapping step (family/type name → IfcExportAs, e.g.
-/// "Steckdose" → "IfcOutlet") for families Revit's default category
-/// mapping can't distinguish between on its own. Deep validation (checking
-/// specific IFC property-set completeness per element) needs the same
-/// schema knowledge a full IFC QA tool would — this covers the "know what
-/// you're about to export, map families that need it, then export
+/// optional IFC class mapping step (family/type name → "Export Type to
+/// IFC As", e.g. "Steckdose" → "IfcOutlet") for families Revit's default
+/// category mapping can't distinguish between on its own. Deep validation
+/// (checking specific IFC property-set completeness per element) needs the
+/// same schema knowledge a full IFC QA tool would — this covers the "know
+/// what you're about to export, map families that need it, then export
 /// cleanly" half confidently.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
@@ -63,13 +63,12 @@ public class Command : BimFlowCommand
             mappingTransaction.Start();
             try
             {
-                IfcClassMapper.EnsureParameterExists(commandData.Application.Application, doc);
                 var results = IfcClassMapper.Apply(matchesByRule, notOwned);
                 mappingTransaction.Commit();
 
                 var unmatched = results.Where(r => r.Value.Updated == 0 && r.Value.SkippedNotOwned == 0).Select(r => r.Key.NameContains).ToList();
                 var skippedTotal = results.Values.Sum(r => r.SkippedNotOwned);
-                var summary = $"Set IfcExportAs on {results.Values.Sum(r => r.Updated)} type(s) across {results.Count(r => r.Value.Updated > 0)} rule(s).";
+                var summary = $"Set \"Export Type to IFC As\" on {results.Values.Sum(r => r.Updated)} type(s) across {results.Count(r => r.Value.Updated > 0)} rule(s).";
                 if (skippedTotal > 0)
                     summary += $"\n\n{skippedTotal} matching type(s) are checked out by another user right now and were skipped — re-run once they're synced and relinquished.";
                 if (unmatched.Count > 0)
@@ -79,10 +78,7 @@ public class Command : BimFlowCommand
             catch (Exception ex)
             {
                 mappingTransaction.RollBack();
-                var hint = doc.IsWorkshared
-                    ? "\n\nThis is a shared model — creating the IfcExportAs parameter needs edit access to project standards. Make sure no one else is currently editing this model, sync, and try again."
-                    : string.Empty;
-                TaskDialog.Show("BIMFlow — IFCExportQA", $"Couldn't apply IFC class mapping: {ex.Message}{hint}");
+                TaskDialog.Show("BIMFlow — IFCExportQA", $"Couldn't apply IFC class mapping: {ex.Message}");
                 return Result.Failed;
             }
         }
