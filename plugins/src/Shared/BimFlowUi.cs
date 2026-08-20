@@ -20,6 +20,8 @@ using Popup = System.Windows.Controls.Primitives.Popup;
 using PlacementMode = System.Windows.Controls.Primitives.PlacementMode;
 using Control = System.Windows.Controls.Control;
 using TextElement = System.Windows.Documents.TextElement;
+using Brushes = System.Windows.Media.Brushes;
+using WpfComboBox = System.Windows.Controls.ComboBox;
 // Directory.Build.props declares a solution-wide global alias
 // ("Using Include=Autodesk.Revit.DB.Color Alias=Color") so every other
 // plugin's bare "Color" means the Revit one. A file-level "using Color =
@@ -292,8 +294,8 @@ public static class BimFlowUi
 
         var content = new FrameworkElementFactory(typeof(System.Windows.Controls.ContentPresenter), "ContentSite");
         content.SetValue(Grid.ColumnProperty, 0);
-        content.SetValue(System.Windows.Controls.ContentPresenter.ContentProperty, new TemplateBindingExtension(ComboBox.SelectionBoxItemProperty));
-        content.SetValue(System.Windows.Controls.ContentPresenter.ContentTemplateProperty, new TemplateBindingExtension(ComboBox.SelectionBoxItemTemplateProperty));
+        content.SetValue(System.Windows.Controls.ContentPresenter.ContentProperty, new TemplateBindingExtension(WpfComboBox.SelectionBoxItemProperty));
+        content.SetValue(System.Windows.Controls.ContentPresenter.ContentTemplateProperty, new TemplateBindingExtension(WpfComboBox.SelectionBoxItemTemplateProperty));
         content.SetValue(TextElement.ForegroundProperty, new TemplateBindingExtension(Control.ForegroundProperty));
         content.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
         content.SetValue(UIElement.IsHitTestVisibleProperty, false);
@@ -312,7 +314,7 @@ public static class BimFlowUi
         toggle.SetValue(Control.BorderThicknessProperty, new Thickness(0));
         toggle.SetValue(Control.FocusableProperty, false);
         toggle.SetValue(Control.TemplateProperty, ToggleButtonBlankTemplate());
-        toggle.SetBinding(ToggleButton.IsCheckedProperty, new System.Windows.Data.Binding(nameof(ComboBox.IsDropDownOpen))
+        toggle.SetBinding(ToggleButton.IsCheckedProperty, new System.Windows.Data.Binding(nameof(WpfComboBox.IsDropDownOpen))
         {
             RelativeSource = System.Windows.Data.RelativeSource.TemplatedParent,
             Mode = System.Windows.Data.BindingMode.TwoWay,
@@ -324,7 +326,7 @@ public static class BimFlowUi
         popup.SetValue(Popup.PopupAnimationProperty, System.Windows.Controls.Primitives.PopupAnimation.Fade);
         popup.SetValue(Popup.StaysOpenProperty, false);
         popup.SetValue(Popup.FocusableProperty, false);
-        popup.SetValue(Popup.IsOpenProperty, new TemplateBindingExtension(ComboBox.IsDropDownOpenProperty));
+        popup.SetValue(Popup.IsOpenProperty, new TemplateBindingExtension(WpfComboBox.IsDropDownOpenProperty));
 
         var popupBorder = new FrameworkElementFactory(typeof(Border));
         popupBorder.SetValue(Border.BackgroundProperty, BrushOf(CardBackgroundAlt));
