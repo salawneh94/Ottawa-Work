@@ -1,5 +1,6 @@
 using CheckBox = System.Windows.Controls.CheckBox;
 using ComboBox = System.Windows.Controls.ComboBox;
+using ComboBoxItem = System.Windows.Controls.ComboBoxItem;
 using ScrollViewer = System.Windows.Controls.ScrollViewer;
 using Slider = System.Windows.Controls.Slider;
 using StackPanel = System.Windows.Controls.StackPanel;
@@ -35,6 +36,39 @@ public class OverrideByParamWindow : BimFlowWindow
 {
     public const string NoValueKey = "(No Value)";
 
+    /// <summary>
+    /// A fixed roster of common model categories, always offered in the same
+    /// order regardless of what's actually in the model — matching the
+    /// reference tool's Category dropdown. Categories with zero elements in
+    /// the active view are still listed (so the roster doesn't change shape
+    /// project-to-project) but shown muted/disabled with their live count,
+    /// rather than silently omitted the way an earlier view-scoped version
+    /// of this dropdown did.
+    /// </summary>
+    private static readonly (string Label, BuiltInCategory BuiltIn)[] CategoryRoster =
+    {
+        ("Walls", BuiltInCategory.OST_Walls),
+        ("Doors", BuiltInCategory.OST_Doors),
+        ("Windows", BuiltInCategory.OST_Windows),
+        ("Rooms", BuiltInCategory.OST_Rooms),
+        ("Floors", BuiltInCategory.OST_Floors),
+        ("Ceilings", BuiltInCategory.OST_Ceilings),
+        ("Furniture", BuiltInCategory.OST_Furniture),
+        ("Generic Models", BuiltInCategory.OST_GenericModel),
+        ("Structural Columns", BuiltInCategory.OST_StructuralColumns),
+        ("Structural Framing", BuiltInCategory.OST_StructuralFraming),
+        ("Mechanical Equipment", BuiltInCategory.OST_MechanicalEquipment),
+        ("Electrical Equipment", BuiltInCategory.OST_ElectricalEquipment),
+        ("Plumbing Fixtures", BuiltInCategory.OST_PlumbingFixtures),
+        ("Casework", BuiltInCategory.OST_Casework),
+        ("Curtain Panels", BuiltInCategory.OST_CurtainWallPanels),
+        ("Curtain Wall Mullions", BuiltInCategory.OST_CurtainWallMullions),
+        ("Columns", BuiltInCategory.OST_Columns),
+        ("Roofs", BuiltInCategory.OST_Roofs),
+        ("Stairs", BuiltInCategory.OST_Stairs),
+        ("Railings", BuiltInCategory.OST_Railings),
+    };
+
     private readonly Document _doc;
     private readonly View _view;
     private readonly Dictionary<string, Category> _categoriesByName;
@@ -69,14 +103,12 @@ public class OverrideByParamWindow : BimFlowWindow
         _doc = doc;
         _view = view;
 
-        _categoriesByName = new FilteredElementCollector(doc, view.Id)
-            .WhereElementIsNotElementType()
-            .Select(e => e.Category)
-            .Where(c => c is not null)
-            .GroupBy(c => c!.Name)
-            .Select(g => g.First()!)
-            .OrderBy(c => c.Name)
-            .ToDictionary(c => c.Name, c => c);
+        _categoriesByName = new Dictionary<string, Category>();
+        foreach (var (label, builtIn) in CategoryRoster)
+        {
+            var category = Category.GetCategory(doc, builtIn);
+            if (category is not null) _categoriesByName[label] = category;
+        }
 
         var root = new StackPanel();
         root.Children.Add(BimFlowUi.TitleBar("🎨", "Color Code", "Color-code elements by parameter value using persistent view filters."));
@@ -91,7 +123,25 @@ public class OverrideByParamWindow : BimFlowWindow
         left.Children.Add(_modeBox);
 
         left.Children.Add(BimFlowUi.SectionHeader("Category"));
-        _categoryBox.Items.AddRange(_categoriesByName.Keys.Cast<object>().ToArray());
+        var firstNonEmptyIndex = 0;
+        for (var i = 0; i < CategoryRoster.Length; i++)
+        {
+            var (label, _) = CategoryRoster[i];
+            if (!_categoriesByName.TryGetValue(label, out var category)) continue;
+
+            var count = new FilteredElementCollector(doc, view.Id).WhereElementIsNotElementType().OfCategoryId(category.Id).GetElementCount();
+            var isEmpty = count == 0;
+            var item = new ComboBoxItem
+            {
+                Content = isEmpty ? $"{label} — 0 in view" : label,
+                Tag = label,
+                IsEnabled = !isEmpty,
+                Foreground = BimFlowUi.BrushOf(isEmpty ? BimFlowUi.TextSecondary : BimFlowUi.TextPrimary),
+                FontStyle = isEmpty ? System.Windows.FontStyles.Italic : System.Windows.FontStyles.Normal,
+            };
+            _categoryBox.Items.Add(item);
+            if (!isEmpty && firstNonEmptyIndex == 0) firstNonEmptyIndex = _categoryBox.Items.Count - 1;
+        }
         _categoryBox.SelectionChanged += (_, _) => { RefreshCategoryCount(); RefreshParameterOptions(); };
         left.Children.Add(_categoryBox);
         left.Children.Add(_categoryCountText);
@@ -185,7 +235,7 @@ public class OverrideByParamWindow : BimFlowWindow
         SetContent(root, padding: 24);
 
         RefreshPaletteSwatchRow();
-        if (_categoryBox.Items.Count > 0) _categoryBox.SelectedIndex = 0;
+        if (_categoryBox.Items.Count > 0) _categoryBox.SelectedIndex = firstNonEmptyIndex;
         RefreshCategoryCount();
     }
 
@@ -228,9 +278,13 @@ public class OverrideByParamWindow : BimFlowWindow
         }
     }
 
+    /// <summary>The Category combo now holds styled ComboBoxItems (for the grey-out-when-empty look) instead of
+    /// plain strings, so its selected label comes off the item's Tag rather than a direct string cast.</summary>
+    private string? SelectedCategoryLabel() => (_categoryBox.SelectedItem as ComboBoxItem)?.Tag as string;
+
     private void RefreshCategoryCount()
     {
-        if (_categoryBox.SelectedItem is not string categoryName)
+        if (SelectedCategoryLabel() is not { } categoryName)
         {
             _categoryCountText.Text = "";
             return;
@@ -242,7 +296,7 @@ public class OverrideByParamWindow : BimFlowWindow
 
     private void RefreshParameterOptions()
     {
-        if (_categoryBox.SelectedItem is not string categoryName) return;
+        if (SelectedCategoryLabel() is not { } categoryName) return;
         var category = _categoriesByName[categoryName];
 
         var sample = new FilteredElementCollector(_doc, _view.Id)
@@ -265,7 +319,7 @@ public class OverrideByParamWindow : BimFlowWindow
         _legendPanel.Children.Clear();
         _legendRows.Clear();
 
-        if (_categoryBox.SelectedItem is not string categoryName || _paramBox.SelectedItem is not string paramName || _paletteBox.SelectedItem is not string paletteName)
+        if (SelectedCategoryLabel() is not { } categoryName || _paramBox.SelectedItem is not string paramName || _paletteBox.SelectedItem is not string paletteName)
         {
             RefreshLegendSummary();
             return;
@@ -332,7 +386,7 @@ public class OverrideByParamWindow : BimFlowWindow
 
     private void Finish(ColorCodeAction action)
     {
-        SelectedCategory = _categoryBox.SelectedItem as string is { } name ? _categoriesByName[name] : null;
+        SelectedCategory = SelectedCategoryLabel() is { } name ? _categoriesByName[name] : null;
         SelectedParameterName = _paramBox.SelectedItem as string;
         Transparency = (int)_transparencySlider.Value;
         Mode = _modeBox.SelectedIndex == 1 ? ColorCodeMode.ColorOnly : ColorCodeMode.ColorAndTransparency;
