@@ -11,6 +11,15 @@ using StackPanel = System.Windows.Controls.StackPanel;
 using Border = System.Windows.Controls.Border;
 using CornerRadius = System.Windows.CornerRadius;
 using FontWeights = System.Windows.FontWeights;
+using Grid = System.Windows.Controls.Grid;
+using ColumnDefinition = System.Windows.Controls.ColumnDefinition;
+using ItemsPresenter = System.Windows.Controls.ItemsPresenter;
+using ScrollViewer = System.Windows.Controls.ScrollViewer;
+using ToggleButton = System.Windows.Controls.Primitives.ToggleButton;
+using Popup = System.Windows.Controls.Primitives.Popup;
+using PlacementMode = System.Windows.Controls.Primitives.PlacementMode;
+using Control = System.Windows.Controls.Control;
+using TextElement = System.Windows.Documents.TextElement;
 // Directory.Build.props declares a solution-wide global alias
 // ("Using Include=Autodesk.Revit.DB.Color Alias=Color") so every other
 // plugin's bare "Color" means the Revit one. A file-level "using Color =
@@ -232,18 +241,19 @@ public static class BimFlowUi
     }
 
     /// <summary>
-    /// A dark-styled dropdown, closed box and open popup both. WPF's
-    /// Foreground property is inherited, so the near-white text set below
-    /// for the closed box was bleeding into the popup too — but the
-    /// popup's own background stayed the default white (never themed),
-    /// making every dropdown item read as near-white-on-white: legible only
-    /// for the one row highlighted blue on selection. ItemContainerStyle
-    /// gives every row its own explicit dark background/text instead of
-    /// inheriting anything, and the two SystemColors resource keys below
-    /// cover the popup's own default-template chrome around those rows —
-    /// deliberately not a full custom ControlTemplate (the popup's open/
-    /// close animation, sizing, and placement logic all keep working
-    /// exactly as before; only colors change).
+    /// A dark-styled dropdown, closed box and open popup both. An earlier
+    /// version left the default OS ControlTemplate in place and only
+    /// overrode two SystemColors resource keys — that fixed the popup rows
+    /// (confirmed: they render fine), but the closed box's own selected-item
+    /// text turned out to come from the theme chrome's baked-in brush, which
+    /// a runtime DynamicResource override can't reach if the theme uses
+    /// StaticResource there — confirmed live in Revit as invisible/washed-out
+    /// text on every combo across a real dialog. Same fix as
+    /// PrimaryButton/SecondaryButton above: a full custom ControlTemplate
+    /// that owns every visual (box border, selected-value text, arrow,
+    /// popup background) so nothing depends on OS theme resources at all.
+    /// The Popup must keep the exact name "PART_Popup" — ComboBox's control
+    /// logic (open/close, positioning) looks it up by that name specifically.
     /// </summary>
     public static ComboBox ComboBox()
     {
@@ -257,12 +267,98 @@ public static class BimFlowUi
             FontSize = 13,
             Margin = new Thickness(0, 4, 0, 10),
             ItemContainerStyle = ComboBoxItemStyle(),
+            Template = ComboBoxTemplate(),
         };
-
-        combo.Resources[System.Windows.SystemColors.WindowBrushKey] = BrushOf(CardBackgroundAlt);
-        combo.Resources[System.Windows.SystemColors.ControlTextBrushKey] = BrushOf(TextPrimary);
-
         return combo;
+    }
+
+    private static System.Windows.Controls.ControlTemplate ComboBoxTemplate()
+    {
+        var template = new System.Windows.Controls.ControlTemplate(typeof(ComboBox));
+
+        var border = new FrameworkElementFactory(typeof(Border), "MainBorder");
+        border.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Control.BackgroundProperty));
+        border.SetValue(Border.BorderBrushProperty, new TemplateBindingExtension(Control.BorderBrushProperty));
+        border.SetValue(Border.BorderThicknessProperty, new TemplateBindingExtension(Control.BorderThicknessProperty));
+        border.SetValue(Border.PaddingProperty, new TemplateBindingExtension(Control.PaddingProperty));
+        border.SetValue(Border.CornerRadiusProperty, new CornerRadius(6));
+
+        var grid = new FrameworkElementFactory(typeof(Grid));
+        var starColumn = new FrameworkElementFactory(typeof(ColumnDefinition));
+        var autoColumn = new FrameworkElementFactory(typeof(ColumnDefinition));
+        autoColumn.SetValue(ColumnDefinition.WidthProperty, System.Windows.GridLength.Auto);
+        grid.AppendChild(starColumn);
+        grid.AppendChild(autoColumn);
+
+        var content = new FrameworkElementFactory(typeof(System.Windows.Controls.ContentPresenter), "ContentSite");
+        content.SetValue(Grid.ColumnProperty, 0);
+        content.SetValue(System.Windows.Controls.ContentPresenter.ContentProperty, new TemplateBindingExtension(ComboBox.SelectionBoxItemProperty));
+        content.SetValue(System.Windows.Controls.ContentPresenter.ContentTemplateProperty, new TemplateBindingExtension(ComboBox.SelectionBoxItemTemplateProperty));
+        content.SetValue(TextElement.ForegroundProperty, new TemplateBindingExtension(Control.ForegroundProperty));
+        content.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+        content.SetValue(UIElement.IsHitTestVisibleProperty, false);
+
+        var arrow = new FrameworkElementFactory(typeof(TextBlock));
+        arrow.SetValue(TextBlock.TextProperty, "▾");
+        arrow.SetValue(Grid.ColumnProperty, 1);
+        arrow.SetValue(TextBlock.ForegroundProperty, new TemplateBindingExtension(Control.ForegroundProperty));
+        arrow.SetValue(FrameworkElement.MarginProperty, new Thickness(8, 0, 0, 0));
+        arrow.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+        arrow.SetValue(UIElement.IsHitTestVisibleProperty, false);
+
+        var toggle = new FrameworkElementFactory(typeof(ToggleButton));
+        toggle.SetValue(Grid.ColumnSpanProperty, 2);
+        toggle.SetValue(Control.BackgroundProperty, Brushes.Transparent);
+        toggle.SetValue(Control.BorderThicknessProperty, new Thickness(0));
+        toggle.SetValue(Control.FocusableProperty, false);
+        toggle.SetValue(Control.TemplateProperty, ToggleButtonBlankTemplate());
+        toggle.SetBinding(ToggleButton.IsCheckedProperty, new System.Windows.Data.Binding(nameof(ComboBox.IsDropDownOpen))
+        {
+            RelativeSource = System.Windows.Data.RelativeSource.TemplatedParent,
+            Mode = System.Windows.Data.BindingMode.TwoWay,
+        });
+
+        var popup = new FrameworkElementFactory(typeof(Popup), "PART_Popup");
+        popup.SetValue(Popup.AllowsTransparencyProperty, true);
+        popup.SetValue(Popup.PlacementProperty, PlacementMode.Bottom);
+        popup.SetValue(Popup.PopupAnimationProperty, System.Windows.Controls.Primitives.PopupAnimation.Fade);
+        popup.SetValue(Popup.StaysOpenProperty, false);
+        popup.SetValue(Popup.FocusableProperty, false);
+        popup.SetValue(Popup.IsOpenProperty, new TemplateBindingExtension(ComboBox.IsDropDownOpenProperty));
+
+        var popupBorder = new FrameworkElementFactory(typeof(Border));
+        popupBorder.SetValue(Border.BackgroundProperty, BrushOf(CardBackgroundAlt));
+        popupBorder.SetValue(Border.BorderBrushProperty, BrushOf(BorderColor));
+        popupBorder.SetValue(Border.BorderThicknessProperty, new Thickness(1));
+        popupBorder.SetValue(Border.CornerRadiusProperty, new CornerRadius(6));
+        popupBorder.SetValue(FrameworkElement.MinWidthProperty, new TemplateBindingExtension(FrameworkElement.ActualWidthProperty));
+        popupBorder.SetValue(FrameworkElement.MaxHeightProperty, 260.0);
+        popupBorder.SetValue(FrameworkElement.MarginProperty, new Thickness(0, 4, 0, 0));
+
+        var scroll = new FrameworkElementFactory(typeof(ScrollViewer));
+        scroll.SetValue(ScrollViewer.VerticalScrollBarVisibilityProperty, System.Windows.Controls.ScrollBarVisibility.Auto);
+        var itemsPresenter = new FrameworkElementFactory(typeof(ItemsPresenter));
+        scroll.AppendChild(itemsPresenter);
+        popupBorder.AppendChild(scroll);
+        popup.AppendChild(popupBorder);
+
+        grid.AppendChild(content);
+        grid.AppendChild(arrow);
+        grid.AppendChild(toggle);
+        grid.AppendChild(popup);
+        border.AppendChild(grid);
+
+        template.VisualTree = border;
+        return template;
+    }
+
+    private static System.Windows.Controls.ControlTemplate ToggleButtonBlankTemplate()
+    {
+        var template = new System.Windows.Controls.ControlTemplate(typeof(ToggleButton));
+        var border = new FrameworkElementFactory(typeof(Border));
+        border.SetValue(Border.BackgroundProperty, Brushes.Transparent);
+        template.VisualTree = border;
+        return template;
     }
 
     private static System.Windows.Style ComboBoxItemStyle()
