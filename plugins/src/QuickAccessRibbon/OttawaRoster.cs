@@ -3,8 +3,12 @@ namespace BIMFlow.QuickAccessRibbon;
 /// <summary>One row per ribbon entry — folder doubles as DLL name (BIMFlow.<Folder>.dll),
 /// command class (BIMFlow.<Folder>.Command) and icon key (Icons/<Folder>_16.png), the same
 /// convention every plugin's own .csproj/Application.cs already follows. Moved here from the
-/// BIMFlow-catalog's PluginRoster.cs, which this build doesn't have — see OttawaRoster below.</summary>
-public record RosterEntry(string Folder, string Panel, string Text, string Tooltip, bool Hero);
+/// BIMFlow-catalog's PluginRoster.cs, which this build doesn't have — see OttawaRoster below.
+/// PulldownGroup is optional: entries sharing the same group name are nested as sub-buttons
+/// under one named pulldown/flyout button instead of sitting flat in the panel — matching how
+/// the reference tool's "Highlight" button opens a menu of HL Exterior/HL Interior rather than
+/// showing them as their own top-level buttons.</summary>
+public record RosterEntry(string Folder, string Panel, string Text, string Tooltip, bool Hero, string? PulldownGroup = null);
 
 /// <summary>
 /// The internal Ottawa-Work firm suite's ribbon roster — a curated subset of
@@ -20,8 +24,8 @@ public static class OttawaRoster
     {
         // Panel 1: Highlight & View
         new("OverrideByParam", "Highlight & View", "Color Code", "Color-code any category by any parameter value — pick a palette, preview live, then apply as real persistent view filters.", false),
-        new("HighlightExterior", "Highlight & View", "HL Exterior", "Toggle a red color highlight on every exterior wall in the active view.", false),
-        new("HighlightInterior", "Highlight & View", "HL Interior", "Toggle a blue color highlight on every interior wall in the active view.", false),
+        new("HighlightExterior", "Highlight & View", "HL Exterior", "Toggle a red color highlight on every exterior wall in the active view.", false, PulldownGroup: "Highlight"),
+        new("HighlightInterior", "Highlight & View", "HL Interior", "Toggle a blue color highlight on every interior wall in the active view.", false, PulldownGroup: "Highlight"),
         new("PointCloudColorizer", "Highlight & View", "PC Color", "Tint point cloud instances with a preset or custom color, all in view or just the selection.", false),
         new("PointCloudHeatmap", "Highlight & View", "PC Heatmap", "Compare walls against point cloud scan data and color-code deviations: green/yellow/red by tolerance.", false),
 

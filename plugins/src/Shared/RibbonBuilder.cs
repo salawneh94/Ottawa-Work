@@ -58,9 +58,11 @@ public static class RibbonBuilder
     /// DLL, in an "Icons" subfolder (pre-baked PNGs, not rendered at
     /// runtime — see plugins/src/Shared/Icons and the CI packaging step
     /// that copies them alongside every DLL). Missing files are skipped
-    /// silently; a button without an icon still works, just plainer.
+    /// silently; a button without an icon still works, just plainer. Takes
+    /// the common ButtonData base (not PushButtonData specifically) so the
+    /// same call works for a PulldownButtonData too.
     /// </summary>
-    public static void ApplyIcon(PushButtonData data, string assemblyLocation, string iconKey)
+    public static void ApplyIcon(ButtonData data, string assemblyLocation, string iconKey)
     {
         var iconsDir = Path.Combine(Path.GetDirectoryName(assemblyLocation)!, "Icons");
         var small = Path.Combine(iconsDir, $"{iconKey}_16.png");

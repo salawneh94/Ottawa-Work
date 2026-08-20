@@ -22,6 +22,11 @@ namespace BIMFlow.QuickAccessRibbon;
 /// their own OnStartup with no coordination or defined ordering between
 /// them. Every OttawaRoster entry is Hero=false (plain stacked buttons) —
 /// a 23-tool internal suite doesn't need the catalog's hero-tier styling.
+///
+/// A roster entry can also carry a PulldownGroup name: entries sharing one
+/// get nested under a single named PulldownButton (a flyout menu) instead
+/// of sitting flat in the panel — see AddPulldown, used for "Highlight"
+/// (HL Exterior/HL Interior) to match the reference tool's layout.
 /// </summary>
 public class Application : IExternalApplication
 {
@@ -43,12 +48,28 @@ public class Application : IExternalApplication
             var panel = RibbonBuilder.EnsurePanel(application, group.Key);
             if (panel.GetItems().Count > 0) continue;
 
-            foreach (var hero in group.Where(e => e.Hero))
+            foreach (var hero in group.Where(e => e.Hero && e.PulldownGroup is null))
                 panel.AddItem(SiblingButtonData(hero, ownAssembly));
 
-            var stacked = group.Where(e => !e.Hero).Select(e => SiblingButtonData(e, ownAssembly)).ToList();
+            foreach (var pulldownGroup in group.Where(e => e.PulldownGroup is not null).GroupBy(e => e.PulldownGroup))
+                AddPulldown(panel, pulldownGroup.Key!, pulldownGroup.ToList(), ownAssembly);
+
+            var stacked = group.Where(e => !e.Hero && e.PulldownGroup is null).Select(e => SiblingButtonData(e, ownAssembly)).ToList();
             AddStacked(panel, stacked);
         }
+    }
+
+    /// <summary>Nests a group of roster entries under one named pulldown/flyout button instead of showing
+    /// them flat in the panel — matches the reference tool's "Highlight" button opening a menu of
+    /// HL Exterior/HL Interior rather than listing them as their own top-level buttons.</summary>
+    private static void AddPulldown(RibbonPanel panel, string groupName, List<RosterEntry> entries, string ownAssembly)
+    {
+        var pulldownData = new PulldownButtonData($"Ribbon{groupName}Pulldown", groupName);
+        RibbonBuilder.ApplyIcon(pulldownData, ownAssembly, groupName);
+
+        if (panel.AddItem(pulldownData) is not PulldownButton pulldown) return;
+        foreach (var entry in entries)
+            pulldown.AddPushButton(SiblingButtonData(entry, ownAssembly));
     }
 
     private static PushButtonData SiblingButtonData(RosterEntry entry, string ownAssembly)
