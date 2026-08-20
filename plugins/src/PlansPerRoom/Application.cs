@@ -6,7 +6,7 @@ public class Application : BimFlowApplication
 {
     protected override string PanelName => "Rooms";
     protected override string ButtonInternalName => "PlansPerRoomButton";
-    protected override string ButtonText => "PlansPerRoom";
-    protected override string ToolTip => "Generate a cropped floor plan view for every room in one pass.";
+    protected override string ButtonText => "Plans Per Room";
+    protected override string ToolTip => "Build a full room-data sheet set with editable naming templates and per-room finish parameters.";
     protected override string CommandFullClassName => typeof(Command).FullName!;
 }

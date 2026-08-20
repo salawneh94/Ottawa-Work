@@ -50,7 +50,7 @@ public static class PluginRoster
         new("ParamBatchEditor", "Parameters & Families", "ParamBatchEditor", "Bulk-edit parameter values in a spreadsheet-style grid.", false),
         new("ParameterFormulaPropagator", "Parameters & Families", "ParameterFormulaPropagator", "Generate parameter values from a template pattern and sequential numbering.", false),
         new("ParameterMapper", "Parameters & Families", "ParameterMapper", "Transfer parameter values between related elements by rule.", false),
-        new("PlansPerRoom", "Rooms", "PlansPerRoom", "Generate a cropped floor plan view for every room in one pass.", true),
+        new("PlansPerRoom", "Rooms", "Plans Per Room", "Build a full room-data sheet set — floor plan, key plan, elevations, wall sections, RCP — with editable naming templates and per-room finish parameters.", true),
         new("PointCloudColorizer", "Highlight", "PC Color", "Tint point cloud instances with a preset or custom color, all in view or just the selection.", false),
         new("PointCloudHeatmap", "Highlight", "PC Heatmap", "Compare walls against point cloud scan data and color-code deviations: green/yellow/red by tolerance.", false),
         new("PurgePro", "Model QA/QC & Cleanup", "Purge Pro", "Repeat Revit's purge-unused until the model stops shrinking.", true),

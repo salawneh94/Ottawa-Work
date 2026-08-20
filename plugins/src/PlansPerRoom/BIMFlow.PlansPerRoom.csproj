@@ -3,6 +3,8 @@
   <PropertyGroup>
     <RootNamespace>BIMFlow.PlansPerRoom</RootNamespace>
     <AssemblyName>BIMFlow.PlansPerRoom</AssemblyName>
+    <!-- WPF for the dark-themed dialog (RoomPlansWindow); see BIMFlow.Shared's csproj comment. -->
+    <UseWPF>true</UseWPF>
   </PropertyGroup>
 
   <ItemGroup>
