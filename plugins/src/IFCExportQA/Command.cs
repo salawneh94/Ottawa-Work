@@ -47,6 +47,12 @@ public class Command : BimFlowCommand
         if (mappingWindow.ShowDialog() != true)
             return Result.Cancelled;
 
+        // Declared here (not inside the block below) so the post-export
+        // rewrite step further down can reuse the exact same match/ownership
+        // data instead of recomputing it.
+        var matchesByRule = new Dictionary<IfcClassMapper.Rule, List<ElementType>>();
+        var notOwned = new HashSet<ElementId>();
+
         if (mappingWindow.Applied)
         {
             // Match + ownership request both happen before the transaction
@@ -56,8 +62,8 @@ public class Command : BimFlowCommand
             // produced consistently wrong results when tested for real
             // (every matched type reported as owned by someone else, even
             // on a solo, detached-from-central file).
-            var matchesByRule = IfcClassMapper.Match(doc, mappingWindow.Rules);
-            var notOwned = IfcClassMapper.RequestOwnership(doc, matchesByRule);
+            matchesByRule = IfcClassMapper.Match(doc, mappingWindow.Rules);
+            notOwned = IfcClassMapper.RequestOwnership(doc, matchesByRule);
 
             using var mappingTransaction = new Transaction(doc, "BIMFlow: Apply IFC Class Mapping");
             mappingTransaction.Start();
@@ -113,7 +119,20 @@ public class Command : BimFlowCommand
             return Result.Failed;
         }
 
-        TaskDialog.Show("BIMFlow — IFCExportQA", $"Exported to:\n{saveDialog.FileName}");
+        var summary = $"Exported to:\n{saveDialog.FileName}";
+
+        // Rewrite entity class keywords in the file Revit just wrote — the
+        // built-in "Export Type to IFC As" parameter set earlier had no
+        // effect on this project's exports even when set by hand in
+        // Revit's own UI, so this is the mechanism that actually works.
+        if (mappingWindow.Applied && matchesByRule.Count > 0)
+        {
+            var guidToClass = IfcFilePostProcessor.BuildGuidToClassMap(doc, matchesByRule, notOwned);
+            var rewrittenCount = IfcFilePostProcessor.RewriteClasses(saveDialog.FileName, guidToClass);
+            summary += $"\n\nRewrote {rewrittenCount} of {guidToClass.Count} mapped element(s) to their target IFC class directly in the file.";
+        }
+
+        TaskDialog.Show("BIMFlow — IFCExportQA", summary);
         return Result.Succeeded;
     }
 }
