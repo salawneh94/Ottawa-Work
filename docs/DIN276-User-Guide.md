@@ -1,0 +1,118 @@
+# DIN 276 Cost Estimator — User Guide
+
+The DIN 276 Cost Estimator classifies model elements into DIN 276
+Kostengruppen (2nd-level, 3-digit groups), computes their real quantities,
+and multiplies by unit rates you enter to produce a live cost estimate. It
+ships in Ottawa Tools → the panel containing "DIN 276 Cost Estimator".
+
+## What it does — and does not — do
+
+- It does **not** ship with any built-in €/unit rates. Construction costs
+  vary too much by region and year to hardcode responsibly, so every rate
+  table starts at zero. Type rates in directly, or import a rate sheet
+  you've exported before (see **Import / export**, below).
+- It only classifies elements into the 2nd-level Kostengruppen that have an
+  unambiguous default mapping (see **How classification works**). Elements
+  with no mapping — and no explicit override — simply don't appear in the
+  table; they are not guessed at.
+- "Assign to elements" (see below) is the only action that writes anything
+  to the model. Everything else — scope selection, quantity takeoff, rate
+  entry, import, export — only reads the model or a file on disk.
+
+## How classification works
+
+Each element is matched to a Kostengruppe by a two-tier lookup:
+
+1. **Explicit override — checked first.** If the element has its own
+   `Kostengruppe` parameter (a project or shared parameter your firm adds —
+   see **Which parameter it uses**, below) with a value, that value wins,
+   whatever the built-in rule table below would otherwise say. This lets you
+   correct or extend the automatic classification per-project without
+   touching the tool itself.
+2. **Built-in rule table — used if there's no override.** A small set of
+   categories map to a Kostengruppe automatically:
+
+   | Category | Kostengruppe |
+   |---|---|
+   | Walls (exterior function) | 330 Außenwände |
+   | Walls (interior function) | 340 Innenwände |
+   | Doors / Windows | inherits their host wall's 330/340 split |
+   | Floors | 350 Decken |
+   | Roofs | 360 Dächer |
+   | Plumbing fixtures, pipes | 410 Abwasser-, Wasser-, Gasanlagen |
+   | Mechanical equipment | 420 Wärmeversorgungsanlagen |
+   | Ducts | 430 Raumlufttechnische Anlagen |
+   | Electrical equipment, electrical fixtures, lighting fixtures | 440 Elektrische Anlagen |
+   | Communication devices, fire alarm devices, security devices | 450 Kommunikations- und Sicherheitstechnik |
+
+   Categories not listed here (structural columns/framing, and most
+   nutzungsspezifische equipment) have no unambiguous DIN 276 home at the
+   2nd level and are deliberately left unmapped — give those elements an
+   explicit `Kostengruppe` value if you want them included.
+
+Quantities are read from Revit's own area/volume/length parameters and
+converted out of Revit's internal feet-based units into real m²/m³/m
+regardless of your project's display unit settings, so the numbers in the
+report are always genuinely metric.
+
+## Which parameter it targets
+
+The tool reads and writes a single parameter, by name: **`Kostengruppe`**.
+
+This must be a project parameter (or shared parameter bound into the
+project) that your firm adds — Manage → Project Parameters — as either
+**Text** or **Number**; both storage types are read and written correctly.
+It is *not* created automatically by the tool.
+
+It deliberately does **not** read or write the built-in Assembly Code field
+(`Baugruppenkennzeichen` in German Revit, `UNIFORMAT_CODE` internally).
+That field is commonly already in use for UniFormat/OmniClass
+classification on a project, and silently repurposing it for DIN 276 codes
+risks clobbering data the firm relies on for something else. Keeping DIN
+276 codes on their own dedicated parameter avoids that entirely.
+
+If a project has no `Kostengruppe` parameter yet, elements are still
+classified and priced in the on-screen report (using the built-in rule
+table) — only the override-read and the "Assign to elements" write-back are
+unavailable until the parameter exists.
+
+## Step-by-step usage
+
+1. Open a project, then launch **DIN 276 Cost Estimator** from Ottawa Tools.
+2. Choose a **scope**: *Whole project* or *Active view*. The table
+   recalculates immediately.
+3. Review the **Kostengruppen** table. Each row shows the matched
+   Kostengruppe, its quantity (already in m²/m³/m as appropriate), an
+   editable **€/Einheit** rate box, and the row's subtotal. Type a rate to
+   see the subtotal and the **Gesamtsumme** (grand total) update live.
+4. **Import rates**, optionally: load an `.xlsx` rate sheet with `KG` and
+   `€/Einheit` columns (the same format the tool exports) to fill in rates
+   in bulk instead of typing each one.
+5. **Export report**, optionally: save the current table (including your
+   rates and the grand total) as an `.xlsx` file.
+6. **Assign to elements**, optionally: writes each currently-classified
+   element's resolved Kostengruppe code onto its own `Kostengruppe`
+   parameter. You'll be asked to confirm first. Elements without that
+   parameter, or where it's read-only, are skipped (not created or
+   forced) — the summary dialog afterward reports how many were assigned
+   versus skipped. This is the one step that changes the model, and it
+   runs inside a single transaction: if anything goes wrong partway
+   through, the whole assignment is rolled back rather than left
+   half-applied.
+7. **Close** when you're done — Import/Export/rate entry never require
+   closing the dialog to take effect.
+
+## Notes for firm-wide use
+
+- Because classification and quantity takeoff are non-destructive, it's
+  safe to open the tool and explore scope/rates on any project without
+  risk — nothing is written until you explicitly click **Assign to
+  elements** and confirm.
+- To standardize rates across projects, export a report once rates are
+  filled in, save that `.xlsx` as your firm's DIN 276 rate sheet, and
+  import it at the start of future projects.
+- To override the automatic classification for elements the built-in rule
+  table doesn't cover (or gets wrong for a specific project), add a
+  `Kostengruppe` project parameter if the project doesn't already have one,
+  then set it directly on those elements — the override always wins over
+  the built-in rules.

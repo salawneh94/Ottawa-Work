@@ -19,16 +19,23 @@ public record KostengruppeTotal(string Code, string Name, QuantityUnit Unit, dou
 /// zero and the user fills it in (or imports one they already have).
 ///
 /// Classification is a two-tier lookup: an explicit "Kostengruppe" project/
-/// shared parameter on the element wins if present (e.g. "331"), letting a
-/// firm override or extend the defaults per-project without touching this
-/// code; otherwise a small built-in rule table maps common categories to
-/// their DIN 276 group (Walls split into 330 Außenwände/340 Innenwände by
-/// WallFunction, matching HighlightExterior/HighlightInterior's existing
-/// exterior/interior split; doors/windows inherit their host wall's split).
-/// This only covers the categories with an unambiguous DIN 276 home at the
+/// shared parameter on the element wins if present (e.g. "331", as text or
+/// as a number — both storage types are read), letting a firm override or
+/// extend the defaults per-project without touching this code; otherwise a
+/// small built-in rule table maps common categories to their DIN 276 group
+/// (Walls split into 330 Außenwände/340 Innenwände by WallFunction,
+/// matching HighlightExterior/HighlightInterior's existing exterior/
+/// interior split; doors/windows inherit their host wall's split). This
+/// only covers the categories with an unambiguous DIN 276 home at the
 /// 2nd-level — Columns/Framing and most nutzungsspezifische equipment are
 /// deliberately left unmapped rather than guessed, and simply won't appear
 /// in the report unless given an explicit Kostengruppe parameter value.
+///
+/// TryAssignKostengruppe writes the resolved code back onto that same
+/// "Kostengruppe" parameter (Command.cs wraps calls to it in a transaction
+/// with rollback, the only part of this tool that touches the model — see
+/// its own doc comment for why it won't fall back to writing Assembly Code
+/// instead).
 ///
 /// Quantities read Revit's native area/volume/length parameters, which are
 /// always stored in internal (feet-based) units regardless of the
@@ -108,9 +115,8 @@ public static class Din276Engine
 
     private static string? ResolveCode(Element element, Dictionary<BuiltInCategory, string> categoryCodes)
     {
-        var overrideParam = element.LookupParameter(ParameterOverrideName);
-        if (overrideParam is { HasValue: true, StorageType: StorageType.String } && !string.IsNullOrWhiteSpace(overrideParam.AsString()))
-            return overrideParam.AsString();
+        var overrideValue = ReadOverrideParameter(element);
+        if (!string.IsNullOrWhiteSpace(overrideValue)) return overrideValue;
 
         if (element is Wall wall)
             return wall.WallType?.Function == WallFunction.Interior ? "340" : "330";
@@ -127,6 +133,54 @@ public static class Din276Engine
             if (category.Id == new ElementId(builtIn)) return code;
 
         return null;
+    }
+
+    /// <summary>
+    /// Reads the "Kostengruppe" override parameter regardless of whether the
+    /// firm set it up as Text or as a Number — DIN 276 codes are 3-digit
+    /// numeric strings, and it's equally reasonable for a project parameter
+    /// to store "330" as an integer as it is to store it as text, so only
+    /// checking StorageType.String (an earlier version's bug) silently
+    /// ignored every element on a project that chose the numeric route.
+    /// </summary>
+    private static string? ReadOverrideParameter(Element element)
+    {
+        var param = element.LookupParameter(ParameterOverrideName);
+        if (param is not { HasValue: true }) return null;
+
+        return param.StorageType switch
+        {
+            StorageType.String => param.AsString(),
+            StorageType.Integer => param.AsInteger().ToString(),
+            _ => null,
+        };
+    }
+
+    /// <summary>
+    /// Writes a resolved Kostengruppe code back onto the element's own
+    /// "Kostengruppe" parameter, if — and only if — that parameter already
+    /// exists there and is writable. Deliberately does not fall back to
+    /// Assembly Code (BuiltInParameter.UNIFORMAT_CODE): that field is
+    /// commonly already in use for UniFormat/OmniClass classification, and
+    /// silently repurposing it for DIN 276 codes could clobber data the
+    /// firm relies on for something else. An element with no "Kostengruppe"
+    /// parameter at all is skipped, not created — creating and binding a
+    /// new shared parameter from inside a plugin action is its own can of
+    /// worms (a shared parameter file, category bindings, a family-vs-
+    /// project distinction) and isn't done here; add the parameter to the
+    /// project first (Manage → Project Parameters) and re-run.
+    /// </summary>
+    public static bool TryAssignKostengruppe(Element element, string code)
+    {
+        var param = element.LookupParameter(ParameterOverrideName);
+        if (param is not { IsReadOnly: false }) return false;
+
+        return param.StorageType switch
+        {
+            StorageType.String => param.Set(code),
+            StorageType.Integer => int.TryParse(code, out var intCode) && param.Set(intCode),
+            _ => false,
+        };
     }
 
     private static double GetQuantity(Element element, QuantityUnit unit) => unit switch

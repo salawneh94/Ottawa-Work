@@ -26,6 +26,10 @@ public enum CostScope { WholeProject, ActiveView }
 /// at zero until you type rates in or import a rate sheet you already have.
 /// Import/export are pure file I/O (no document changes), so both run
 /// directly from here rather than needing a transaction in Command.cs.
+/// Assign to elements is the one action that writes to the model — this
+/// window only confirms and hands the resolved codes off via
+/// PendingAssignments/AssignRequested; Command.cs does the actual writes
+/// in its own transaction after this window closes.
 /// </summary>
 public class Din276Window : BimFlowWindow
 {
@@ -39,7 +43,11 @@ public class Din276Window : BimFlowWindow
 
     private CostScope _scope = CostScope.WholeProject;
     private List<KostengruppeTotal> _totals = new();
+    private List<ElementQuantity> _quantities = new();
     private readonly Dictionary<string, double> _rates = new();
+
+    public List<ElementQuantity> PendingAssignments { get; private set; } = new();
+    public bool AssignRequested { get; private set; }
 
     public Din276Window(Document doc, View activeView) : base("BIMFlow — DIN 276 Cost Estimator", minWidth: 640)
     {
@@ -80,16 +88,30 @@ public class Din276Window : BimFlowWindow
         var buttonRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 16, 0, 0) };
         var closeButton = BimFlowUi.SecondaryButton("Close");
         var importButton = BimFlowUi.SecondaryButton("Import rates");
-        var exportButton = BimFlowUi.PrimaryButton("Export report");
+        var exportButton = BimFlowUi.SecondaryButton("Export report");
+        var assignButton = BimFlowUi.SuccessButton("Assign to elements");
         closeButton.Margin = new Thickness(0, 0, 8, 0);
         importButton.Margin = new Thickness(0, 0, 8, 0);
+        exportButton.Margin = new Thickness(0, 0, 8, 0);
         closeButton.Click += (_, _) => { DialogResult = true; Close(); };
         importButton.Click += (_, _) => ImportRates();
         exportButton.Click += (_, _) => ExportReport();
+        assignButton.Click += (_, _) => RequestAssign();
         buttonRow.Children.Add(closeButton);
         buttonRow.Children.Add(importButton);
         buttonRow.Children.Add(exportButton);
+        buttonRow.Children.Add(assignButton);
         root.Children.Add(buttonRow);
+        root.Children.Add(new TextBlock
+        {
+            Text = "Assign to elements writes each element's resolved KG code onto its own 'Kostengruppe' parameter (project/shared parameter must already exist — elements without it are skipped).",
+            FontSize = 9,
+            Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary),
+            Margin = new Thickness(0, 6, 0, 0),
+            TextWrapping = TextWrapping.Wrap,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            TextAlignment = System.Windows.TextAlignment.Right,
+        });
 
         SetContent(root, padding: 24);
 
@@ -110,8 +132,8 @@ public class Din276Window : BimFlowWindow
             ? new FilteredElementCollector(_doc).WhereElementIsNotElementType().ToList()
             : new FilteredElementCollector(_doc, _activeView.Id).WhereElementIsNotElementType().ToList();
 
-        var quantities = Din276Engine.Classify(elements);
-        _totals = Din276Engine.Aggregate(quantities, _rates);
+        _quantities = Din276Engine.Classify(elements);
+        _totals = Din276Engine.Aggregate(_quantities, _rates);
 
         BuildTable();
         RefreshGrandTotal();
@@ -232,5 +254,27 @@ public class Din276Window : BimFlowWindow
 
         if (savedPath is not null)
             System.Windows.MessageBox.Show($"Exported to:\n{savedPath}", "BIMFlow — DIN 276 Cost Estimator");
+    }
+
+    /// <summary>Confirms, then hands the currently-classified elements off to Command.cs to actually write —
+    /// this window never touches the model itself, matching every other BIMFlow dialog's transaction split.</summary>
+    private void RequestAssign()
+    {
+        if (_quantities.Count == 0)
+        {
+            System.Windows.MessageBox.Show("Nothing to assign — no Kostengruppen matched in this scope.", "BIMFlow — DIN 276 Cost Estimator");
+            return;
+        }
+
+        var confirm = System.Windows.MessageBox.Show(
+            $"Write the resolved Kostengruppe code onto {_quantities.Count} element(s)' own 'Kostengruppe' parameter?\n\nElements without that parameter (or where it's read-only) are skipped, not created.",
+            "BIMFlow — DIN 276 Cost Estimator",
+            System.Windows.MessageBoxButton.YesNo);
+        if (confirm != System.Windows.MessageBoxResult.Yes) return;
+
+        PendingAssignments = _quantities;
+        AssignRequested = true;
+        DialogResult = true;
+        Close();
     }
 }
