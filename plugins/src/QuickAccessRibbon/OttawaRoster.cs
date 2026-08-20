@@ -13,10 +13,6 @@ public record RosterEntry(string Folder, string Panel, string Text, string Toolt
 /// firm's own 7 named panels rather than the catalog's marketing panel
 /// names. This is what BIMFlow.QuickAccessRibbon's Application.cs builds
 /// the "Ottawa Tools" ribbon tab from in this build.
-///
-/// "Batch Excel Sync" (Panel 2) is deliberately not listed yet — it's a new
-/// tool to be built from a reference screenshot the firm hasn't sent yet.
-/// Add it here once that plugin exists.
 /// </summary>
 public static class OttawaRoster
 {
@@ -28,6 +24,7 @@ public static class OttawaRoster
 
         // Panel 2: Data & Excel
         new("Excel2Revit", "Data & Excel", "Single Excel Sync", "Two-way sync between Excel/CSV and Revit parameters or schedules.", false),
+        new("BatchExcelSync", "Data & Excel", "Batch Excel Sync", "Export any category's parameters to Excel, edit them, then re-import with a live diff and approve exactly which changes to commit.", false),
         new("IFCExportQA", "Data & Excel", "IFC Mapping & Exporter", "Pre-flight checks, IFC class mapping presets, and clean IFC export.", false),
 
         // Panel 3: Renumbering

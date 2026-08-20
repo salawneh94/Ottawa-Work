@@ -199,6 +199,24 @@ public static class BimFlowUi
         return button;
     }
 
+    /// <summary>A solid green button for a positive commit/apply action distinct from the blue primary action — "COMMIT APPROVED CHANGES", etc.</summary>
+    public static Button SuccessButton(string text)
+    {
+        var button = new Button
+        {
+            Content = text.ToUpperInvariant(),
+            Background = BrushOf(Success),
+            Foreground = BrushOf(TextPrimary),
+            FontWeight = FontWeights.SemiBold,
+            FontSize = 12,
+            BorderThickness = new Thickness(0),
+            Padding = new Thickness(14, 12, 14, 12),
+            Cursor = System.Windows.Input.Cursors.Hand,
+        };
+        button.Template = RoundedButtonTemplate();
+        return button;
+    }
+
     /// <summary>
     /// Repaints a button in-place between the "active" solid-blue look and the
     /// "inactive" outlined look — for a two-state toggle pair (e.g. "Yes/No")

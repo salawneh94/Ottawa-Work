@@ -4,6 +4,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.LegendUsageAudit", "src\LegendUsageAudit\BIMFlow.LegendUsageAudit.csproj", "{E31337C1-D924-48FD-BB38-FD41882C9FE9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.BatchExcelSync", "src\BatchExcelSync\BIMFlow.BatchExcelSync.csproj", "{0642D3D5-4CEC-4159-85CC-581CAB8274F5}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.BatchExporter", "src\BatchExporter\BIMFlow.BatchExporter.csproj", "{CEFDB333-9756-44B6-B76E-E7586E4AD30D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.BatchScheduleExporter", "src\BatchScheduleExporter\BIMFlow.BatchScheduleExporter.csproj", "{A37A5DB2-AE0F-49F0-8AD4-13C80E2C0E74}"
@@ -170,6 +172,10 @@ Global
 		{E31337C1-D924-48FD-BB38-FD41882C9FE9}.Debug|x64.Build.0 = Debug|x64
 		{E31337C1-D924-48FD-BB38-FD41882C9FE9}.Release|x64.ActiveCfg = Release|x64
 		{E31337C1-D924-48FD-BB38-FD41882C9FE9}.Release|x64.Build.0 = Release|x64
+		{0642D3D5-4CEC-4159-85CC-581CAB8274F5}.Debug|x64.ActiveCfg = Debug|x64
+		{0642D3D5-4CEC-4159-85CC-581CAB8274F5}.Debug|x64.Build.0 = Debug|x64
+		{0642D3D5-4CEC-4159-85CC-581CAB8274F5}.Release|x64.ActiveCfg = Release|x64
+		{0642D3D5-4CEC-4159-85CC-581CAB8274F5}.Release|x64.Build.0 = Release|x64
 		{CEFDB333-9756-44B6-B76E-E7586E4AD30D}.Debug|x64.ActiveCfg = Debug|x64
 		{CEFDB333-9756-44B6-B76E-E7586E4AD30D}.Debug|x64.Build.0 = Debug|x64
 		{CEFDB333-9756-44B6-B76E-E7586E4AD30D}.Release|x64.ActiveCfg = Release|x64

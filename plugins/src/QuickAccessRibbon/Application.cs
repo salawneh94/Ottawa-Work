@@ -21,7 +21,7 @@ namespace BIMFlow.QuickAccessRibbon;
 /// can't be built by independent add-ins each adding one button during
 /// their own OnStartup with no coordination or defined ordering between
 /// them. Every OttawaRoster entry is Hero=false (plain stacked buttons) —
-/// a 19-tool internal suite doesn't need the catalog's hero-tier styling.
+/// a 20-tool internal suite doesn't need the catalog's hero-tier styling.
 /// </summary>
 public class Application : IExternalApplication
 {

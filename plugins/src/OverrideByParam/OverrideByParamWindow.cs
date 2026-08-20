@@ -37,37 +37,15 @@ public class OverrideByParamWindow : BimFlowWindow
     public const string NoValueKey = "(No Value)";
 
     /// <summary>
-    /// A fixed roster of common model categories, always offered in the same
-    /// order regardless of what's actually in the model — matching the
-    /// reference tool's Category dropdown. Categories with zero elements in
-    /// the active view are still listed (so the roster doesn't change shape
-    /// project-to-project) but shown muted/disabled with their live count,
-    /// rather than silently omitted the way an earlier view-scoped version
-    /// of this dropdown did.
+    /// The shared common-categories roster (BIMFlow.Shared.CommonCategories),
+    /// offered in the same fixed order every time regardless of what's
+    /// actually in the model — matching the reference tool's Category
+    /// dropdown. Categories with zero elements in the active view are still
+    /// listed (so the roster doesn't change shape project-to-project) but
+    /// shown muted/disabled with their live count, rather than silently
+    /// omitted the way an earlier view-scoped version of this dropdown did.
     /// </summary>
-    private static readonly (string Label, BuiltInCategory BuiltIn)[] CategoryRoster =
-    {
-        ("Walls", BuiltInCategory.OST_Walls),
-        ("Doors", BuiltInCategory.OST_Doors),
-        ("Windows", BuiltInCategory.OST_Windows),
-        ("Rooms", BuiltInCategory.OST_Rooms),
-        ("Floors", BuiltInCategory.OST_Floors),
-        ("Ceilings", BuiltInCategory.OST_Ceilings),
-        ("Furniture", BuiltInCategory.OST_Furniture),
-        ("Generic Models", BuiltInCategory.OST_GenericModel),
-        ("Structural Columns", BuiltInCategory.OST_StructuralColumns),
-        ("Structural Framing", BuiltInCategory.OST_StructuralFraming),
-        ("Mechanical Equipment", BuiltInCategory.OST_MechanicalEquipment),
-        ("Electrical Equipment", BuiltInCategory.OST_ElectricalEquipment),
-        ("Plumbing Fixtures", BuiltInCategory.OST_PlumbingFixtures),
-        ("Casework", BuiltInCategory.OST_Casework),
-        ("Curtain Panels", BuiltInCategory.OST_CurtainWallPanels),
-        ("Curtain Wall Mullions", BuiltInCategory.OST_CurtainWallMullions),
-        ("Columns", BuiltInCategory.OST_Columns),
-        ("Roofs", BuiltInCategory.OST_Roofs),
-        ("Stairs", BuiltInCategory.OST_Stairs),
-        ("Railings", BuiltInCategory.OST_Railings),
-    };
+    private static readonly (string Label, BuiltInCategory BuiltIn)[] CategoryRoster = CommonCategories.Roster;
 
     private readonly Document _doc;
     private readonly View _view;
