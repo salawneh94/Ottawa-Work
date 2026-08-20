@@ -46,7 +46,7 @@ public static class PluginRoster
         new("ModelHealthDashboard", "Model QA/QC & Cleanup", "ModelHealthDashboard", "Track file size, warning count, and element count trends over time.", false),
         new("NamingConventionAudit", "Model QA/QC & Cleanup", "NamingConventionAudit", "Check view, sheet, or family type names against a regex pattern you define.", false),
         new("OverriddenDimensions", "Model QA/QC & Cleanup", "OverriddenDimensions", "Find dimensions with a manually typed value override.", false),
-        new("OverrideByParam", "Highlight", "Color Code", "Color-code any category by any parameter value, as real persistent view filters. Also exports PNG and clears its own filters.", true),
+        new("OverrideByParam", "Highlight", "Color Code", "Color-code any category by any parameter value — pick a palette, preview live, then apply as real persistent view filters. Also exports PNG and clears its own filters.", true),
         new("ParamBatchEditor", "Parameters & Families", "ParamBatchEditor", "Bulk-edit parameter values in a spreadsheet-style grid.", false),
         new("ParameterFormulaPropagator", "Parameters & Families", "ParameterFormulaPropagator", "Generate parameter values from a template pattern and sequential numbering.", false),
         new("ParameterMapper", "Parameters & Families", "ParameterMapper", "Transfer parameter values between related elements by rule.", false),

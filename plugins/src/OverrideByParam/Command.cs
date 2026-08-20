@@ -37,11 +37,66 @@ public class Command : BimFlowCommand
 
         return window.ChosenAction switch
         {
+            ColorCodeAction.Preview => Preview(doc, view, window),
             ColorCodeAction.ApplyFilters => ApplyFilters(doc, view, window),
             ColorCodeAction.ExportPng => ExportPng(doc, view),
             ColorCodeAction.ClearFilters => ClearFilters(doc, view),
             _ => Result.Succeeded,
         };
+    }
+
+    private static OverrideGraphicSettings BuildOverrides(Autodesk.Revit.DB.Color color, int transparency, ColorCodeMode mode)
+    {
+        var overrides = new OverrideGraphicSettings().SetProjectionLineColor(color).SetCutLineColor(color);
+        if (mode == ColorCodeMode.ColorAndTransparency) overrides = overrides.SetSurfaceTransparency(transparency);
+        return overrides;
+    }
+
+    private Result Preview(Document doc, View view, OverrideByParamWindow window)
+    {
+        if (window.SelectedCategory is null || window.SelectedParameterName is null)
+            return Result.Succeeded;
+
+        var category = window.SelectedCategory;
+        var paramName = window.SelectedParameterName;
+
+        var elements = new FilteredElementCollector(doc, view.Id)
+            .WhereElementIsNotElementType()
+            .OfCategoryId(category.Id)
+            .ToList();
+
+        using var transaction = new Transaction(doc, "BIMFlow: Preview Color Code");
+        transaction.Start();
+        try
+        {
+            if (window.WipeFirst)
+                foreach (var element in elements)
+                    view.SetElementOverrides(element.Id, new OverrideGraphicSettings());
+
+            var applied = 0;
+            foreach (var element in elements)
+            {
+                var value = element.LookupParameter(paramName)?.AsValueString();
+                var key = string.IsNullOrWhiteSpace(value) ? OverrideByParamWindow.NoValueKey : value!;
+                if (key == OverrideByParamWindow.NoValueKey) continue;
+                if (!window.SelectedValues.Contains(key)) continue;
+
+                var overrides = BuildOverrides(window.ColorByValue[key], window.Transparency, window.Mode);
+                view.SetElementOverrides(element.Id, overrides);
+                applied++;
+            }
+
+            transaction.Commit();
+            TaskDialog.Show("BIMFlow — Color Code", $"Previewed {applied} element(s) directly in the active view. Nothing was saved as a filter — use \"Apply as filters\" to make it persistent, or re-run Preview/Clear to change it.");
+        }
+        catch (Exception ex)
+        {
+            transaction.RollBack();
+            TaskDialog.Show("BIMFlow — Color Code", $"Couldn't preview: {ex.Message}");
+            return Result.Failed;
+        }
+
+        return Result.Succeeded;
     }
 
     private Result ApplyFilters(Document doc, View view, OverrideByParamWindow window)
@@ -80,7 +135,7 @@ public class Command : BimFlowCommand
             }
 
             var applied = 0;
-            foreach (var value in window.SelectedValues)
+            foreach (var value in window.SelectedValues.Where(v => v != OverrideByParamWindow.NoValueKey))
             {
                 var filterName = namePrefix + value;
                 var rule = ParameterFilterRuleFactory.CreateEqualsRule(sample.Id, value);
@@ -100,11 +155,7 @@ public class Command : BimFlowCommand
                 if (!view.GetFilters().Contains(pfe.Id))
                     view.AddFilter(pfe.Id);
 
-                var color = window.ColorByValue[value];
-                var overrides = new OverrideGraphicSettings()
-                    .SetProjectionLineColor(color)
-                    .SetCutLineColor(color)
-                    .SetSurfaceTransparency(window.Transparency);
+                var overrides = BuildOverrides(window.ColorByValue[value], window.Transparency, window.Mode);
                 view.SetFilterOverrides(pfe.Id, overrides);
                 applied++;
             }

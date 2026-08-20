@@ -181,6 +181,39 @@ public static class BimFlowUi
         return button;
     }
 
+    /// <summary>A solid red button for destructive/irreversible actions — "CLEAR FILTERS", etc.</summary>
+    public static Button DangerButton(string text)
+    {
+        var button = new Button
+        {
+            Content = text.ToUpperInvariant(),
+            Background = BrushOf(Danger),
+            Foreground = BrushOf(TextPrimary),
+            FontWeight = FontWeights.SemiBold,
+            FontSize = 12,
+            BorderThickness = new Thickness(0),
+            Padding = new Thickness(14, 12, 14, 12),
+            Cursor = System.Windows.Input.Cursors.Hand,
+        };
+        button.Template = RoundedButtonTemplate();
+        return button;
+    }
+
+    /// <summary>
+    /// Repaints a button in-place between the "active" solid-blue look and the
+    /// "inactive" outlined look — for a two-state toggle pair (e.g. "Yes/No")
+    /// where only one side is ever selected. Both buttons already exist (from
+    /// PrimaryButton/SecondaryButton); this just flips their Background/
+    /// Foreground/BorderBrush, which the shared RoundedButtonTemplate reads via
+    /// TemplateBinding, so no re-templating or new instances are needed.
+    /// </summary>
+    public static void SetToggleActive(Button button, bool active)
+    {
+        button.Background = BrushOf(active ? Accent : CardBackgroundAlt);
+        button.BorderBrush = BrushOf(active ? Accent : BorderColor);
+        button.FontWeight = active ? FontWeights.SemiBold : FontWeights.Normal;
+    }
+
     private static System.Windows.Controls.ControlTemplate RoundedButtonTemplate()
     {
         var template = new System.Windows.Controls.ControlTemplate(typeof(Button));
