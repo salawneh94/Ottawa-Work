@@ -17,14 +17,25 @@ namespace BIMFlow.Shared;
 /// value Revit writes as the entity's GlobalId) and swap just the class
 /// keyword on that line, leaving every argument untouched.
 ///
-/// Safe as long as the old and new classes share the same attribute
-/// count — true for every class in IfcClassMapper.DefaultRules, all
-/// simple IfcElement-based occurrence entities with a single trailing
-/// (and, in practice, unset/"$") PredefinedType attribute.
+/// Confirmed against a real project: the first version of this rewrite
+/// (swap the class keyword, leave every argument as-is) crashed
+/// Navisworks' IFC import on the rewritten file, while the exact same
+/// export with mapping skipped opened fine — proving the rewrite itself
+/// produced an invalid file. The likely cause: some rewritten elements
+/// had a real PredefinedType enum value set (not the usual blank "$"),
+/// and swapping to a class with a different PredefinedType enum turned
+/// that value into a literal invalid for the new class — something
+/// stricter importers reject even though lenient viewers ignore it. This
+/// now unconditionally blanks the trailing attribute (the last one before
+/// the closing paren — PredefinedType on every class in DefaultRules) to
+/// "$" as part of the rewrite, which is always valid regardless of the
+/// target class's enum type, at the cost of losing whatever specific
+/// PredefinedType value the element had.
 /// </summary>
 public static class IfcFilePostProcessor
 {
     private static readonly Regex EntityLine = new(@"^(#\d+\s*=\s*)IFC[A-Z0-9]+(\('([^']+)'.*)$", RegexOptions.Compiled);
+    private static readonly Regex TrailingAttribute = new(@",[^,()]*\)\s*;\s*$", RegexOptions.Compiled);
 
     /// <summary>
     /// Maps each matched element's IfcGUID to its target IFC class (upper
@@ -78,7 +89,8 @@ public static class IfcFilePostProcessor
             var guid = match.Groups[3].Value;
             if (!guidToClass.TryGetValue(guid, out var newClass)) continue;
 
-            lines[i] = match.Groups[1].Value + newClass + match.Groups[2].Value;
+            var rewritten = match.Groups[1].Value + newClass + match.Groups[2].Value;
+            lines[i] = TrailingAttribute.Replace(rewritten, ",$);");
             changed++;
         }
 
