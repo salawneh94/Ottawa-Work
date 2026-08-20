@@ -40,6 +40,17 @@ public static class IfcClassMapper
         new("Feuerlöscher", "IfcFireSuppressionTerminal"),
         new("Lüftungsklappe", "IfcDamper"),
         new("Ventilator", "IfcFan"),
+        // Sanitary/drainage fixtures found still sitting under the
+        // generic IfcFlowTerminal bucket after a real export — matches
+        // sinks, floor/roof drains, and Geberit in-wall mounting
+        // elements for toilets/urinals/washbasins.
+        new("Ausgussbecken", "IfcSanitaryTerminal"),
+        new("Bodenablauf", "IfcSanitaryTerminal"),
+        new("Regenablauf", "IfcSanitaryTerminal"),
+        new("Geberit", "IfcSanitaryTerminal"),
+        new("Waschbecken", "IfcSanitaryTerminal"),
+        new("Urinal", "IfcSanitaryTerminal"),
+        new("Geräteanschlussventil", "IfcValve"),
     };
 
     /// <summary>
