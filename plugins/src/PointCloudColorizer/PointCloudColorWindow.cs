@@ -1,5 +1,5 @@
 using ColorDialogWinForms = System.Windows.Forms.ColorDialog;
-using DialogResult = System.Windows.Forms.DialogResult;
+using WinFormsDialogResult = System.Windows.Forms.DialogResult;
 using RadioButton = System.Windows.Controls.RadioButton;
 using StackPanel = System.Windows.Controls.StackPanel;
 using TextBlock = System.Windows.Controls.TextBlock;
@@ -78,7 +78,7 @@ public class PointCloudColorWindow : BimFlowWindow
         customButton.Click += (_, _) =>
         {
             using var dialog = new ColorDialogWinForms { FullOpen = true };
-            if (dialog.ShowDialog() == DialogResult.OK)
+            if (dialog.ShowDialog() == WinFormsDialogResult.OK)
                 SetSelectedColor("Custom", new RevitColor(dialog.Color.R, dialog.Color.G, dialog.Color.B));
         };
         paletteStack.Children.Add(customButton);
