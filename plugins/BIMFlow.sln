@@ -94,6 +94,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.RoomRenumber", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.RoomTagger", "src\RoomTagger\BIMFlow.RoomTagger.csproj", "{50544DBB-F034-4A32-A8EB-7FB0E8A92659}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.PointCloudHeatmap", "src\PointCloudHeatmap\BIMFlow.PointCloudHeatmap.csproj", "{A969D125-9746-4391-890F-530BB71B11C1}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ScheduleBlankDetector", "src\ScheduleBlankDetector\BIMFlow.ScheduleBlankDetector.csproj", "{31881A93-2999-4F66-B6B7-291CF83F1D24}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ScopeBoxSync", "src\ScopeBoxSync\BIMFlow.ScopeBoxSync.csproj", "{3B737CF1-2931-4908-BA51-CD5D9AE02AB7}"
@@ -342,6 +344,10 @@ Global
 		{50544DBB-F034-4A32-A8EB-7FB0E8A92659}.Debug|x64.Build.0 = Debug|x64
 		{50544DBB-F034-4A32-A8EB-7FB0E8A92659}.Release|x64.ActiveCfg = Release|x64
 		{50544DBB-F034-4A32-A8EB-7FB0E8A92659}.Release|x64.Build.0 = Release|x64
+		{A969D125-9746-4391-890F-530BB71B11C1}.Debug|x64.ActiveCfg = Debug|x64
+		{A969D125-9746-4391-890F-530BB71B11C1}.Debug|x64.Build.0 = Debug|x64
+		{A969D125-9746-4391-890F-530BB71B11C1}.Release|x64.ActiveCfg = Release|x64
+		{A969D125-9746-4391-890F-530BB71B11C1}.Release|x64.Build.0 = Release|x64
 		{A19F2F39-0051-404F-B69B-EE40A1D8B9BA}.Debug|x64.ActiveCfg = Debug|x64
 		{A19F2F39-0051-404F-B69B-EE40A1D8B9BA}.Debug|x64.Build.0 = Debug|x64
 		{A19F2F39-0051-404F-B69B-EE40A1D8B9BA}.Release|x64.ActiveCfg = Release|x64

@@ -52,6 +52,7 @@ public static class PluginRoster
         new("ParameterMapper", "Parameters & Families", "ParameterMapper", "Transfer parameter values between related elements by rule.", false),
         new("PlansPerRoom", "Rooms", "PlansPerRoom", "Generate a cropped floor plan view for every room in one pass.", true),
         new("PointCloudColorizer", "Highlight", "PC Color", "Tint point cloud instances with a preset or custom color, all in view or just the selection.", false),
+        new("PointCloudHeatmap", "Highlight", "PC Heatmap", "Compare walls against point cloud scan data and color-code deviations: green/yellow/red by tolerance.", false),
         new("PurgePro", "Model QA/QC & Cleanup", "Purge Pro", "Repeat Revit's purge-unused until the model stops shrinking.", true),
         new("QCSummary", "Model QA/QC & Cleanup", "QCSummary", "One-click QA dashboard: unbounded rooms, disconnected walls, orphaned doors, sill consistency.", false),
         new("QuickSelect", "Renumbering & Productivity", "QuickSelect+", "Select elements by category and parameter-value rules.", true),

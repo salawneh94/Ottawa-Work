@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — PointCloudHeatmap</Name>
+    <Assembly>BIMFlow.PointCloudHeatmap.dll</Assembly>
+    <AddInId>{21628106-652b-4207-9054-f9825a3a9447}</AddInId>
+    <FullClassName>BIMFlow.PointCloudHeatmap.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>
