@@ -58,5 +58,6 @@ public static class OttawaRoster
 
         // Panel 7: Parameters
         new("ParamBatchEditor", "Parameters", "Param Batch Editor", "Bulk-edit parameter values in a spreadsheet-style grid.", false),
+        new("Din276CostEstimator", "Parameters", "DIN 276 Costs", "Classify elements into DIN 276 Kostengruppen and price them against your own unit rates — live quantities, editable rates, exportable report.", false),
     };
 }

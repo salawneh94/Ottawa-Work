@@ -21,7 +21,7 @@ namespace BIMFlow.QuickAccessRibbon;
 /// can't be built by independent add-ins each adding one button during
 /// their own OnStartup with no coordination or defined ordering between
 /// them. Every OttawaRoster entry is Hero=false (plain stacked buttons) —
-/// a 23-tool internal suite doesn't need the catalog's hero-tier styling.
+/// a 24-tool internal suite doesn't need the catalog's hero-tier styling.
 ///
 /// A roster entry can also carry a PulldownGroup name: entries sharing one
 /// get nested under a single named PulldownButton (a flyout menu) instead

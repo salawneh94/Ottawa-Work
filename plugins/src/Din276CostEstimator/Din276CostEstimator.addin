@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — DIN 276 Cost Estimator</Name>
+    <Assembly>BIMFlow.Din276CostEstimator.dll</Assembly>
+    <AddInId>{828edffe-58d7-4a00-8596-5cd37f4a3d21}</AddInId>
+    <FullClassName>BIMFlow.Din276CostEstimator.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

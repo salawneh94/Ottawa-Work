@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.DimensionAuto", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.DimensionEditor", "src\DimensionEditor\BIMFlow.DimensionEditor.csproj", "{EB0ECEFB-6AC2-4F18-BB27-61F951E2933F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.Din276CostEstimator", "src\Din276CostEstimator\BIMFlow.Din276CostEstimator.csproj", "{E4FD85E0-F231-4B8E-8682-0E6B65DFF08E}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.DoorWindowRenumber", "src\DoorWindowRenumber\BIMFlow.DoorWindowRenumber.csproj", "{D07C9576-27DB-4490-AAD6-829082EF11B7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.DuplicateFinder", "src\DuplicateFinder\BIMFlow.DuplicateFinder.csproj", "{03E84F21-26B8-4075-B049-916536613211}"
@@ -208,6 +210,10 @@ Global
 		{EB0ECEFB-6AC2-4F18-BB27-61F951E2933F}.Debug|x64.Build.0 = Debug|x64
 		{EB0ECEFB-6AC2-4F18-BB27-61F951E2933F}.Release|x64.ActiveCfg = Release|x64
 		{EB0ECEFB-6AC2-4F18-BB27-61F951E2933F}.Release|x64.Build.0 = Release|x64
+		{E4FD85E0-F231-4B8E-8682-0E6B65DFF08E}.Debug|x64.ActiveCfg = Debug|x64
+		{E4FD85E0-F231-4B8E-8682-0E6B65DFF08E}.Debug|x64.Build.0 = Debug|x64
+		{E4FD85E0-F231-4B8E-8682-0E6B65DFF08E}.Release|x64.ActiveCfg = Release|x64
+		{E4FD85E0-F231-4B8E-8682-0E6B65DFF08E}.Release|x64.Build.0 = Release|x64
 		{D07C9576-27DB-4490-AAD6-829082EF11B7}.Debug|x64.ActiveCfg = Debug|x64
 		{D07C9576-27DB-4490-AAD6-829082EF11B7}.Debug|x64.Build.0 = Debug|x64
 		{D07C9576-27DB-4490-AAD6-829082EF11B7}.Release|x64.ActiveCfg = Release|x64
