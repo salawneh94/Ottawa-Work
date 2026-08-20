@@ -9,9 +9,12 @@ using Autodesk.Revit.UI;
 namespace BIMFlow.Shared;
 
 /// <summary>
-/// Every BIMFlow add-in contributes into the same "BIMFlow" ribbon tab so
-/// customers who own several plugins see one consistent home for all of them,
-/// instead of a tab per purchase.
+/// Every add-in in this internal Ottawa-Work build contributes into the same
+/// "Ottawa Tools" ribbon tab — the unlicensed, ribbon-restricted fork of
+/// BIMFlow.Shared's RibbonBuilder, which uses a "BIMFlow" tab and the full
+/// 75+ plugin roster instead. This build's ribbon is driven from
+/// OttawaRoster (not PluginRoster) in BIMFlow.QuickAccessRibbon's
+/// Application.cs, restricted to the internal firm's own curated tool set.
 ///
 /// An earlier version routed each category through one shared button that
 /// opened a custom WPF tool-picker window (BIMFlow.Dashboard), with every
@@ -33,7 +36,7 @@ namespace BIMFlow.Shared;
 /// </summary>
 public static class RibbonBuilder
 {
-    private const string TabName = "BIMFlow";
+    private const string TabName = "Ottawa Tools";
 
     public static RibbonPanel EnsurePanel(UIControlledApplication app, string panelName)
     {
@@ -43,7 +46,7 @@ public static class RibbonBuilder
         }
         catch (Autodesk.Revit.Exceptions.ArgumentException)
         {
-            // Tab already created by another BIMFlow add-in loaded earlier this session.
+            // Tab already created by another add-in loaded earlier this session.
         }
 
         var existing = app.GetRibbonPanels(TabName).FirstOrDefault(p => p.Name == panelName);

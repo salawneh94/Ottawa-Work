@@ -98,6 +98,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.PointCloudHeatmap",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ScheduleBlankDetector", "src\ScheduleBlankDetector\BIMFlow.ScheduleBlankDetector.csproj", "{31881A93-2999-4F66-B6B7-291CF83F1D24}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.UnplacedCleaner", "src\UnplacedCleaner\BIMFlow.UnplacedCleaner.csproj", "{F26D40BD-44B2-4683-B548-36DCD470E650}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ScopeBoxSync", "src\ScopeBoxSync\BIMFlow.ScopeBoxSync.csproj", "{3B737CF1-2931-4908-BA51-CD5D9AE02AB7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SelectByCategory", "src\SelectByCategory\BIMFlow.SelectByCategory.csproj", "{8A3CFB34-D599-45E7-B9B9-42CB8CBE7D9D}"
@@ -356,6 +358,10 @@ Global
 		{31881A93-2999-4F66-B6B7-291CF83F1D24}.Debug|x64.Build.0 = Debug|x64
 		{31881A93-2999-4F66-B6B7-291CF83F1D24}.Release|x64.ActiveCfg = Release|x64
 		{31881A93-2999-4F66-B6B7-291CF83F1D24}.Release|x64.Build.0 = Release|x64
+		{F26D40BD-44B2-4683-B548-36DCD470E650}.Debug|x64.ActiveCfg = Debug|x64
+		{F26D40BD-44B2-4683-B548-36DCD470E650}.Debug|x64.Build.0 = Debug|x64
+		{F26D40BD-44B2-4683-B548-36DCD470E650}.Release|x64.ActiveCfg = Release|x64
+		{F26D40BD-44B2-4683-B548-36DCD470E650}.Release|x64.Build.0 = Release|x64
 		{3B737CF1-2931-4908-BA51-CD5D9AE02AB7}.Debug|x64.ActiveCfg = Debug|x64
 		{3B737CF1-2931-4908-BA51-CD5D9AE02AB7}.Debug|x64.Build.0 = Debug|x64
 		{3B737CF1-2931-4908-BA51-CD5D9AE02AB7}.Release|x64.ActiveCfg = Release|x64

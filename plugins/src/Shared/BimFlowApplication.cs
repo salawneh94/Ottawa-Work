@@ -10,7 +10,7 @@ namespace BIMFlow.Shared;
 /// RibbonPanel.AddStackedItems, which needs the full roster of a panel's
 /// buttons up front, not 73 independent add-ins adding one button each with
 /// no defined order between them. All of that now happens in one place —
-/// BIMFlow.QuickAccessRibbon's Application.cs, driven by PluginRoster — so
+/// BIMFlow.QuickAccessRibbon's Application.cs, driven by OttawaRoster — so
 /// this class's OnStartup is intentionally a no-op. The abstract properties
 /// stay (every plugin's Application.cs still declares them) as a compile-
 /// time record of what each plugin's own panel/text/tooltip/command is,
