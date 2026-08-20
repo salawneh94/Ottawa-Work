@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — HL Exterior</Name>
+    <Assembly>BIMFlow.HighlightExterior.dll</Assembly>
+    <AddInId>{671b4abd-a1a3-4ac1-802d-8a3a59640e23}</AddInId>
+    <FullClassName>BIMFlow.HighlightExterior.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

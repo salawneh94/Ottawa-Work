@@ -19,8 +19,11 @@ public static class OttawaRoster
     public static readonly RosterEntry[] Entries =
     {
         // Panel 1: Highlight & View
-        new("HighlightWalls", "Highlight & View", "Highlight Elements", "Toggle an interior/exterior color highlight on every wall in the active view.", false),
         new("OverrideByParam", "Highlight & View", "Color Code", "Color-code any category by any parameter value — pick a palette, preview live, then apply as real persistent view filters.", false),
+        new("HighlightExterior", "Highlight & View", "HL Exterior", "Toggle a red color highlight on every exterior wall in the active view.", false),
+        new("HighlightInterior", "Highlight & View", "HL Interior", "Toggle a blue color highlight on every interior wall in the active view.", false),
+        new("PointCloudColorizer", "Highlight & View", "PC Color", "Tint point cloud instances with a preset or custom color, all in view or just the selection.", false),
+        new("PointCloudHeatmap", "Highlight & View", "PC Heatmap", "Compare walls against point cloud scan data and color-code deviations: green/yellow/red by tolerance.", false),
 
         // Panel 2: Data & Excel
         new("Excel2Revit", "Data & Excel", "Single Excel Sync", "Two-way sync between Excel/CSV and Revit parameters or schedules.", false),

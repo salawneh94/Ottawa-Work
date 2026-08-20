@@ -50,6 +50,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.GridRenumber", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.HighlightWalls", "src\HighlightWalls\BIMFlow.HighlightWalls.csproj", "{8543FB2E-1F27-4895-AF2C-A5B3C665F899}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.HighlightExterior", "src\HighlightExterior\BIMFlow.HighlightExterior.csproj", "{F1980C49-FFE2-4AC9-9BC3-0B7B34EF7A97}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.HighlightInterior", "src\HighlightInterior\BIMFlow.HighlightInterior.csproj", "{3DA7D138-5957-46F1-8D1D-22E75B57E8DC}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.IFCExportQA", "src\IFCExportQA\BIMFlow.IFCExportQA.csproj", "{FD6C2211-409D-441A-A0FE-4B4032B1786F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.InsulationManager", "src\InsulationManager\BIMFlow.InsulationManager.csproj", "{0317883D-12DD-44A8-8651-D1FA5E2AF5BB}"
@@ -264,6 +268,14 @@ Global
 		{8543FB2E-1F27-4895-AF2C-A5B3C665F899}.Debug|x64.Build.0 = Debug|x64
 		{8543FB2E-1F27-4895-AF2C-A5B3C665F899}.Release|x64.ActiveCfg = Release|x64
 		{8543FB2E-1F27-4895-AF2C-A5B3C665F899}.Release|x64.Build.0 = Release|x64
+		{F1980C49-FFE2-4AC9-9BC3-0B7B34EF7A97}.Debug|x64.ActiveCfg = Debug|x64
+		{F1980C49-FFE2-4AC9-9BC3-0B7B34EF7A97}.Debug|x64.Build.0 = Debug|x64
+		{F1980C49-FFE2-4AC9-9BC3-0B7B34EF7A97}.Release|x64.ActiveCfg = Release|x64
+		{F1980C49-FFE2-4AC9-9BC3-0B7B34EF7A97}.Release|x64.Build.0 = Release|x64
+		{3DA7D138-5957-46F1-8D1D-22E75B57E8DC}.Debug|x64.ActiveCfg = Debug|x64
+		{3DA7D138-5957-46F1-8D1D-22E75B57E8DC}.Debug|x64.Build.0 = Debug|x64
+		{3DA7D138-5957-46F1-8D1D-22E75B57E8DC}.Release|x64.ActiveCfg = Release|x64
+		{3DA7D138-5957-46F1-8D1D-22E75B57E8DC}.Release|x64.Build.0 = Release|x64
 		{FD6C2211-409D-441A-A0FE-4B4032B1786F}.Debug|x64.ActiveCfg = Debug|x64
 		{FD6C2211-409D-441A-A0FE-4B4032B1786F}.Debug|x64.Build.0 = Debug|x64
 		{FD6C2211-409D-441A-A0FE-4B4032B1786F}.Release|x64.ActiveCfg = Release|x64
