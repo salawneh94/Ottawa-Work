@@ -74,12 +74,12 @@ public class Command : BimFlowCommand
 
                 var unmatched = results.Where(r => r.Value.Updated == 0 && r.Value.SkippedNotOwned == 0).Select(r => r.Key.NameContains).ToList();
                 var skippedTotal = results.Values.Sum(r => r.SkippedNotOwned);
-                var summary = $"Set \"Export Type to IFC As\" on {results.Values.Sum(r => r.Updated)} type(s) across {results.Count(r => r.Value.Updated > 0)} rule(s).";
+                var mappingSummary = $"Set \"Export Type to IFC As\" on {results.Values.Sum(r => r.Updated)} type(s) across {results.Count(r => r.Value.Updated > 0)} rule(s).";
                 if (skippedTotal > 0)
-                    summary += $"\n\n{skippedTotal} matching type(s) are checked out by another user right now and were skipped — re-run once they're synced and relinquished.";
+                    mappingSummary += $"\n\n{skippedTotal} matching type(s) are checked out by another user right now and were skipped — re-run once they're synced and relinquished.";
                 if (unmatched.Count > 0)
-                    summary += $"\n\nNo matching family/type name found for: {string.Join(", ", unmatched)}";
-                TaskDialog.Show("BIMFlow — IFCExportQA", summary);
+                    mappingSummary += $"\n\nNo matching family/type name found for: {string.Join(", ", unmatched)}";
+                TaskDialog.Show("BIMFlow — IFCExportQA", mappingSummary);
             }
             catch (Exception ex)
             {
