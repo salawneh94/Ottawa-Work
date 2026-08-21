@@ -57,7 +57,11 @@ public static class OttawaRoster
         new("RevisionTrack", "Model QA/QC", "Revision Track", "Automate revision clouds and revision schedules across sheet sets.", false),
 
         // Panel 7: Parameters
-        new("ParamBatchEditor", "Parameters", "Param Batch Editor", "Bulk-edit parameter values in a spreadsheet-style grid.", false),
+        // ParamBatchEditor's old spreadsheet-grid bulk edit is superseded by
+        // ParamPowerSuite's own Bulk Set tab — consolidated per request, not
+        // duplicated; the ParamBatchEditor plugin files themselves are left
+        // on disk untouched, just no longer wired into this ribbon.
+        new("ParamPowerSuite", "Parameters", "Param Power Suite", "Bulk-edit parameters across every loaded element: set, find/replace, transform, copy, combine, jam to shared, or create a new bound parameter — all in one tabbed workbench.", false),
         new("Din276CostEstimator", "Parameters", "DIN 276 Costs", "Classify elements into DIN 276 Kostengruppen and price them against your own unit rates — live quantities, editable rates, exportable report.", false),
     };
 }

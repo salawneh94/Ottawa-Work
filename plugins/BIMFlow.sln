@@ -80,6 +80,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.OverrideByParam", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ParamBatchEditor", "src\ParamBatchEditor\BIMFlow.ParamBatchEditor.csproj", "{56682A43-E2C4-4991-A5FF-FF6EDD705675}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ParamPowerSuite", "src\ParamPowerSuite\BIMFlow.ParamPowerSuite.csproj", "{897412F9-6834-4375-B56D-F400919069E9}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ParameterFormulaPropagator", "src\ParameterFormulaPropagator\BIMFlow.ParameterFormulaPropagator.csproj", "{3C25296E-B0E5-4F13-819C-713C91A440E7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ParameterMapper", "src\ParameterMapper\BIMFlow.ParameterMapper.csproj", "{988F8AE2-298E-4C98-B27C-58D449827759}"
@@ -330,6 +332,10 @@ Global
 		{56682A43-E2C4-4991-A5FF-FF6EDD705675}.Debug|x64.Build.0 = Debug|x64
 		{56682A43-E2C4-4991-A5FF-FF6EDD705675}.Release|x64.ActiveCfg = Release|x64
 		{56682A43-E2C4-4991-A5FF-FF6EDD705675}.Release|x64.Build.0 = Release|x64
+		{897412F9-6834-4375-B56D-F400919069E9}.Debug|x64.ActiveCfg = Debug|x64
+		{897412F9-6834-4375-B56D-F400919069E9}.Debug|x64.Build.0 = Debug|x64
+		{897412F9-6834-4375-B56D-F400919069E9}.Release|x64.ActiveCfg = Release|x64
+		{897412F9-6834-4375-B56D-F400919069E9}.Release|x64.Build.0 = Release|x64
 		{3C25296E-B0E5-4F13-819C-713C91A440E7}.Debug|x64.ActiveCfg = Debug|x64
 		{3C25296E-B0E5-4F13-819C-713C91A440E7}.Debug|x64.Build.0 = Debug|x64
 		{3C25296E-B0E5-4F13-819C-713C91A440E7}.Release|x64.ActiveCfg = Release|x64
