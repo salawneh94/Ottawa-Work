@@ -50,14 +50,16 @@ public static class OttawaRoster
 
         // Panel 2: Highlight — view-graphics tools (color overrides,
         // point-cloud comparison), separated from Select above to match the
-        // reference tool's own Select/Highlight split. "Highlight" (the
-        // card-grid dashboard of every Select/Highlight tool) is no longer
-        // a large hero launcher — it's a plain small stacked button here
-        // like its peers; the dashboard's cards still run through these
-        // same Command classes via UIApplication.PostCommand, so there's no
-        // separate copy of any tool's logic — see HighlightDashboard/Command.cs.
-        // Same load-bearing entry order as Select above: 2 columns of 3.
-        new("HighlightDashboard", "Highlight", "Highlight", "Browse every Select/Highlight tool in one card grid and launch any of them from here.", false),
+        // reference tool's own Select/Highlight split. The old "Highlight"
+        // card-grid dashboard entry (a launcher-of-launchers for these same
+        // 5 tools) was removed entirely: it posted each card's command via
+        // UIApplication.PostCommand(RevitCommandId.LookupCommandId(fullClassName)),
+        // but LookupCommandId's string argument has to be Revit's own internal
+        // ribbon-item identifier (derived from tab/panel/button internal
+        // names), not a bare C# class name — confirmed dead on a real click
+        // in Revit (nothing happened), which this repo's compile-only CI
+        // could never have caught. Deleting it cost nothing: every tool it
+        // would have launched is already its own standalone button below.
         new("HighlightExterior", "Highlight", "HL Exterior", "Toggle a red color highlight on every exterior wall in the active view.", false),
         new("HighlightInterior", "Highlight", "HL Interior", "Toggle a blue color highlight on every interior wall in the active view.", false),
         new("OverrideByParam", "Highlight", "Color Code", "Color-code any category by any parameter value — pick a palette, preview live, then apply as real persistent view filters.", false),

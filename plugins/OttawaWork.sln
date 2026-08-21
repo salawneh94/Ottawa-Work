@@ -12,8 +12,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OttawaWork.Excel2Revit", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OttawaWork.GridRenumber", "src\GridRenumber\OttawaWork.GridRenumber.csproj", "{373649EB-5A39-402E-972D-A1BF0950147F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OttawaWork.HighlightDashboard", "src\HighlightDashboard\OttawaWork.HighlightDashboard.csproj", "{891E1CB3-E772-4CCB-89E2-A65A61ABB2A5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OttawaWork.HighlightExterior", "src\HighlightExterior\OttawaWork.HighlightExterior.csproj", "{F1980C49-FFE2-4AC9-9BC3-0B7B34EF7A97}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OttawaWork.HighlightInterior", "src\HighlightInterior\OttawaWork.HighlightInterior.csproj", "{3DA7D138-5957-46F1-8D1D-22E75B57E8DC}"
@@ -106,10 +104,6 @@ Global
 		{373649EB-5A39-402E-972D-A1BF0950147F}.Debug|x64.Build.0 = Debug|x64
 		{373649EB-5A39-402E-972D-A1BF0950147F}.Release|x64.ActiveCfg = Release|x64
 		{373649EB-5A39-402E-972D-A1BF0950147F}.Release|x64.Build.0 = Release|x64
-		{891E1CB3-E772-4CCB-89E2-A65A61ABB2A5}.Debug|x64.ActiveCfg = Debug|x64
-		{891E1CB3-E772-4CCB-89E2-A65A61ABB2A5}.Debug|x64.Build.0 = Debug|x64
-		{891E1CB3-E772-4CCB-89E2-A65A61ABB2A5}.Release|x64.ActiveCfg = Release|x64
-		{891E1CB3-E772-4CCB-89E2-A65A61ABB2A5}.Release|x64.Build.0 = Release|x64
 		{F1980C49-FFE2-4AC9-9BC3-0B7B34EF7A97}.Debug|x64.ActiveCfg = Debug|x64
 		{F1980C49-FFE2-4AC9-9BC3-0B7B34EF7A97}.Debug|x64.Build.0 = Debug|x64
 		{F1980C49-FFE2-4AC9-9BC3-0B7B34EF7A97}.Release|x64.ActiveCfg = Release|x64
