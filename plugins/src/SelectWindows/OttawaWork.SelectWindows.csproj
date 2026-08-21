@@ -9,10 +9,4 @@
     <ProjectReference Include="..\Shared\OttawaWork.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="SelectWindows.addin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

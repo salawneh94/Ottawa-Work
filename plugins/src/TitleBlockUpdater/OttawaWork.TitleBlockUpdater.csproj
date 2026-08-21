@@ -11,10 +11,4 @@
     <ProjectReference Include="..\Shared\OttawaWork.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="TitleBlockUpdater.addin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

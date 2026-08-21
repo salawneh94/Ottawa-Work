@@ -11,34 +11,31 @@ plugins/
   OttawaWork.sln           Solution referencing every project below
   Directory.Build.props    Shared build settings + Revit API references
   src/
-    Shared/                Common SDK: ribbon registration, shared dialogs
+    Shared/                Common SDK: base command class, shared dialogs, engines
+    QuickAccessRibbon/      Builds the whole "Ottawa Tools" ribbon tab — the only
+                            project with its own Application.cs + .addin
     <PluginName>/           One folder per wired plugin (see OttawaRoster.cs)
       OttawaWork.<PluginName>.csproj
-      <PluginName>.addin    Revit add-in manifest
-      Application.cs        Ribbon registration (IExternalApplication)
       Command.cs             The actual tool logic (IExternalCommand)
   scripts/                  One-off generators from the pre-fork catalog era (unused now)
 ```
 
-Every plugin folder name is derived from the catalog's `name` field with
-non-alphanumeric characters stripped (see `pluginProjectFolder()` in
-`web/src/lib/catalog.ts`) — the website's download endpoint zips this exact
-folder, so the two stay in sync automatically.
+Only `QuickAccessRibbon` has its own `Application.cs`/`.addin` — every other
+plugin is just a `Command.cs` (plus whatever engine/window files it needs)
+with no `IExternalApplication` of its own at all. That used to not be true:
+every plugin had its own no-op `Application.cs` registered via its own
+`.addin`, a leftover from before ribbon-building was centralized. Since a
+ribbon button's `PushButtonData` already resolves its `Command` class
+straight from that plugin's own DLL via `RibbonBuilder.SiblingAssembly` —
+completely independent of Revit's own `.addin`-based `Application`
+discovery — those registrations did nothing but force Revit to load and
+`OnStartup()` 36 extra assemblies on every launch. Removed entirely.
 
-Each plugin's own `Application.cs` still declares its panel/text/tooltip/
-command as a record of what it is, but doesn't register a ribbon button
-itself (`OttawaWorkApplication.OnStartup` is a no-op) — the whole ribbon is
-built in one centralized pass instead, by `src/QuickAccessRibbon/`. That
-folder isn't a catalog plugin (not in `data/plugins.json`, not sold
-separately, `RequiresLicense` hardcoded `false`); it reads
-`PluginRoster.Entries` (generated from every plugin's `Application.cs` +
-`data/plugins.json` + `data/plugin-impact.json`) and builds every panel —
-1-2 "hero" buttons per panel (the featured/highest-priced plugins) via
-`RibbonPanel.AddItem`, the rest stacked 2-3 at a time via
-`RibbonPanel.AddStackedItems` — plus its own 9 quick-select commands in a
-new "Select" panel and 2 more folded into "Highlight". This has to be
-centralized: matching a native Revit ribbon's mix of large and small
-buttons needs a panel's full button roster up front, which 75 independent
+`QuickAccessRibbon`'s own `Application.cs` reads `OttawaRoster.Entries` and
+builds every panel — a few "hero" buttons per panel via `RibbonPanel.AddItem`,
+the rest stacked 2-3 at a time via `RibbonPanel.AddStackedItems`. This has to
+be centralized: matching a native Revit ribbon's mix of large and small
+buttons needs a panel's full button roster up front, which independent
 add-ins each registering one button during their own `OnStartup`, with no
 defined order between them, can't provide.
 
@@ -101,11 +98,15 @@ To build it yourself instead:
 1. Install Revit (2025 by default; see below for older versions) if you want
    to actually run the add-ins — it's not required just to build.
 2. Open `OttawaWork.sln`.
-3. Build. Each project's `.addin` manifest is copied next to its output DLL.
-4. Each `.addin` manifest references its own DLL by bare filename (resolved
-   relative to the manifest's own folder), so copy every plugin's output
-   DLL and `.addin` file — flattened into one folder, not kept in separate
-   per-plugin subfolders — into `%AppData%\Autodesk\Revit\Addins\<version>\`.
+3. Build. `QuickAccessRibbon.addin` (the only `.addin` manifest in the whole
+   suite) is copied next to its output DLL.
+4. `QuickAccessRibbon.addin` references its own DLL by bare filename
+   (resolved relative to the manifest's own folder) and, via
+   `RibbonBuilder.SiblingAssembly`, every other plugin's DLL by the same
+   convention — so every plugin's output DLL still has to land in one flat
+   folder together with it, not kept in separate per-plugin subfolders, in
+   `%AppData%\Autodesk\Revit\Addins\<version>\`. Only the `.addin` file
+   itself needs copying; the other 36 plugins don't have one.
 5. Ribbon icons need no separate copy step — they're embedded resources
    inside `OttawaWork.QuickAccessRibbon.dll` itself
    (`plugins/src/QuickAccessRibbon/Resources/Icons/3d`), loaded via a

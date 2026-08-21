@@ -7,11 +7,15 @@ namespace OttawaWork.QuickAccessRibbon;
 /// Builds the "Ottawa Tools" ribbon tab in one pass, restricted to the
 /// internal firm's own curated roster (OttawaRoster) — not the full 75+
 /// plugin BIMFlow catalog (PluginRoster), which this build never references.
-/// Individual plugins' own OttawaWorkApplication.OnStartup no longer adds
-/// anything to the ribbon (see that file); it's all driven from
-/// OttawaRoster.Entries here instead, referencing each plugin's own Command
-/// class in its own DLL via RibbonBuilder.SiblingAssembly, the same cross-
-/// assembly trick the old tool-picker dashboard used.
+/// This is the only plugin with its own IExternalApplication/.addin left in
+/// the whole suite: every other plugin's Application.cs and .addin were
+/// deleted outright (not just left as a no-op) once nothing referenced them
+/// — a ribbon button's PushButtonData already resolves its Command class
+/// straight from that plugin's own DLL via RibbonBuilder.SiblingAssembly,
+/// completely independent of Revit's own .addin-based Application discovery,
+/// so those registrations were pure Revit-startup overhead: 36 extra
+/// assemblies loaded and OnStartup'd for nothing, every single launch.
+/// Everything is driven from OttawaRoster.Entries here instead.
 ///
 /// Why centralize this: matching a native Revit ribbon's mix of large
 /// "hero" buttons and small stacked-3 rows (see e.g. the View tab) needs
