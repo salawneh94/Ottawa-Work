@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — Windows</Name>
+    <Assembly>BIMFlow.SelectWindows.dll</Assembly>
+    <AddInId>{de183c3d-14d4-43bc-b043-a2ac82fc3ce0}</AddInId>
+    <FullClassName>BIMFlow.SelectWindows.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

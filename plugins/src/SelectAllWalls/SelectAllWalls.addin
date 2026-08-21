@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — All Walls</Name>
+    <Assembly>BIMFlow.SelectAllWalls.dll</Assembly>
+    <AddInId>{b0b356d9-b476-4fc2-9b6a-42d10e815eff}</AddInId>
+    <FullClassName>BIMFlow.SelectAllWalls.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

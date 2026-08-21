@@ -172,6 +172,30 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SelectExteriorInter
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.QuickAccessRibbon", "src\QuickAccessRibbon\BIMFlow.QuickAccessRibbon.csproj", "{58789A75-80A5-405D-8241-61CC982F12F0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SelectAllWalls", "src\SelectAllWalls\BIMFlow.SelectAllWalls.csproj", "{9DCD40D7-CE5D-4112-BB2A-E17A3853325B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SelectExtWalls", "src\SelectExtWalls\BIMFlow.SelectExtWalls.csproj", "{05A74350-BEB6-4112-9268-ED847F4B64FD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SelectIntWalls", "src\SelectIntWalls\BIMFlow.SelectIntWalls.csproj", "{8C9366B3-9FF4-4440-8876-29C9C418E223}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SelectAllDoors", "src\SelectAllDoors\BIMFlow.SelectAllDoors.csproj", "{06368392-6C3D-4B9A-B474-ED647EA01AEF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SelectExtDoors", "src\SelectExtDoors\BIMFlow.SelectExtDoors.csproj", "{A5469878-BBCD-47B0-8FA0-6B62DDDC7132}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SelectIntDoors", "src\SelectIntDoors\BIMFlow.SelectIntDoors.csproj", "{06D2A9F9-A75A-4999-9DED-7F478982DCF5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SelectFloors", "src\SelectFloors\BIMFlow.SelectFloors.csproj", "{CF9DB6E8-9E4D-4209-BDB2-D3B867E8FCB7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SelectWindows", "src\SelectWindows\BIMFlow.SelectWindows.csproj", "{1A567523-51DB-4712-A1DE-2785C4CB9195}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SelectRoofs", "src\SelectRoofs\BIMFlow.SelectRoofs.csproj", "{626E1B7A-E03F-4B11-8F36-D86D24FC2FBF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SelectCeilings", "src\SelectCeilings\BIMFlow.SelectCeilings.csproj", "{34CFC263-C4CA-4BEC-BBD8-AB6D9DCB91DC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SelectBeams", "src\SelectBeams\BIMFlow.SelectBeams.csproj", "{98FACE08-2467-4646-A67E-4F5516A4DB94}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SelectRooms", "src\SelectRooms\BIMFlow.SelectRooms.csproj", "{0179C6B0-4472-4C41-832D-6045F6877159}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -518,6 +542,54 @@ Global
 		{58789A75-80A5-405D-8241-61CC982F12F0}.Debug|x64.Build.0 = Debug|x64
 		{58789A75-80A5-405D-8241-61CC982F12F0}.Release|x64.ActiveCfg = Release|x64
 		{58789A75-80A5-405D-8241-61CC982F12F0}.Release|x64.Build.0 = Release|x64
+		{9DCD40D7-CE5D-4112-BB2A-E17A3853325B}.Debug|x64.ActiveCfg = Debug|x64
+		{9DCD40D7-CE5D-4112-BB2A-E17A3853325B}.Debug|x64.Build.0 = Debug|x64
+		{9DCD40D7-CE5D-4112-BB2A-E17A3853325B}.Release|x64.ActiveCfg = Release|x64
+		{9DCD40D7-CE5D-4112-BB2A-E17A3853325B}.Release|x64.Build.0 = Release|x64
+		{05A74350-BEB6-4112-9268-ED847F4B64FD}.Debug|x64.ActiveCfg = Debug|x64
+		{05A74350-BEB6-4112-9268-ED847F4B64FD}.Debug|x64.Build.0 = Debug|x64
+		{05A74350-BEB6-4112-9268-ED847F4B64FD}.Release|x64.ActiveCfg = Release|x64
+		{05A74350-BEB6-4112-9268-ED847F4B64FD}.Release|x64.Build.0 = Release|x64
+		{8C9366B3-9FF4-4440-8876-29C9C418E223}.Debug|x64.ActiveCfg = Debug|x64
+		{8C9366B3-9FF4-4440-8876-29C9C418E223}.Debug|x64.Build.0 = Debug|x64
+		{8C9366B3-9FF4-4440-8876-29C9C418E223}.Release|x64.ActiveCfg = Release|x64
+		{8C9366B3-9FF4-4440-8876-29C9C418E223}.Release|x64.Build.0 = Release|x64
+		{06368392-6C3D-4B9A-B474-ED647EA01AEF}.Debug|x64.ActiveCfg = Debug|x64
+		{06368392-6C3D-4B9A-B474-ED647EA01AEF}.Debug|x64.Build.0 = Debug|x64
+		{06368392-6C3D-4B9A-B474-ED647EA01AEF}.Release|x64.ActiveCfg = Release|x64
+		{06368392-6C3D-4B9A-B474-ED647EA01AEF}.Release|x64.Build.0 = Release|x64
+		{A5469878-BBCD-47B0-8FA0-6B62DDDC7132}.Debug|x64.ActiveCfg = Debug|x64
+		{A5469878-BBCD-47B0-8FA0-6B62DDDC7132}.Debug|x64.Build.0 = Debug|x64
+		{A5469878-BBCD-47B0-8FA0-6B62DDDC7132}.Release|x64.ActiveCfg = Release|x64
+		{A5469878-BBCD-47B0-8FA0-6B62DDDC7132}.Release|x64.Build.0 = Release|x64
+		{06D2A9F9-A75A-4999-9DED-7F478982DCF5}.Debug|x64.ActiveCfg = Debug|x64
+		{06D2A9F9-A75A-4999-9DED-7F478982DCF5}.Debug|x64.Build.0 = Debug|x64
+		{06D2A9F9-A75A-4999-9DED-7F478982DCF5}.Release|x64.ActiveCfg = Release|x64
+		{06D2A9F9-A75A-4999-9DED-7F478982DCF5}.Release|x64.Build.0 = Release|x64
+		{CF9DB6E8-9E4D-4209-BDB2-D3B867E8FCB7}.Debug|x64.ActiveCfg = Debug|x64
+		{CF9DB6E8-9E4D-4209-BDB2-D3B867E8FCB7}.Debug|x64.Build.0 = Debug|x64
+		{CF9DB6E8-9E4D-4209-BDB2-D3B867E8FCB7}.Release|x64.ActiveCfg = Release|x64
+		{CF9DB6E8-9E4D-4209-BDB2-D3B867E8FCB7}.Release|x64.Build.0 = Release|x64
+		{1A567523-51DB-4712-A1DE-2785C4CB9195}.Debug|x64.ActiveCfg = Debug|x64
+		{1A567523-51DB-4712-A1DE-2785C4CB9195}.Debug|x64.Build.0 = Debug|x64
+		{1A567523-51DB-4712-A1DE-2785C4CB9195}.Release|x64.ActiveCfg = Release|x64
+		{1A567523-51DB-4712-A1DE-2785C4CB9195}.Release|x64.Build.0 = Release|x64
+		{626E1B7A-E03F-4B11-8F36-D86D24FC2FBF}.Debug|x64.ActiveCfg = Debug|x64
+		{626E1B7A-E03F-4B11-8F36-D86D24FC2FBF}.Debug|x64.Build.0 = Debug|x64
+		{626E1B7A-E03F-4B11-8F36-D86D24FC2FBF}.Release|x64.ActiveCfg = Release|x64
+		{626E1B7A-E03F-4B11-8F36-D86D24FC2FBF}.Release|x64.Build.0 = Release|x64
+		{34CFC263-C4CA-4BEC-BBD8-AB6D9DCB91DC}.Debug|x64.ActiveCfg = Debug|x64
+		{34CFC263-C4CA-4BEC-BBD8-AB6D9DCB91DC}.Debug|x64.Build.0 = Debug|x64
+		{34CFC263-C4CA-4BEC-BBD8-AB6D9DCB91DC}.Release|x64.ActiveCfg = Release|x64
+		{34CFC263-C4CA-4BEC-BBD8-AB6D9DCB91DC}.Release|x64.Build.0 = Release|x64
+		{98FACE08-2467-4646-A67E-4F5516A4DB94}.Debug|x64.ActiveCfg = Debug|x64
+		{98FACE08-2467-4646-A67E-4F5516A4DB94}.Debug|x64.Build.0 = Debug|x64
+		{98FACE08-2467-4646-A67E-4F5516A4DB94}.Release|x64.ActiveCfg = Release|x64
+		{98FACE08-2467-4646-A67E-4F5516A4DB94}.Release|x64.Build.0 = Release|x64
+		{0179C6B0-4472-4C41-832D-6045F6877159}.Debug|x64.ActiveCfg = Debug|x64
+		{0179C6B0-4472-4C41-832D-6045F6877159}.Debug|x64.Build.0 = Debug|x64
+		{0179C6B0-4472-4C41-832D-6045F6877159}.Release|x64.ActiveCfg = Release|x64
+		{0179C6B0-4472-4C41-832D-6045F6877159}.Release|x64.Build.0 = Release|x64
 EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

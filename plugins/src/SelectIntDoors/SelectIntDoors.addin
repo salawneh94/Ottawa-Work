@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — Int Doors</Name>
+    <Assembly>BIMFlow.SelectIntDoors.dll</Assembly>
+    <AddInId>{d868d3c1-8756-4a35-b40f-df98fab3d56f}</AddInId>
+    <FullClassName>BIMFlow.SelectIntDoors.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

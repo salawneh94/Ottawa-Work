@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMFlow — Ceilings</Name>
+    <Assembly>BIMFlow.SelectCeilings.dll</Assembly>
+    <AddInId>{665ed705-fc5c-493e-b34a-c60ceee6c284}</AddInId>
+    <FullClassName>BIMFlow.SelectCeilings.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>

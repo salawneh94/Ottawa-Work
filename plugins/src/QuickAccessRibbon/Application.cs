@@ -7,8 +7,6 @@ namespace BIMFlow.QuickAccessRibbon;
 /// Builds the "Ottawa Tools" ribbon tab in one pass, restricted to the
 /// internal firm's own curated roster (OttawaRoster) — not the full 75+
 /// plugin BIMFlow catalog (PluginRoster), which this build never references.
-/// No Select panel and no ad-hoc Highlight extras here either: those are
-/// BIMFlow-catalog conveniences, not part of the firm's 7 named panels.
 /// Individual plugins' own BimFlowApplication.OnStartup no longer adds
 /// anything to the ribbon (see that file); it's all driven from
 /// OttawaRoster.Entries here instead, referencing each plugin's own Command
@@ -21,14 +19,18 @@ namespace BIMFlow.QuickAccessRibbon;
 /// can't be built by independent add-ins each adding one button during
 /// their own OnStartup with no coordination or defined ordering between
 /// them. Most OttawaRoster entries are Hero=false (plain stacked, 16x16
-/// icons) — only the suite's 4 primary launchers (Highlight, Batch Excel
-/// Sync, Param Power Suite, DIN 276 Costs) are Hero=true, rendered as large
-/// standalone 32x32 buttons via AddItem below.
+/// icons) — only the suite's 3 primary launchers (Batch Excel Sync, Param
+/// Power Suite, DIN 276 Costs) are Hero=true, rendered as large standalone
+/// 32x32 buttons via AddItem below. The Select and Highlight panels
+/// intentionally have no Hero entries at all — every button there is a
+/// small stacked quick-action, matching the reference Direct Selection
+/// layout's uniform 16x16 columns.
 ///
 /// A roster entry can also carry a PulldownGroup name: entries sharing one
 /// get nested under a single named PulldownButton (a flyout menu) instead
-/// of sitting flat in the panel — see AddPulldown, used for "Highlight"
-/// (HL Exterior/HL Interior) to match the reference tool's layout.
+/// of sitting flat in the panel — see AddPulldown. Not currently used by
+/// any panel (Select and Highlight both use plain stacked columns instead),
+/// kept as general-purpose ribbon infrastructure.
 /// </summary>
 public class Application : IExternalApplication
 {

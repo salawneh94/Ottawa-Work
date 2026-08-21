@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>BIMFlow.SelectCeilings</RootNamespace>
+    <AssemblyName>BIMFlow.SelectCeilings</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\BIMFlow.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="SelectCeilings.addin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
