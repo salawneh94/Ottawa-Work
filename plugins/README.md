@@ -131,7 +131,7 @@ To build it yourself instead:
    per-plugin subfolders — into `%AppData%\Autodesk\Revit\Addins\<version>\`.
 5. Ribbon icons need no separate copy step — they're embedded resources
    inside `BIMFlow.QuickAccessRibbon.dll` itself
-   (`plugins/src/QuickAccessRibbon/Resources/Icons`), loaded via a
+   (`plugins/src/QuickAccessRibbon/Resources/Icons/3d`), loaded via a
    `pack://application:,,,/BIMFlow.QuickAccessRibbon;component/...` URI by
    `RibbonBuilder.ApplyIcon`. Building and copying that one DLL (step 4) is
    enough; see the file for why.

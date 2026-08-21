@@ -1,7 +1,7 @@
 namespace BIMFlow.QuickAccessRibbon;
 
 /// <summary>One row per ribbon entry — folder doubles as DLL name (BIMFlow.<Folder>.dll),
-/// command class (BIMFlow.<Folder>.Command) and icon key (Icons/<Folder>_16.png), the same
+/// command class (BIMFlow.<Folder>.Command) and icon key (Icons/3d/<Folder>_16.png), the same
 /// convention every plugin's own .csproj/Application.cs already follows. Moved here from the
 /// BIMFlow-catalog's PluginRoster.cs, which this build doesn't have — see OttawaRoster below.
 /// PulldownGroup is optional: entries sharing the same group name are nested as sub-buttons
@@ -42,7 +42,7 @@ public static class OttawaRoster
 
         // Panel 2: Data & Excel
         new("Excel2Revit", "Data & Excel", "Single Excel Sync", "Two-way sync between Excel/CSV and Revit parameters or schedules.", false),
-        new("BatchExcelSync", "Data & Excel", "Batch Excel Sync", "Export any category's parameters to Excel, edit them, then re-import with a live diff and approve exactly which changes to commit.", false),
+        new("BatchExcelSync", "Data & Excel", "Batch Excel Sync", "Export any category's parameters to Excel, edit them, then re-import with a live diff and approve exactly which changes to commit.", true),
         new("IFCExportQA", "Data & Excel", "IFC Mapping & Exporter", "Pre-flight checks, IFC class mapping presets, and clean IFC export.", false),
 
         // Panel 3: Renumbering
@@ -72,7 +72,7 @@ public static class OttawaRoster
         // ParamPowerSuite's own Bulk Set tab — consolidated per request, not
         // duplicated; the ParamBatchEditor plugin files themselves are left
         // on disk untouched, just no longer wired into this ribbon.
-        new("ParamPowerSuite", "Parameters", "Param Power Suite", "Bulk-edit parameters across every loaded element: set, find/replace, transform, copy, combine, jam to shared, or create a new bound parameter — all in one tabbed workbench.", false),
-        new("Din276CostEstimator", "Parameters", "DIN 276 Costs", "Classify elements into DIN 276 Kostengruppen and price them against your own unit rates — live quantities, editable rates, exportable report.", false),
+        new("ParamPowerSuite", "Parameters", "Param Power Suite", "Bulk-edit parameters across every loaded element: set, find/replace, transform, copy, combine, jam to shared, or create a new bound parameter — all in one tabbed workbench.", true),
+        new("Din276CostEstimator", "Parameters", "DIN 276 Costs", "Classify elements into DIN 276 Kostengruppen and price them against your own unit rates — live quantities, editable rates, exportable report.", true),
     };
 }

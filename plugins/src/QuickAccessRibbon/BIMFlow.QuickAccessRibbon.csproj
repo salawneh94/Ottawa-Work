@@ -25,8 +25,11 @@
 
   <ItemGroup>
     <!-- Ribbon icon PNGs, embedded (not copied loose) — RibbonBuilder loads
-         these via pack://application:,,,/BIMFlow.QuickAccessRibbon;component/... -->
-    <Resource Include="Resources\Icons\*.png" />
+         these via pack://application:,,,/BIMFlow.QuickAccessRibbon;component/...
+         The "3d" subfolder holds the real hand-drawn pictogram set (a wall
+         glyph, spreadsheet grid, wrench, stair, etc. per tool) that replaced
+         the original placeholder 2-letter monogram badges. -->
+    <Resource Include="Resources\Icons\3d\*.png" />
   </ItemGroup>
 
 </Project>

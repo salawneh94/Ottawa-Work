@@ -20,8 +20,10 @@ namespace BIMFlow.QuickAccessRibbon;
 /// RibbonPanel.AddStackedItems, which takes 2 or 3 items in one call — it
 /// can't be built by independent add-ins each adding one button during
 /// their own OnStartup with no coordination or defined ordering between
-/// them. Every OttawaRoster entry is Hero=false (plain stacked buttons) —
-/// a 24-tool internal suite doesn't need the catalog's hero-tier styling.
+/// them. Most OttawaRoster entries are Hero=false (plain stacked, 16x16
+/// icons) — only the suite's 4 primary launchers (Highlight, Batch Excel
+/// Sync, Param Power Suite, DIN 276 Costs) are Hero=true, rendered as large
+/// standalone 32x32 buttons via AddItem below.
 ///
 /// A roster entry can also carry a PulldownGroup name: entries sharing one
 /// get nested under a single named PulldownButton (a flyout menu) instead

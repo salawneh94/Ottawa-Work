@@ -74,7 +74,7 @@ public static class RibbonBuilder
 
     /// <summary>
     /// Loads "&lt;iconKey&gt;_16.png" / "_32.png" from this project's own
-    /// embedded Resources (plugins/src/QuickAccessRibbon/Resources/Icons —
+    /// embedded Resources (plugins/src/QuickAccessRibbon/Resources/Icons/3d —
     /// see that folder and this project's csproj Resource item), via a
     /// pack://application:,,,/BIMFlow.QuickAccessRibbon;component/... URI
     /// rather than a loose file next to some add-in's DLL: every icon this
@@ -83,9 +83,11 @@ public static class RibbonBuilder
     /// loose-file copy step could silently drop one. Takes the common
     /// ButtonData base (not PushButtonData specifically) so the same call
     /// works for a PulldownButtonData too. Any failure to load (a typo'd
-    /// iconKey, a genuinely missing resource) is caught and skipped, same
-    /// as the old "missing file" tolerance — a button without an icon still
-    /// works, just plainer.
+    /// iconKey, a genuinely missing resource) is caught and skipped — a
+    /// button without an icon still works, just plainer. This is a tolerant
+    /// *loading* fallback only: there is no runtime-drawn placeholder (no
+    /// generated monogram/badge) behind it — every iconKey below resolves to
+    /// a real, hand-drawn pictogram PNG actually shipped in Resources/Icons/3d.
     /// </summary>
     public static void ApplyIcon(ButtonData data, string iconKey)
     {
@@ -97,7 +99,7 @@ public static class RibbonBuilder
     {
         try
         {
-            image = LoadIcon(new Uri($"pack://application:,,,/{IconComponent};component/Resources/Icons/{iconKey}_{size}.png"));
+            image = LoadIcon(new Uri($"pack://application:,,,/{IconComponent};component/Resources/Icons/3d/{iconKey}_{size}.png"));
             return true;
         }
         catch (Exception)
