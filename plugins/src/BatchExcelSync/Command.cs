@@ -26,12 +26,12 @@ public class Command : BimFlowCommand
         window.ShowDialog();
         if (!window.Committed) return Result.Cancelled;
 
-        int updated;
+        BatchExcelSyncEngine.CommitResult result;
         using var transaction = new Transaction(doc, "BIMFlow: Commit Batch Excel Sync Changes");
         transaction.Start();
         try
         {
-            updated = BatchExcelSyncEngine.Commit(doc, window.ApprovedRows, window.CommitScope, window.CommitColumns);
+            result = BatchExcelSyncEngine.Commit(doc, window.ApprovedRows, window.CommitScope, window.CommitColumns);
             transaction.Commit();
         }
         catch (Exception ex)
@@ -41,7 +41,14 @@ public class Command : BimFlowCommand
             return Result.Failed;
         }
 
-        TaskDialog.Show("BIMFlow — Batch Excel Sync", $"Updated {updated} of {window.ApprovedRows.Count} approved field(s).");
+        var summary = $"Updated {result.Updated} of {window.ApprovedRows.Count} approved field(s).";
+        if (result.Failures.Count > 0)
+        {
+            summary += "\n\nWhy some fields didn't update:";
+            foreach (var group in result.Failures.GroupBy(f => f.Reason).OrderByDescending(g => g.Count()).Take(5))
+                summary += $"\n• {group.Count()}x — {group.Key} (e.g. \"{group.First().NewValue}\" → {group.First().ParamName} on {group.First().ElementLabel})";
+        }
+        TaskDialog.Show("BIMFlow — Batch Excel Sync", summary);
         return Result.Succeeded;
     }
 }
