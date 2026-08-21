@@ -1,3 +1,10 @@
+// Explicit aliases, not plain "using System.IO;" — this project has both
+// UseWPF and UseWindowsForms on, and that combination drops System.IO from
+// the SDK's implicit global usings (see LicenseStore.cs for the full
+// explanation) — needed here for Path/File.
+using Path = System.IO.Path;
+using File = System.IO.File;
+
 using System.Text;
 using Autodesk.Revit.DB;
 
