@@ -5,9 +5,12 @@ namespace BIMFlow.QuickAccessRibbon;
 /// convention every plugin's own .csproj/Application.cs already follows. Moved here from the
 /// BIMFlow-catalog's PluginRoster.cs, which this build doesn't have — see OttawaRoster below.
 /// PulldownGroup is optional: entries sharing the same group name are nested as sub-buttons
-/// under one named pulldown/flyout button instead of sitting flat in the panel — matching how
-/// the reference tool's "Highlight" button opens a menu of HL Exterior/HL Interior rather than
-/// showing them as their own top-level buttons.</summary>
+/// under one named pulldown/flyout button instead of sitting flat in the panel. Not currently
+/// used by any entry below — Panel 1's "Highlight" used this for HL Exterior/HL Interior at one
+/// point, but is now its own hero button opening a card-grid dashboard instead (see
+/// HighlightDashboard/HighlightDashboardWindow.cs), with HL Exterior/HL Interior promoted to
+/// flat, standalone quick-action buttons alongside it. Left in place as general-purpose ribbon
+/// infrastructure in case a future panel needs the same nested-flyout layout.</summary>
 public record RosterEntry(string Folder, string Panel, string Text, string Tooltip, bool Hero, string? PulldownGroup = null);
 
 /// <summary>
@@ -23,9 +26,17 @@ public static class OttawaRoster
     public static readonly RosterEntry[] Entries =
     {
         // Panel 1: Highlight & View
+        // "Highlight" is its own hero button opening a card-grid dashboard of
+        // every Select/Highlight tool (HighlightDashboardWindow) — not a
+        // pulldown menu anymore, since the quick-action buttons below now
+        // sit flat on the ribbon for 1-click execution instead of being
+        // nested under it. The dashboard's cards run through these same
+        // Command classes via UIApplication.PostCommand, so there's no
+        // separate copy of any tool's logic — see HighlightDashboard/Command.cs.
+        new("HighlightDashboard", "Highlight & View", "Highlight", "Browse every Select/Highlight tool in one card grid and launch any of them from here.", true),
         new("OverrideByParam", "Highlight & View", "Color Code", "Color-code any category by any parameter value — pick a palette, preview live, then apply as real persistent view filters.", false),
-        new("HighlightExterior", "Highlight & View", "HL Exterior", "Toggle a red color highlight on every exterior wall in the active view.", false, PulldownGroup: "Highlight"),
-        new("HighlightInterior", "Highlight & View", "HL Interior", "Toggle a blue color highlight on every interior wall in the active view.", false, PulldownGroup: "Highlight"),
+        new("HighlightExterior", "Highlight & View", "HL Exterior", "Toggle a red color highlight on every exterior wall in the active view.", false),
+        new("HighlightInterior", "Highlight & View", "HL Interior", "Toggle a blue color highlight on every interior wall in the active view.", false),
         new("PointCloudColorizer", "Highlight & View", "PC Color", "Tint point cloud instances with a preset or custom color, all in view or just the selection.", false),
         new("PointCloudHeatmap", "Highlight & View", "PC Heatmap", "Compare walls against point cloud scan data and color-code deviations: green/yellow/red by tolerance.", false),
 

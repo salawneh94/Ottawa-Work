@@ -218,6 +218,57 @@ public static class BimFlowUi
     }
 
     /// <summary>
+    /// A clickable card — icon glyph, title, description, left-aligned — for
+    /// a grid of launchable tools (the Highlight dashboard's card view).
+    /// Built the same way as every other button here (custom ControlTemplate
+    /// wrapping a Border + ContentPresenter): a plain WPF Button styled to
+    /// look like a Card() rather than an actual Card, so it stays keyboard/
+    /// click-accessible without needing a separate click handler bolted onto
+    /// a non-interactive Border.
+    /// </summary>
+    public static Button CardButton(string icon, string title, string description)
+    {
+        var content = new StackPanel();
+        content.Children.Add(new TextBlock { Text = icon, FontSize = 22, Margin = new Thickness(0, 0, 0, 8) });
+        content.Children.Add(new TextBlock { Text = title, FontSize = 13, FontWeight = FontWeights.SemiBold, Foreground = BrushOf(TextPrimary) });
+        content.Children.Add(new TextBlock { Text = description, FontSize = 10, Foreground = BrushOf(TextSecondary), TextWrapping = System.Windows.TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 0) });
+
+        var button = new Button
+        {
+            Content = content,
+            Width = 260,
+            Background = BrushOf(CardBackground),
+            BorderBrush = BrushOf(BorderColor),
+            BorderThickness = new Thickness(1),
+            Padding = new Thickness(16),
+            Margin = new Thickness(6),
+            HorizontalContentAlignment = HorizontalAlignment.Left,
+            Cursor = System.Windows.Input.Cursors.Hand,
+        };
+        button.Template = CardButtonTemplate();
+        return button;
+    }
+
+    private static System.Windows.Controls.ControlTemplate CardButtonTemplate()
+    {
+        var template = new System.Windows.Controls.ControlTemplate(typeof(Button));
+        var border = new FrameworkElementFactory(typeof(Border));
+        border.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
+        border.SetValue(Border.BorderBrushProperty, new TemplateBindingExtension(Button.BorderBrushProperty));
+        border.SetValue(Border.BorderThicknessProperty, new TemplateBindingExtension(Button.BorderThicknessProperty));
+        border.SetValue(Border.PaddingProperty, new TemplateBindingExtension(Button.PaddingProperty));
+        border.SetValue(Border.CornerRadiusProperty, new CornerRadius(10));
+
+        var presenter = new FrameworkElementFactory(typeof(System.Windows.Controls.ContentPresenter));
+        presenter.SetValue(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Left);
+        presenter.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Top);
+        border.AppendChild(presenter);
+
+        template.VisualTree = border;
+        return template;
+    }
+
+    /// <summary>
     /// Repaints a button in-place between the "active" solid-blue look and the
     /// "inactive" outlined look — for a two-state toggle pair (e.g. "Yes/No")
     /// where only one side is ever selected. Both buttons already exist (from

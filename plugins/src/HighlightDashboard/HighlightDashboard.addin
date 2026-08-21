@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>Ottawa Tools — Highlight Dashboard</Name>
+    <Assembly>BIMFlow.HighlightDashboard.dll</Assembly>
+    <AddInId>{7555751d-d42d-4ecd-b699-dc6f164a1c7c}</AddInId>
+    <FullClassName>BIMFlow.HighlightDashboard.Application</FullClassName>
+    <VendorId>BIMFlow</VendorId>
+    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+  </AddIn>
+</RevitAddIns>
