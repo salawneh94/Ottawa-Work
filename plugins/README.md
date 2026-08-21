@@ -43,47 +43,23 @@ defined order between them, can't provide.
 
 ## Status
 
-All **75 plugins** in the catalog have real, working implementations
-(`"status": "live"` in `data/plugins.json`). Every plugin sold on the site
-has shipping code behind it — nothing in the catalog is a placeholder.
+Ottawa-Work is a pruned, internal fork — it only keeps source for the
+**37 plugins actually wired into the Ottawa Tools ribbon**
+(`src/QuickAccessRibbon/OttawaRoster.cs` is the single source of truth for
+exactly which ones and what panel each sits in). The sibling BIMFlow repo
+carries the full 75+ plugin marketing catalog (`data/plugins.json`, sold
+per-plugin on the site) that this one doesn't have and doesn't need —
+Ottawa-Work has no license gate, no website, and no plugins beyond what the
+firm's own ribbon actually shows.
 
-10 plugins that were previously scaffolded as `"in-development"`
-(DuctPipeSizer, RebarBatch, LoadPathAuditor, COBieBuilder, KeynoteManager,
-CommentSync, ModelComparer, SyncGuardian, UniqueNumbering, RoomClearHeight)
-have been removed from the catalog and the repo entirely, rather than left
-half-built — each one needed either correctness-critical domain expertise
-(sizing calculations, rebar/load-path analysis, a real COBie or BCF format
-implementation) or a Revit API surface too uncertain to implement
-confidently without testing against a real install (keynote tables,
-cross-model raycasting). They're still in git history if a future pass
-wants to pick any of them back up.
-
-Six other names from that original removed list came back with
-deliberately narrower scope, specifically to sidestep the uncertainty that
-got them pulled the first time: **LegendBuilder** (now requires an
-existing legend view to duplicate — Revit has no API to create one from
-nothing), **PlansPerRoom**, **CSITakeoff** (assumes Assembly Code is
-already populated on element types, rather than attempting new
-classification), and **PointCloudColorizer** (covers what were separately
-listed as PointCloudColors/PointCloudHeatmap — a uniform override color
-per instance, since true intensity/heatmap coloring isn't exposed through
-the public API at all). **RoomHeightSync** and **SlabHeightSync** cover
-similar ground to the old AutoHeights concept with a CSV-driven,
-explicit-value approach rather than automatic calculation.
-
-Several of the live plugins are **intentionally scoped down** from a
-broader original idea for the same reason — the full promise needed either
-correctness-critical domain expertise or an uncertain API surface, so the
-plugin does the well-defined, high-confidence subset instead of guessing
-(e.g. DimensionAuto dimensions grid-to-grid spacing rather than arbitrary
-wall faces; MEPClashPrecheck does a bounding-box heuristic rather than true
-solid-geometry clash detection; AutoLegendBuilder audits detail component
-usage rather than line/fill patterns; StairCalculator checks the 2R+G
-proportion guideline explicitly as a design sanity check, not a certified
-code compliance review; QCSummary's "disconnected wall" flag is a
-bounding-box proximity heuristic, not true geometric connectivity
-analysis). Each plugin's `Command.cs` doc comment and the catalog's
-`features` array say exactly what's covered.
+An earlier version of this repo carried the sibling catalog's full plugin
+source wholesale, with only the ribbon wiring curated down to 37 — the
+other ~58 never appeared anywhere in the UI (`BimFlowApplication.OnStartup`
+is a no-op for every plugin; only `OttawaRoster.Entries` puts a button on
+the ribbon) but still compiled on every CI run and still shipped their
+`.dll`/`.addin` into the installer, loading into Revit at startup for no
+visible benefit. Those were removed entirely (still in git history if a
+future pass wants any of them back) rather than left as dead weight.
 
 ## Building
 

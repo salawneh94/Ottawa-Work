@@ -92,8 +92,8 @@ jobs:
           Write-Host "Packaged $dllCount DLL(s) and $addinCount .addin manifest(s)."
 
           if ($dllCount -eq 0) {
-            Write-Host "No DLLs found — listing plugins/src/QCSummary/bin for diagnosis:"
-            Get-ChildItem -Path "plugins/src/QCSummary/bin" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
+            Write-Host "No DLLs found — listing plugins/src/ParamPowerSuite/bin for diagnosis:"
+            Get-ChildItem -Path "plugins/src/ParamPowerSuite/bin" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
           }
 
           Set-Content -Path "$dist/README.txt" -Value @"

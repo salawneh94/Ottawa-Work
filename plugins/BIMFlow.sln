@@ -2,55 +2,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.LegendUsageAudit", "src\LegendUsageAudit\BIMFlow.LegendUsageAudit.csproj", "{E31337C1-D924-48FD-BB38-FD41882C9FE9}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.BatchExcelSync", "src\BatchExcelSync\BIMFlow.BatchExcelSync.csproj", "{0642D3D5-4CEC-4159-85CC-581CAB8274F5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.BatchExporter", "src\BatchExporter\BIMFlow.BatchExporter.csproj", "{CEFDB333-9756-44B6-B76E-E7586E4AD30D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.BatchScheduleExporter", "src\BatchScheduleExporter\BIMFlow.BatchScheduleExporter.csproj", "{A37A5DB2-AE0F-49F0-8AD4-13C80E2C0E74}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ConnectorAlign", "src\ConnectorAlign\BIMFlow.ConnectorAlign.csproj", "{B6286EF5-1CC9-452E-AE9B-56A8A091561F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.CropSync", "src\CropSync\BIMFlow.CropSync.csproj", "{B2B100FB-74FD-42AA-ADF8-16DC94174ADE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.CrossProjectTransfer", "src\CrossProjectTransfer\BIMFlow.CrossProjectTransfer.csproj", "{F5A77719-787C-4B15-9572-AA33723038B3}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.DimensionAuto", "src\DimensionAuto\BIMFlow.DimensionAuto.csproj", "{E4E3DC25-2AD8-4D32-B7A7-3789DA3ECB08}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.DimensionEditor", "src\DimensionEditor\BIMFlow.DimensionEditor.csproj", "{EB0ECEFB-6AC2-4F18-BB27-61F951E2933F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.Din276CostEstimator", "src\Din276CostEstimator\BIMFlow.Din276CostEstimator.csproj", "{E4FD85E0-F231-4B8E-8682-0E6B65DFF08E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.DoorWindowRenumber", "src\DoorWindowRenumber\BIMFlow.DoorWindowRenumber.csproj", "{D07C9576-27DB-4490-AAD6-829082EF11B7}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.DuplicateFinder", "src\DuplicateFinder\BIMFlow.DuplicateFinder.csproj", "{03E84F21-26B8-4075-B049-916536613211}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ElementXRay", "src\ElementXRay\BIMFlow.ElementXRay.csproj", "{7D4253CA-3D65-42D6-831B-A49A17D7EE3E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.EquipmentScheduler", "src\EquipmentScheduler\BIMFlow.EquipmentScheduler.csproj", "{BDE762E6-CB30-4F98-9102-393AA9446E8A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.Excel2Revit", "src\Excel2Revit\BIMFlow.Excel2Revit.csproj", "{7F626CA0-5F72-4D26-987D-3859AB1F20CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ExcelAsDraft", "src\ExcelAsDraft\BIMFlow.ExcelAsDraft.csproj", "{843D3EA2-FB03-40A2-8A99-55A802400129}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.FamilyAuditor", "src\FamilyAuditor\BIMFlow.FamilyAuditor.csproj", "{299B8275-1F88-4FFD-A7DC-2AE7017A9F37}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.FamilyFinder", "src\FamilyFinder\BIMFlow.FamilyFinder.csproj", "{91C4E1B2-43B4-415A-A94E-01D3D092CE43}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.FamilyLoaderPro", "src\FamilyLoaderPro\BIMFlow.FamilyLoaderPro.csproj", "{BBC0D387-7D75-4AB3-A1BE-CC3AD8652A50}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.FamilyTypeManager", "src\FamilyTypeManager\BIMFlow.FamilyTypeManager.csproj", "{07FC3CEA-B2C3-4798-BF25-022528827C2E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.FramingChecker", "src\FramingChecker\BIMFlow.FramingChecker.csproj", "{A86AC370-5E0D-4213-882F-970C0B2C8874}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.GridBubbleManager", "src\GridBubbleManager\BIMFlow.GridBubbleManager.csproj", "{59F0882E-A9FA-4CD0-85C3-996AE5DC188A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.GridGenerator", "src\GridGenerator\BIMFlow.GridGenerator.csproj", "{764441DA-DCF1-4895-801E-3B569FD31D3D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.GridRenumber", "src\GridRenumber\BIMFlow.GridRenumber.csproj", "{373649EB-5A39-402E-972D-A1BF0950147F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.HighlightWalls", "src\HighlightWalls\BIMFlow.HighlightWalls.csproj", "{8543FB2E-1F27-4895-AF2C-A5B3C665F899}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.HighlightDashboard", "src\HighlightDashboard\BIMFlow.HighlightDashboard.csproj", "{891E1CB3-E772-4CCB-89E2-A65A61ABB2A5}"
 EndProject
@@ -60,47 +20,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.HighlightInterior",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.IFCExportQA", "src\IFCExportQA\BIMFlow.IFCExportQA.csproj", "{FD6C2211-409D-441A-A0FE-4B4032B1786F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.InsulationManager", "src\InsulationManager\BIMFlow.InsulationManager.csproj", "{0317883D-12DD-44A8-8651-D1FA5E2AF5BB}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.LegendPlacer", "src\LegendPlacer\BIMFlow.LegendPlacer.csproj", "{BC8E5587-534C-49D0-A679-C8661167C8DB}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.LinkedModelAuditor", "src\LinkedModelAuditor\BIMFlow.LinkedModelAuditor.csproj", "{AA01C84F-73AD-4207-A32E-ABDFEEC823FF}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.MEPClashPrecheck", "src\MEPClashPrecheck\BIMFlow.MEPClashPrecheck.csproj", "{C2EA7A81-39AE-44DD-9747-65879FE223A5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.MaterialSwap", "src\MaterialSwap\BIMFlow.MaterialSwap.csproj", "{6C456F45-5502-46CB-A74D-4CF068C3E7DC}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ModelCeilings", "src\ModelCeilings\BIMFlow.ModelCeilings.csproj", "{63982B3A-EE98-4FF1-BEBD-AF4E827D3342}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ModelHealthDashboard", "src\ModelHealthDashboard\BIMFlow.ModelHealthDashboard.csproj", "{68DF1B98-D5BB-40E1-91C5-F2D78046331A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.NamingConventionAudit", "src\NamingConventionAudit\BIMFlow.NamingConventionAudit.csproj", "{DCE33630-D992-4828-BEDE-55E669A96B3D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.OverriddenDimensions", "src\OverriddenDimensions\BIMFlow.OverriddenDimensions.csproj", "{09128865-2F55-4703-9897-8D3481A91677}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.OverrideByParam", "src\OverrideByParam\BIMFlow.OverrideByParam.csproj", "{C701E250-A81C-443B-8277-2F2306B8ECB2}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ParamBatchEditor", "src\ParamBatchEditor\BIMFlow.ParamBatchEditor.csproj", "{56682A43-E2C4-4991-A5FF-FF6EDD705675}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ParamPowerSuite", "src\ParamPowerSuite\BIMFlow.ParamPowerSuite.csproj", "{897412F9-6834-4375-B56D-F400919069E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ParameterFormulaPropagator", "src\ParameterFormulaPropagator\BIMFlow.ParameterFormulaPropagator.csproj", "{3C25296E-B0E5-4F13-819C-713C91A440E7}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ParameterMapper", "src\ParameterMapper\BIMFlow.ParameterMapper.csproj", "{988F8AE2-298E-4C98-B27C-58D449827759}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.PurgePro", "src\PurgePro\BIMFlow.PurgePro.csproj", "{E0AED422-2FEE-41BE-97B3-80B9ACC93CFA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.QCSummary", "src\QCSummary\BIMFlow.QCSummary.csproj", "{45734707-AEE6-4BB5-AB0D-22AC85E6BB9E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.QuickSelect", "src\QuickSelect\BIMFlow.QuickSelect.csproj", "{D9797756-83F0-47AA-A5E9-988B3D0858B5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.RevisionTrack", "src\RevisionTrack\BIMFlow.RevisionTrack.csproj", "{61B1E508-E6CE-4603-97CE-8189605969C5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.RoomFinishSchedule", "src\RoomFinishSchedule\BIMFlow.RoomFinishSchedule.csproj", "{F52D9EF0-CE51-4BD5-B24D-62C2F7EC32A4}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.RoomFinisher", "src\RoomFinisher\BIMFlow.RoomFinisher.csproj", "{0F98893A-0B4F-4630-BB09-BE1870A9B547}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.RoomInventory", "src\RoomInventory\BIMFlow.RoomInventory.csproj", "{567D9065-CD90-4702-884A-44B3D82AFBF8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.RoomRenumber", "src\RoomRenumber\BIMFlow.RoomRenumber.csproj", "{A19F2F39-0051-404F-B69B-EE40A1D8B9BA}"
 EndProject
@@ -108,67 +38,21 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.RoomTagger", "src\R
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.PointCloudHeatmap", "src\PointCloudHeatmap\BIMFlow.PointCloudHeatmap.csproj", "{A969D125-9746-4391-890F-530BB71B11C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ScheduleBlankDetector", "src\ScheduleBlankDetector\BIMFlow.ScheduleBlankDetector.csproj", "{31881A93-2999-4F66-B6B7-291CF83F1D24}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.UnplacedCleaner", "src\UnplacedCleaner\BIMFlow.UnplacedCleaner.csproj", "{F26D40BD-44B2-4683-B548-36DCD470E650}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ScopeBoxSync", "src\ScopeBoxSync\BIMFlow.ScopeBoxSync.csproj", "{3B737CF1-2931-4908-BA51-CD5D9AE02AB7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SelectByCategory", "src\SelectByCategory\BIMFlow.SelectByCategory.csproj", "{8A3CFB34-D599-45E7-B9B9-42CB8CBE7D9D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.Shared", "src\Shared\BIMFlow.Shared.csproj", "{969DE38C-F9A2-4C9A-8AA9-AAAD7F13D307}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SharedCoordinatesAudit", "src\SharedCoordinatesAudit\BIMFlow.SharedCoordinatesAudit.csproj", "{E4D2937F-1479-48BC-AB49-FAF1C9893B43}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SharedParamSync", "src\SharedParamSync\BIMFlow.SharedParamSync.csproj", "{5993F2CA-D2E5-4C0B-956E-3845B17A123F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SheetForge", "src\SheetForge\BIMFlow.SheetForge.csproj", "{1D9995C2-E2CE-4A63-9063-09E78280D9A3}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SheetListExporter", "src\SheetListExporter\BIMFlow.SheetListExporter.csproj", "{771F5429-1BF1-404B-B3AE-A415757593A2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.StairCalculator", "src\StairCalculator\BIMFlow.StairCalculator.csproj", "{241394A4-8614-42C2-8C87-EF86B02E1638}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.StandardsChecker", "src\StandardsChecker\BIMFlow.StandardsChecker.csproj", "{AD8A2392-1E7A-4E49-9120-E5FC6203D4F9}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SystemColorCoder", "src\SystemColorCoder\BIMFlow.SystemColorCoder.csproj", "{69E99DD9-02D7-4459-83D3-375958F14EE4}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.TagAll", "src\TagAll\BIMFlow.TagAll.csproj", "{0B627556-9E09-446F-BE36-6722A58E9A85}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.TextStyleAudit", "src\TextStyleAudit\BIMFlow.TextStyleAudit.csproj", "{244245AC-9C82-43B5-A830-181E53B86F35}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.TitleBlockUpdater", "src\TitleBlockUpdater\BIMFlow.TitleBlockUpdater.csproj", "{CCDFF0B1-67B5-42ED-AF62-5F61B502E060}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.UnplacedViewFinder", "src\UnplacedViewFinder\BIMFlow.UnplacedViewFinder.csproj", "{10A565A7-2C17-4C73-BAB9-040DAEC0EB61}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ViewFilterCopy", "src\ViewFilterCopy\BIMFlow.ViewFilterCopy.csproj", "{663D642B-1A8E-4DFE-9CE0-D0BE60954F2E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ViewMatrix", "src\ViewMatrix\BIMFlow.ViewMatrix.csproj", "{213F5870-5F30-41F0-B51F-A4B7A37AB3B2}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ViewRenamer", "src\ViewRenamer\BIMFlow.ViewRenamer.csproj", "{9D2450B8-B42A-429F-9A96-F92EF0461C03}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.ViewSync", "src\ViewSync\BIMFlow.ViewSync.csproj", "{6B532BD3-7556-47CB-B1B7-13CF7F0AB9E1}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.WallJoinFixer", "src\WallJoinFixer\BIMFlow.WallJoinFixer.csproj", "{38B52808-2E20-42A5-9AB0-280FC6297A26}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.WarningResolver", "src\WarningResolver\BIMFlow.WarningResolver.csproj", "{6BAF0B42-7538-4D0A-A709-CAE7A2E299D6}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.WorksetMonitor", "src\WorksetMonitor\BIMFlow.WorksetMonitor.csproj", "{C047FCFF-1533-46E4-BB71-02719509F88C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.LegendBuilder", "src\LegendBuilder\BIMFlow.LegendBuilder.csproj", "{68B50566-CA0A-4779-BE0F-9945D00F79C8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.PlansPerRoom", "src\PlansPerRoom\BIMFlow.PlansPerRoom.csproj", "{1ABC608D-A370-4373-B200-8016DFD4BB56}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.RoomHeightSync", "src\RoomHeightSync\BIMFlow.RoomHeightSync.csproj", "{DF3CB7C1-EB95-47F4-AA1F-276B1F3AA279}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SlabHeightSync", "src\SlabHeightSync\BIMFlow.SlabHeightSync.csproj", "{447EE932-DA94-4FA3-9C03-52821EF53B6E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.RoomColorFillPlan", "src\RoomColorFillPlan\BIMFlow.RoomColorFillPlan.csproj", "{8A45618E-1419-4FDA-B0C2-40DCF66E89AD}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.PointCloudColorizer", "src\PointCloudColorizer\BIMFlow.PointCloudColorizer.csproj", "{BFBA695C-3698-4303-9A78-04D413C55B12}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.CSITakeoff", "src\CSITakeoff\BIMFlow.CSITakeoff.csproj", "{F0EF9C21-472C-41A3-AE36-D3C7B736A114}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.SelectExteriorInterior", "src\SelectExteriorInterior\BIMFlow.SelectExteriorInterior.csproj", "{1DFA2832-023A-4E5E-80E3-5F62788B3801}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BIMFlow.QuickAccessRibbon", "src\QuickAccessRibbon\BIMFlow.QuickAccessRibbon.csproj", "{58789A75-80A5-405D-8241-61CC982F12F0}"
 EndProject
@@ -202,38 +86,10 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E31337C1-D924-48FD-BB38-FD41882C9FE9}.Debug|x64.ActiveCfg = Debug|x64
-		{E31337C1-D924-48FD-BB38-FD41882C9FE9}.Debug|x64.Build.0 = Debug|x64
-		{E31337C1-D924-48FD-BB38-FD41882C9FE9}.Release|x64.ActiveCfg = Release|x64
-		{E31337C1-D924-48FD-BB38-FD41882C9FE9}.Release|x64.Build.0 = Release|x64
 		{0642D3D5-4CEC-4159-85CC-581CAB8274F5}.Debug|x64.ActiveCfg = Debug|x64
 		{0642D3D5-4CEC-4159-85CC-581CAB8274F5}.Debug|x64.Build.0 = Debug|x64
 		{0642D3D5-4CEC-4159-85CC-581CAB8274F5}.Release|x64.ActiveCfg = Release|x64
 		{0642D3D5-4CEC-4159-85CC-581CAB8274F5}.Release|x64.Build.0 = Release|x64
-		{CEFDB333-9756-44B6-B76E-E7586E4AD30D}.Debug|x64.ActiveCfg = Debug|x64
-		{CEFDB333-9756-44B6-B76E-E7586E4AD30D}.Debug|x64.Build.0 = Debug|x64
-		{CEFDB333-9756-44B6-B76E-E7586E4AD30D}.Release|x64.ActiveCfg = Release|x64
-		{CEFDB333-9756-44B6-B76E-E7586E4AD30D}.Release|x64.Build.0 = Release|x64
-		{A37A5DB2-AE0F-49F0-8AD4-13C80E2C0E74}.Debug|x64.ActiveCfg = Debug|x64
-		{A37A5DB2-AE0F-49F0-8AD4-13C80E2C0E74}.Debug|x64.Build.0 = Debug|x64
-		{A37A5DB2-AE0F-49F0-8AD4-13C80E2C0E74}.Release|x64.ActiveCfg = Release|x64
-		{A37A5DB2-AE0F-49F0-8AD4-13C80E2C0E74}.Release|x64.Build.0 = Release|x64
-		{B6286EF5-1CC9-452E-AE9B-56A8A091561F}.Debug|x64.ActiveCfg = Debug|x64
-		{B6286EF5-1CC9-452E-AE9B-56A8A091561F}.Debug|x64.Build.0 = Debug|x64
-		{B6286EF5-1CC9-452E-AE9B-56A8A091561F}.Release|x64.ActiveCfg = Release|x64
-		{B6286EF5-1CC9-452E-AE9B-56A8A091561F}.Release|x64.Build.0 = Release|x64
-		{B2B100FB-74FD-42AA-ADF8-16DC94174ADE}.Debug|x64.ActiveCfg = Debug|x64
-		{B2B100FB-74FD-42AA-ADF8-16DC94174ADE}.Debug|x64.Build.0 = Debug|x64
-		{B2B100FB-74FD-42AA-ADF8-16DC94174ADE}.Release|x64.ActiveCfg = Release|x64
-		{B2B100FB-74FD-42AA-ADF8-16DC94174ADE}.Release|x64.Build.0 = Release|x64
-		{F5A77719-787C-4B15-9572-AA33723038B3}.Debug|x64.ActiveCfg = Debug|x64
-		{F5A77719-787C-4B15-9572-AA33723038B3}.Debug|x64.Build.0 = Debug|x64
-		{F5A77719-787C-4B15-9572-AA33723038B3}.Release|x64.ActiveCfg = Release|x64
-		{F5A77719-787C-4B15-9572-AA33723038B3}.Release|x64.Build.0 = Release|x64
-		{E4E3DC25-2AD8-4D32-B7A7-3789DA3ECB08}.Debug|x64.ActiveCfg = Debug|x64
-		{E4E3DC25-2AD8-4D32-B7A7-3789DA3ECB08}.Debug|x64.Build.0 = Debug|x64
-		{E4E3DC25-2AD8-4D32-B7A7-3789DA3ECB08}.Release|x64.ActiveCfg = Release|x64
-		{E4E3DC25-2AD8-4D32-B7A7-3789DA3ECB08}.Release|x64.Build.0 = Release|x64
 		{EB0ECEFB-6AC2-4F18-BB27-61F951E2933F}.Debug|x64.ActiveCfg = Debug|x64
 		{EB0ECEFB-6AC2-4F18-BB27-61F951E2933F}.Debug|x64.Build.0 = Debug|x64
 		{EB0ECEFB-6AC2-4F18-BB27-61F951E2933F}.Release|x64.ActiveCfg = Release|x64
@@ -242,66 +98,14 @@ Global
 		{E4FD85E0-F231-4B8E-8682-0E6B65DFF08E}.Debug|x64.Build.0 = Debug|x64
 		{E4FD85E0-F231-4B8E-8682-0E6B65DFF08E}.Release|x64.ActiveCfg = Release|x64
 		{E4FD85E0-F231-4B8E-8682-0E6B65DFF08E}.Release|x64.Build.0 = Release|x64
-		{D07C9576-27DB-4490-AAD6-829082EF11B7}.Debug|x64.ActiveCfg = Debug|x64
-		{D07C9576-27DB-4490-AAD6-829082EF11B7}.Debug|x64.Build.0 = Debug|x64
-		{D07C9576-27DB-4490-AAD6-829082EF11B7}.Release|x64.ActiveCfg = Release|x64
-		{D07C9576-27DB-4490-AAD6-829082EF11B7}.Release|x64.Build.0 = Release|x64
-		{03E84F21-26B8-4075-B049-916536613211}.Debug|x64.ActiveCfg = Debug|x64
-		{03E84F21-26B8-4075-B049-916536613211}.Debug|x64.Build.0 = Debug|x64
-		{03E84F21-26B8-4075-B049-916536613211}.Release|x64.ActiveCfg = Release|x64
-		{03E84F21-26B8-4075-B049-916536613211}.Release|x64.Build.0 = Release|x64
-		{7D4253CA-3D65-42D6-831B-A49A17D7EE3E}.Debug|x64.ActiveCfg = Debug|x64
-		{7D4253CA-3D65-42D6-831B-A49A17D7EE3E}.Debug|x64.Build.0 = Debug|x64
-		{7D4253CA-3D65-42D6-831B-A49A17D7EE3E}.Release|x64.ActiveCfg = Release|x64
-		{7D4253CA-3D65-42D6-831B-A49A17D7EE3E}.Release|x64.Build.0 = Release|x64
-		{BDE762E6-CB30-4F98-9102-393AA9446E8A}.Debug|x64.ActiveCfg = Debug|x64
-		{BDE762E6-CB30-4F98-9102-393AA9446E8A}.Debug|x64.Build.0 = Debug|x64
-		{BDE762E6-CB30-4F98-9102-393AA9446E8A}.Release|x64.ActiveCfg = Release|x64
-		{BDE762E6-CB30-4F98-9102-393AA9446E8A}.Release|x64.Build.0 = Release|x64
 		{7F626CA0-5F72-4D26-987D-3859AB1F20CA}.Debug|x64.ActiveCfg = Debug|x64
 		{7F626CA0-5F72-4D26-987D-3859AB1F20CA}.Debug|x64.Build.0 = Debug|x64
 		{7F626CA0-5F72-4D26-987D-3859AB1F20CA}.Release|x64.ActiveCfg = Release|x64
 		{7F626CA0-5F72-4D26-987D-3859AB1F20CA}.Release|x64.Build.0 = Release|x64
-		{843D3EA2-FB03-40A2-8A99-55A802400129}.Debug|x64.ActiveCfg = Debug|x64
-		{843D3EA2-FB03-40A2-8A99-55A802400129}.Debug|x64.Build.0 = Debug|x64
-		{843D3EA2-FB03-40A2-8A99-55A802400129}.Release|x64.ActiveCfg = Release|x64
-		{843D3EA2-FB03-40A2-8A99-55A802400129}.Release|x64.Build.0 = Release|x64
-		{299B8275-1F88-4FFD-A7DC-2AE7017A9F37}.Debug|x64.ActiveCfg = Debug|x64
-		{299B8275-1F88-4FFD-A7DC-2AE7017A9F37}.Debug|x64.Build.0 = Debug|x64
-		{299B8275-1F88-4FFD-A7DC-2AE7017A9F37}.Release|x64.ActiveCfg = Release|x64
-		{299B8275-1F88-4FFD-A7DC-2AE7017A9F37}.Release|x64.Build.0 = Release|x64
-		{91C4E1B2-43B4-415A-A94E-01D3D092CE43}.Debug|x64.ActiveCfg = Debug|x64
-		{91C4E1B2-43B4-415A-A94E-01D3D092CE43}.Debug|x64.Build.0 = Debug|x64
-		{91C4E1B2-43B4-415A-A94E-01D3D092CE43}.Release|x64.ActiveCfg = Release|x64
-		{91C4E1B2-43B4-415A-A94E-01D3D092CE43}.Release|x64.Build.0 = Release|x64
-		{BBC0D387-7D75-4AB3-A1BE-CC3AD8652A50}.Debug|x64.ActiveCfg = Debug|x64
-		{BBC0D387-7D75-4AB3-A1BE-CC3AD8652A50}.Debug|x64.Build.0 = Debug|x64
-		{BBC0D387-7D75-4AB3-A1BE-CC3AD8652A50}.Release|x64.ActiveCfg = Release|x64
-		{BBC0D387-7D75-4AB3-A1BE-CC3AD8652A50}.Release|x64.Build.0 = Release|x64
-		{07FC3CEA-B2C3-4798-BF25-022528827C2E}.Debug|x64.ActiveCfg = Debug|x64
-		{07FC3CEA-B2C3-4798-BF25-022528827C2E}.Debug|x64.Build.0 = Debug|x64
-		{07FC3CEA-B2C3-4798-BF25-022528827C2E}.Release|x64.ActiveCfg = Release|x64
-		{07FC3CEA-B2C3-4798-BF25-022528827C2E}.Release|x64.Build.0 = Release|x64
-		{A86AC370-5E0D-4213-882F-970C0B2C8874}.Debug|x64.ActiveCfg = Debug|x64
-		{A86AC370-5E0D-4213-882F-970C0B2C8874}.Debug|x64.Build.0 = Debug|x64
-		{A86AC370-5E0D-4213-882F-970C0B2C8874}.Release|x64.ActiveCfg = Release|x64
-		{A86AC370-5E0D-4213-882F-970C0B2C8874}.Release|x64.Build.0 = Release|x64
-		{59F0882E-A9FA-4CD0-85C3-996AE5DC188A}.Debug|x64.ActiveCfg = Debug|x64
-		{59F0882E-A9FA-4CD0-85C3-996AE5DC188A}.Debug|x64.Build.0 = Debug|x64
-		{59F0882E-A9FA-4CD0-85C3-996AE5DC188A}.Release|x64.ActiveCfg = Release|x64
-		{59F0882E-A9FA-4CD0-85C3-996AE5DC188A}.Release|x64.Build.0 = Release|x64
-		{764441DA-DCF1-4895-801E-3B569FD31D3D}.Debug|x64.ActiveCfg = Debug|x64
-		{764441DA-DCF1-4895-801E-3B569FD31D3D}.Debug|x64.Build.0 = Debug|x64
-		{764441DA-DCF1-4895-801E-3B569FD31D3D}.Release|x64.ActiveCfg = Release|x64
-		{764441DA-DCF1-4895-801E-3B569FD31D3D}.Release|x64.Build.0 = Release|x64
 		{373649EB-5A39-402E-972D-A1BF0950147F}.Debug|x64.ActiveCfg = Debug|x64
 		{373649EB-5A39-402E-972D-A1BF0950147F}.Debug|x64.Build.0 = Debug|x64
 		{373649EB-5A39-402E-972D-A1BF0950147F}.Release|x64.ActiveCfg = Release|x64
 		{373649EB-5A39-402E-972D-A1BF0950147F}.Release|x64.Build.0 = Release|x64
-		{8543FB2E-1F27-4895-AF2C-A5B3C665F899}.Debug|x64.ActiveCfg = Debug|x64
-		{8543FB2E-1F27-4895-AF2C-A5B3C665F899}.Debug|x64.Build.0 = Debug|x64
-		{8543FB2E-1F27-4895-AF2C-A5B3C665F899}.Release|x64.ActiveCfg = Release|x64
-		{8543FB2E-1F27-4895-AF2C-A5B3C665F899}.Release|x64.Build.0 = Release|x64
 		{891E1CB3-E772-4CCB-89E2-A65A61ABB2A5}.Debug|x64.ActiveCfg = Debug|x64
 		{891E1CB3-E772-4CCB-89E2-A65A61ABB2A5}.Debug|x64.Build.0 = Debug|x64
 		{891E1CB3-E772-4CCB-89E2-A65A61ABB2A5}.Release|x64.ActiveCfg = Release|x64
@@ -318,90 +122,30 @@ Global
 		{FD6C2211-409D-441A-A0FE-4B4032B1786F}.Debug|x64.Build.0 = Debug|x64
 		{FD6C2211-409D-441A-A0FE-4B4032B1786F}.Release|x64.ActiveCfg = Release|x64
 		{FD6C2211-409D-441A-A0FE-4B4032B1786F}.Release|x64.Build.0 = Release|x64
-		{0317883D-12DD-44A8-8651-D1FA5E2AF5BB}.Debug|x64.ActiveCfg = Debug|x64
-		{0317883D-12DD-44A8-8651-D1FA5E2AF5BB}.Debug|x64.Build.0 = Debug|x64
-		{0317883D-12DD-44A8-8651-D1FA5E2AF5BB}.Release|x64.ActiveCfg = Release|x64
-		{0317883D-12DD-44A8-8651-D1FA5E2AF5BB}.Release|x64.Build.0 = Release|x64
 		{BC8E5587-534C-49D0-A679-C8661167C8DB}.Debug|x64.ActiveCfg = Debug|x64
 		{BC8E5587-534C-49D0-A679-C8661167C8DB}.Debug|x64.Build.0 = Debug|x64
 		{BC8E5587-534C-49D0-A679-C8661167C8DB}.Release|x64.ActiveCfg = Release|x64
 		{BC8E5587-534C-49D0-A679-C8661167C8DB}.Release|x64.Build.0 = Release|x64
-		{AA01C84F-73AD-4207-A32E-ABDFEEC823FF}.Debug|x64.ActiveCfg = Debug|x64
-		{AA01C84F-73AD-4207-A32E-ABDFEEC823FF}.Debug|x64.Build.0 = Debug|x64
-		{AA01C84F-73AD-4207-A32E-ABDFEEC823FF}.Release|x64.ActiveCfg = Release|x64
-		{AA01C84F-73AD-4207-A32E-ABDFEEC823FF}.Release|x64.Build.0 = Release|x64
-		{C2EA7A81-39AE-44DD-9747-65879FE223A5}.Debug|x64.ActiveCfg = Debug|x64
-		{C2EA7A81-39AE-44DD-9747-65879FE223A5}.Debug|x64.Build.0 = Debug|x64
-		{C2EA7A81-39AE-44DD-9747-65879FE223A5}.Release|x64.ActiveCfg = Release|x64
-		{C2EA7A81-39AE-44DD-9747-65879FE223A5}.Release|x64.Build.0 = Release|x64
-		{6C456F45-5502-46CB-A74D-4CF068C3E7DC}.Debug|x64.ActiveCfg = Debug|x64
-		{6C456F45-5502-46CB-A74D-4CF068C3E7DC}.Debug|x64.Build.0 = Debug|x64
-		{6C456F45-5502-46CB-A74D-4CF068C3E7DC}.Release|x64.ActiveCfg = Release|x64
-		{6C456F45-5502-46CB-A74D-4CF068C3E7DC}.Release|x64.Build.0 = Release|x64
-		{63982B3A-EE98-4FF1-BEBD-AF4E827D3342}.Debug|x64.ActiveCfg = Debug|x64
-		{63982B3A-EE98-4FF1-BEBD-AF4E827D3342}.Debug|x64.Build.0 = Debug|x64
-		{63982B3A-EE98-4FF1-BEBD-AF4E827D3342}.Release|x64.ActiveCfg = Release|x64
-		{63982B3A-EE98-4FF1-BEBD-AF4E827D3342}.Release|x64.Build.0 = Release|x64
-		{68DF1B98-D5BB-40E1-91C5-F2D78046331A}.Debug|x64.ActiveCfg = Debug|x64
-		{68DF1B98-D5BB-40E1-91C5-F2D78046331A}.Debug|x64.Build.0 = Debug|x64
-		{68DF1B98-D5BB-40E1-91C5-F2D78046331A}.Release|x64.ActiveCfg = Release|x64
-		{68DF1B98-D5BB-40E1-91C5-F2D78046331A}.Release|x64.Build.0 = Release|x64
 		{DCE33630-D992-4828-BEDE-55E669A96B3D}.Debug|x64.ActiveCfg = Debug|x64
 		{DCE33630-D992-4828-BEDE-55E669A96B3D}.Debug|x64.Build.0 = Debug|x64
 		{DCE33630-D992-4828-BEDE-55E669A96B3D}.Release|x64.ActiveCfg = Release|x64
 		{DCE33630-D992-4828-BEDE-55E669A96B3D}.Release|x64.Build.0 = Release|x64
-		{09128865-2F55-4703-9897-8D3481A91677}.Debug|x64.ActiveCfg = Debug|x64
-		{09128865-2F55-4703-9897-8D3481A91677}.Debug|x64.Build.0 = Debug|x64
-		{09128865-2F55-4703-9897-8D3481A91677}.Release|x64.ActiveCfg = Release|x64
-		{09128865-2F55-4703-9897-8D3481A91677}.Release|x64.Build.0 = Release|x64
 		{C701E250-A81C-443B-8277-2F2306B8ECB2}.Debug|x64.ActiveCfg = Debug|x64
 		{C701E250-A81C-443B-8277-2F2306B8ECB2}.Debug|x64.Build.0 = Debug|x64
 		{C701E250-A81C-443B-8277-2F2306B8ECB2}.Release|x64.ActiveCfg = Release|x64
 		{C701E250-A81C-443B-8277-2F2306B8ECB2}.Release|x64.Build.0 = Release|x64
-		{56682A43-E2C4-4991-A5FF-FF6EDD705675}.Debug|x64.ActiveCfg = Debug|x64
-		{56682A43-E2C4-4991-A5FF-FF6EDD705675}.Debug|x64.Build.0 = Debug|x64
-		{56682A43-E2C4-4991-A5FF-FF6EDD705675}.Release|x64.ActiveCfg = Release|x64
-		{56682A43-E2C4-4991-A5FF-FF6EDD705675}.Release|x64.Build.0 = Release|x64
 		{897412F9-6834-4375-B56D-F400919069E9}.Debug|x64.ActiveCfg = Debug|x64
 		{897412F9-6834-4375-B56D-F400919069E9}.Debug|x64.Build.0 = Debug|x64
 		{897412F9-6834-4375-B56D-F400919069E9}.Release|x64.ActiveCfg = Release|x64
 		{897412F9-6834-4375-B56D-F400919069E9}.Release|x64.Build.0 = Release|x64
-		{3C25296E-B0E5-4F13-819C-713C91A440E7}.Debug|x64.ActiveCfg = Debug|x64
-		{3C25296E-B0E5-4F13-819C-713C91A440E7}.Debug|x64.Build.0 = Debug|x64
-		{3C25296E-B0E5-4F13-819C-713C91A440E7}.Release|x64.ActiveCfg = Release|x64
-		{3C25296E-B0E5-4F13-819C-713C91A440E7}.Release|x64.Build.0 = Release|x64
-		{988F8AE2-298E-4C98-B27C-58D449827759}.Debug|x64.ActiveCfg = Debug|x64
-		{988F8AE2-298E-4C98-B27C-58D449827759}.Debug|x64.Build.0 = Debug|x64
-		{988F8AE2-298E-4C98-B27C-58D449827759}.Release|x64.ActiveCfg = Release|x64
-		{988F8AE2-298E-4C98-B27C-58D449827759}.Release|x64.Build.0 = Release|x64
 		{E0AED422-2FEE-41BE-97B3-80B9ACC93CFA}.Debug|x64.ActiveCfg = Debug|x64
 		{E0AED422-2FEE-41BE-97B3-80B9ACC93CFA}.Debug|x64.Build.0 = Debug|x64
 		{E0AED422-2FEE-41BE-97B3-80B9ACC93CFA}.Release|x64.ActiveCfg = Release|x64
 		{E0AED422-2FEE-41BE-97B3-80B9ACC93CFA}.Release|x64.Build.0 = Release|x64
-		{45734707-AEE6-4BB5-AB0D-22AC85E6BB9E}.Debug|x64.ActiveCfg = Debug|x64
-		{45734707-AEE6-4BB5-AB0D-22AC85E6BB9E}.Debug|x64.Build.0 = Debug|x64
-		{45734707-AEE6-4BB5-AB0D-22AC85E6BB9E}.Release|x64.ActiveCfg = Release|x64
-		{45734707-AEE6-4BB5-AB0D-22AC85E6BB9E}.Release|x64.Build.0 = Release|x64
-		{D9797756-83F0-47AA-A5E9-988B3D0858B5}.Debug|x64.ActiveCfg = Debug|x64
-		{D9797756-83F0-47AA-A5E9-988B3D0858B5}.Debug|x64.Build.0 = Debug|x64
-		{D9797756-83F0-47AA-A5E9-988B3D0858B5}.Release|x64.ActiveCfg = Release|x64
-		{D9797756-83F0-47AA-A5E9-988B3D0858B5}.Release|x64.Build.0 = Release|x64
 		{61B1E508-E6CE-4603-97CE-8189605969C5}.Debug|x64.ActiveCfg = Debug|x64
 		{61B1E508-E6CE-4603-97CE-8189605969C5}.Debug|x64.Build.0 = Debug|x64
 		{61B1E508-E6CE-4603-97CE-8189605969C5}.Release|x64.ActiveCfg = Release|x64
 		{61B1E508-E6CE-4603-97CE-8189605969C5}.Release|x64.Build.0 = Release|x64
-		{F52D9EF0-CE51-4BD5-B24D-62C2F7EC32A4}.Debug|x64.ActiveCfg = Debug|x64
-		{F52D9EF0-CE51-4BD5-B24D-62C2F7EC32A4}.Debug|x64.Build.0 = Debug|x64
-		{F52D9EF0-CE51-4BD5-B24D-62C2F7EC32A4}.Release|x64.ActiveCfg = Release|x64
-		{F52D9EF0-CE51-4BD5-B24D-62C2F7EC32A4}.Release|x64.Build.0 = Release|x64
-		{0F98893A-0B4F-4630-BB09-BE1870A9B547}.Debug|x64.ActiveCfg = Debug|x64
-		{0F98893A-0B4F-4630-BB09-BE1870A9B547}.Debug|x64.Build.0 = Debug|x64
-		{0F98893A-0B4F-4630-BB09-BE1870A9B547}.Release|x64.ActiveCfg = Release|x64
-		{0F98893A-0B4F-4630-BB09-BE1870A9B547}.Release|x64.Build.0 = Release|x64
-		{567D9065-CD90-4702-884A-44B3D82AFBF8}.Debug|x64.ActiveCfg = Debug|x64
-		{567D9065-CD90-4702-884A-44B3D82AFBF8}.Debug|x64.Build.0 = Debug|x64
-		{567D9065-CD90-4702-884A-44B3D82AFBF8}.Release|x64.ActiveCfg = Release|x64
-		{567D9065-CD90-4702-884A-44B3D82AFBF8}.Release|x64.Build.0 = Release|x64
 		{50544DBB-F034-4A32-A8EB-7FB0E8A92659}.Debug|x64.ActiveCfg = Debug|x64
 		{50544DBB-F034-4A32-A8EB-7FB0E8A92659}.Debug|x64.Build.0 = Debug|x64
 		{50544DBB-F034-4A32-A8EB-7FB0E8A92659}.Release|x64.ActiveCfg = Release|x64
@@ -414,10 +158,6 @@ Global
 		{A19F2F39-0051-404F-B69B-EE40A1D8B9BA}.Debug|x64.Build.0 = Debug|x64
 		{A19F2F39-0051-404F-B69B-EE40A1D8B9BA}.Release|x64.ActiveCfg = Release|x64
 		{A19F2F39-0051-404F-B69B-EE40A1D8B9BA}.Release|x64.Build.0 = Release|x64
-		{31881A93-2999-4F66-B6B7-291CF83F1D24}.Debug|x64.ActiveCfg = Debug|x64
-		{31881A93-2999-4F66-B6B7-291CF83F1D24}.Debug|x64.Build.0 = Debug|x64
-		{31881A93-2999-4F66-B6B7-291CF83F1D24}.Release|x64.ActiveCfg = Release|x64
-		{31881A93-2999-4F66-B6B7-291CF83F1D24}.Release|x64.Build.0 = Release|x64
 		{F26D40BD-44B2-4683-B548-36DCD470E650}.Debug|x64.ActiveCfg = Debug|x64
 		{F26D40BD-44B2-4683-B548-36DCD470E650}.Debug|x64.Build.0 = Debug|x64
 		{F26D40BD-44B2-4683-B548-36DCD470E650}.Release|x64.ActiveCfg = Release|x64
@@ -426,86 +166,18 @@ Global
 		{3B737CF1-2931-4908-BA51-CD5D9AE02AB7}.Debug|x64.Build.0 = Debug|x64
 		{3B737CF1-2931-4908-BA51-CD5D9AE02AB7}.Release|x64.ActiveCfg = Release|x64
 		{3B737CF1-2931-4908-BA51-CD5D9AE02AB7}.Release|x64.Build.0 = Release|x64
-		{8A3CFB34-D599-45E7-B9B9-42CB8CBE7D9D}.Debug|x64.ActiveCfg = Debug|x64
-		{8A3CFB34-D599-45E7-B9B9-42CB8CBE7D9D}.Debug|x64.Build.0 = Debug|x64
-		{8A3CFB34-D599-45E7-B9B9-42CB8CBE7D9D}.Release|x64.ActiveCfg = Release|x64
-		{8A3CFB34-D599-45E7-B9B9-42CB8CBE7D9D}.Release|x64.Build.0 = Release|x64
 		{969DE38C-F9A2-4C9A-8AA9-AAAD7F13D307}.Debug|x64.ActiveCfg = Debug|x64
 		{969DE38C-F9A2-4C9A-8AA9-AAAD7F13D307}.Debug|x64.Build.0 = Debug|x64
 		{969DE38C-F9A2-4C9A-8AA9-AAAD7F13D307}.Release|x64.ActiveCfg = Release|x64
 		{969DE38C-F9A2-4C9A-8AA9-AAAD7F13D307}.Release|x64.Build.0 = Release|x64
-		{E4D2937F-1479-48BC-AB49-FAF1C9893B43}.Debug|x64.ActiveCfg = Debug|x64
-		{E4D2937F-1479-48BC-AB49-FAF1C9893B43}.Debug|x64.Build.0 = Debug|x64
-		{E4D2937F-1479-48BC-AB49-FAF1C9893B43}.Release|x64.ActiveCfg = Release|x64
-		{E4D2937F-1479-48BC-AB49-FAF1C9893B43}.Release|x64.Build.0 = Release|x64
-		{5993F2CA-D2E5-4C0B-956E-3845B17A123F}.Debug|x64.ActiveCfg = Debug|x64
-		{5993F2CA-D2E5-4C0B-956E-3845B17A123F}.Debug|x64.Build.0 = Debug|x64
-		{5993F2CA-D2E5-4C0B-956E-3845B17A123F}.Release|x64.ActiveCfg = Release|x64
-		{5993F2CA-D2E5-4C0B-956E-3845B17A123F}.Release|x64.Build.0 = Release|x64
-		{1D9995C2-E2CE-4A63-9063-09E78280D9A3}.Debug|x64.ActiveCfg = Debug|x64
-		{1D9995C2-E2CE-4A63-9063-09E78280D9A3}.Debug|x64.Build.0 = Debug|x64
-		{1D9995C2-E2CE-4A63-9063-09E78280D9A3}.Release|x64.ActiveCfg = Release|x64
-		{1D9995C2-E2CE-4A63-9063-09E78280D9A3}.Release|x64.Build.0 = Release|x64
-		{771F5429-1BF1-404B-B3AE-A415757593A2}.Debug|x64.ActiveCfg = Debug|x64
-		{771F5429-1BF1-404B-B3AE-A415757593A2}.Debug|x64.Build.0 = Debug|x64
-		{771F5429-1BF1-404B-B3AE-A415757593A2}.Release|x64.ActiveCfg = Release|x64
-		{771F5429-1BF1-404B-B3AE-A415757593A2}.Release|x64.Build.0 = Release|x64
 		{241394A4-8614-42C2-8C87-EF86B02E1638}.Debug|x64.ActiveCfg = Debug|x64
 		{241394A4-8614-42C2-8C87-EF86B02E1638}.Debug|x64.Build.0 = Debug|x64
 		{241394A4-8614-42C2-8C87-EF86B02E1638}.Release|x64.ActiveCfg = Release|x64
 		{241394A4-8614-42C2-8C87-EF86B02E1638}.Release|x64.Build.0 = Release|x64
-		{AD8A2392-1E7A-4E49-9120-E5FC6203D4F9}.Debug|x64.ActiveCfg = Debug|x64
-		{AD8A2392-1E7A-4E49-9120-E5FC6203D4F9}.Debug|x64.Build.0 = Debug|x64
-		{AD8A2392-1E7A-4E49-9120-E5FC6203D4F9}.Release|x64.ActiveCfg = Release|x64
-		{AD8A2392-1E7A-4E49-9120-E5FC6203D4F9}.Release|x64.Build.0 = Release|x64
-		{69E99DD9-02D7-4459-83D3-375958F14EE4}.Debug|x64.ActiveCfg = Debug|x64
-		{69E99DD9-02D7-4459-83D3-375958F14EE4}.Debug|x64.Build.0 = Debug|x64
-		{69E99DD9-02D7-4459-83D3-375958F14EE4}.Release|x64.ActiveCfg = Release|x64
-		{69E99DD9-02D7-4459-83D3-375958F14EE4}.Release|x64.Build.0 = Release|x64
-		{0B627556-9E09-446F-BE36-6722A58E9A85}.Debug|x64.ActiveCfg = Debug|x64
-		{0B627556-9E09-446F-BE36-6722A58E9A85}.Debug|x64.Build.0 = Debug|x64
-		{0B627556-9E09-446F-BE36-6722A58E9A85}.Release|x64.ActiveCfg = Release|x64
-		{0B627556-9E09-446F-BE36-6722A58E9A85}.Release|x64.Build.0 = Release|x64
-		{244245AC-9C82-43B5-A830-181E53B86F35}.Debug|x64.ActiveCfg = Debug|x64
-		{244245AC-9C82-43B5-A830-181E53B86F35}.Debug|x64.Build.0 = Debug|x64
-		{244245AC-9C82-43B5-A830-181E53B86F35}.Release|x64.ActiveCfg = Release|x64
-		{244245AC-9C82-43B5-A830-181E53B86F35}.Release|x64.Build.0 = Release|x64
 		{CCDFF0B1-67B5-42ED-AF62-5F61B502E060}.Debug|x64.ActiveCfg = Debug|x64
 		{CCDFF0B1-67B5-42ED-AF62-5F61B502E060}.Debug|x64.Build.0 = Debug|x64
 		{CCDFF0B1-67B5-42ED-AF62-5F61B502E060}.Release|x64.ActiveCfg = Release|x64
 		{CCDFF0B1-67B5-42ED-AF62-5F61B502E060}.Release|x64.Build.0 = Release|x64
-		{10A565A7-2C17-4C73-BAB9-040DAEC0EB61}.Debug|x64.ActiveCfg = Debug|x64
-		{10A565A7-2C17-4C73-BAB9-040DAEC0EB61}.Debug|x64.Build.0 = Debug|x64
-		{10A565A7-2C17-4C73-BAB9-040DAEC0EB61}.Release|x64.ActiveCfg = Release|x64
-		{10A565A7-2C17-4C73-BAB9-040DAEC0EB61}.Release|x64.Build.0 = Release|x64
-		{663D642B-1A8E-4DFE-9CE0-D0BE60954F2E}.Debug|x64.ActiveCfg = Debug|x64
-		{663D642B-1A8E-4DFE-9CE0-D0BE60954F2E}.Debug|x64.Build.0 = Debug|x64
-		{663D642B-1A8E-4DFE-9CE0-D0BE60954F2E}.Release|x64.ActiveCfg = Release|x64
-		{663D642B-1A8E-4DFE-9CE0-D0BE60954F2E}.Release|x64.Build.0 = Release|x64
-		{213F5870-5F30-41F0-B51F-A4B7A37AB3B2}.Debug|x64.ActiveCfg = Debug|x64
-		{213F5870-5F30-41F0-B51F-A4B7A37AB3B2}.Debug|x64.Build.0 = Debug|x64
-		{213F5870-5F30-41F0-B51F-A4B7A37AB3B2}.Release|x64.ActiveCfg = Release|x64
-		{213F5870-5F30-41F0-B51F-A4B7A37AB3B2}.Release|x64.Build.0 = Release|x64
-		{9D2450B8-B42A-429F-9A96-F92EF0461C03}.Debug|x64.ActiveCfg = Debug|x64
-		{9D2450B8-B42A-429F-9A96-F92EF0461C03}.Debug|x64.Build.0 = Debug|x64
-		{9D2450B8-B42A-429F-9A96-F92EF0461C03}.Release|x64.ActiveCfg = Release|x64
-		{9D2450B8-B42A-429F-9A96-F92EF0461C03}.Release|x64.Build.0 = Release|x64
-		{6B532BD3-7556-47CB-B1B7-13CF7F0AB9E1}.Debug|x64.ActiveCfg = Debug|x64
-		{6B532BD3-7556-47CB-B1B7-13CF7F0AB9E1}.Debug|x64.Build.0 = Debug|x64
-		{6B532BD3-7556-47CB-B1B7-13CF7F0AB9E1}.Release|x64.ActiveCfg = Release|x64
-		{6B532BD3-7556-47CB-B1B7-13CF7F0AB9E1}.Release|x64.Build.0 = Release|x64
-		{38B52808-2E20-42A5-9AB0-280FC6297A26}.Debug|x64.ActiveCfg = Debug|x64
-		{38B52808-2E20-42A5-9AB0-280FC6297A26}.Debug|x64.Build.0 = Debug|x64
-		{38B52808-2E20-42A5-9AB0-280FC6297A26}.Release|x64.ActiveCfg = Release|x64
-		{38B52808-2E20-42A5-9AB0-280FC6297A26}.Release|x64.Build.0 = Release|x64
-		{6BAF0B42-7538-4D0A-A709-CAE7A2E299D6}.Debug|x64.ActiveCfg = Debug|x64
-		{6BAF0B42-7538-4D0A-A709-CAE7A2E299D6}.Debug|x64.Build.0 = Debug|x64
-		{6BAF0B42-7538-4D0A-A709-CAE7A2E299D6}.Release|x64.ActiveCfg = Release|x64
-		{6BAF0B42-7538-4D0A-A709-CAE7A2E299D6}.Release|x64.Build.0 = Release|x64
-		{C047FCFF-1533-46E4-BB71-02719509F88C}.Debug|x64.ActiveCfg = Debug|x64
-		{C047FCFF-1533-46E4-BB71-02719509F88C}.Debug|x64.Build.0 = Debug|x64
-		{C047FCFF-1533-46E4-BB71-02719509F88C}.Release|x64.ActiveCfg = Release|x64
-		{C047FCFF-1533-46E4-BB71-02719509F88C}.Release|x64.Build.0 = Release|x64
 			{68B50566-CA0A-4779-BE0F-9945D00F79C8}.Debug|x64.ActiveCfg = Debug|x64
 		{68B50566-CA0A-4779-BE0F-9945D00F79C8}.Debug|x64.Build.0 = Debug|x64
 		{68B50566-CA0A-4779-BE0F-9945D00F79C8}.Release|x64.ActiveCfg = Release|x64
@@ -514,30 +186,10 @@ Global
 		{1ABC608D-A370-4373-B200-8016DFD4BB56}.Debug|x64.Build.0 = Debug|x64
 		{1ABC608D-A370-4373-B200-8016DFD4BB56}.Release|x64.ActiveCfg = Release|x64
 		{1ABC608D-A370-4373-B200-8016DFD4BB56}.Release|x64.Build.0 = Release|x64
-		{DF3CB7C1-EB95-47F4-AA1F-276B1F3AA279}.Debug|x64.ActiveCfg = Debug|x64
-		{DF3CB7C1-EB95-47F4-AA1F-276B1F3AA279}.Debug|x64.Build.0 = Debug|x64
-		{DF3CB7C1-EB95-47F4-AA1F-276B1F3AA279}.Release|x64.ActiveCfg = Release|x64
-		{DF3CB7C1-EB95-47F4-AA1F-276B1F3AA279}.Release|x64.Build.0 = Release|x64
-		{447EE932-DA94-4FA3-9C03-52821EF53B6E}.Debug|x64.ActiveCfg = Debug|x64
-		{447EE932-DA94-4FA3-9C03-52821EF53B6E}.Debug|x64.Build.0 = Debug|x64
-		{447EE932-DA94-4FA3-9C03-52821EF53B6E}.Release|x64.ActiveCfg = Release|x64
-		{447EE932-DA94-4FA3-9C03-52821EF53B6E}.Release|x64.Build.0 = Release|x64
-		{8A45618E-1419-4FDA-B0C2-40DCF66E89AD}.Debug|x64.ActiveCfg = Debug|x64
-		{8A45618E-1419-4FDA-B0C2-40DCF66E89AD}.Debug|x64.Build.0 = Debug|x64
-		{8A45618E-1419-4FDA-B0C2-40DCF66E89AD}.Release|x64.ActiveCfg = Release|x64
-		{8A45618E-1419-4FDA-B0C2-40DCF66E89AD}.Release|x64.Build.0 = Release|x64
 		{BFBA695C-3698-4303-9A78-04D413C55B12}.Debug|x64.ActiveCfg = Debug|x64
 		{BFBA695C-3698-4303-9A78-04D413C55B12}.Debug|x64.Build.0 = Debug|x64
 		{BFBA695C-3698-4303-9A78-04D413C55B12}.Release|x64.ActiveCfg = Release|x64
 		{BFBA695C-3698-4303-9A78-04D413C55B12}.Release|x64.Build.0 = Release|x64
-		{F0EF9C21-472C-41A3-AE36-D3C7B736A114}.Debug|x64.ActiveCfg = Debug|x64
-		{F0EF9C21-472C-41A3-AE36-D3C7B736A114}.Debug|x64.Build.0 = Debug|x64
-		{F0EF9C21-472C-41A3-AE36-D3C7B736A114}.Release|x64.ActiveCfg = Release|x64
-		{F0EF9C21-472C-41A3-AE36-D3C7B736A114}.Release|x64.Build.0 = Release|x64
-		{1DFA2832-023A-4E5E-80E3-5F62788B3801}.Debug|x64.ActiveCfg = Debug|x64
-		{1DFA2832-023A-4E5E-80E3-5F62788B3801}.Debug|x64.Build.0 = Debug|x64
-		{1DFA2832-023A-4E5E-80E3-5F62788B3801}.Release|x64.ActiveCfg = Release|x64
-		{1DFA2832-023A-4E5E-80E3-5F62788B3801}.Release|x64.Build.0 = Release|x64
 		{58789A75-80A5-405D-8241-61CC982F12F0}.Debug|x64.ActiveCfg = Debug|x64
 		{58789A75-80A5-405D-8241-61CC982F12F0}.Debug|x64.Build.0 = Debug|x64
 		{58789A75-80A5-405D-8241-61CC982F12F0}.Release|x64.ActiveCfg = Release|x64
