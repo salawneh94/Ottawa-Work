@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>OttawaWork.Excel2Revit</RootNamespace>
     <AssemblyName>OttawaWork.Excel2Revit</AssemblyName>
-    <!-- WPF for the dark-themed schedule picker (SchedulePickerWindow); see OttawaWork.Shared's csproj comment. -->
+    <!-- WPF for the dark-themed Excel Sync workspace (ExcelSyncWindow); see OttawaWork.Shared's csproj comment. -->
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 

@@ -67,7 +67,7 @@ public static class OttawaRoster
         new("PointCloudHeatmap", "Highlight", "PC Heatmap", "Compare walls against point cloud scan data and color-code deviations: green/yellow/red by tolerance.", false),
 
         // Panel 3: Data & Excel
-        new("Excel2Revit", "Data & Excel", "Single Excel Sync", "Two-way sync between Excel/CSV and Revit parameters or schedules.", false),
+        new("Excel2Revit", "Data & Excel", "Single Excel Sync", "Browse and batch-export any schedule to Excel/CSV/tab-delimited, or import an edited export back as parameter values.", false),
         new("BatchExcelSync", "Data & Excel", "Batch Excel Sync", "Export any category's parameters to Excel, edit them, then re-import with a live diff and approve exactly which changes to commit.", true),
         new("IFCExportQA", "Data & Excel", "IFC Mapping & Exporter", "Pre-flight checks, IFC class mapping presets, and clean IFC export.", false),
 
