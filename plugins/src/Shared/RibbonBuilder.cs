@@ -1,7 +1,6 @@
 // See LicenseStore.cs for why these are explicit aliases rather than plain
 // "using System.IO;" (Shared has both UseWindowsForms and UseWPF).
 using Path = System.IO.Path;
-using File = System.IO.File;
 
 using System.Windows.Media.Imaging;
 using Autodesk.Revit.UI;
@@ -37,6 +36,26 @@ namespace BIMFlow.Shared;
 public static class RibbonBuilder
 {
     private const string TabName = "Ottawa Tools";
+    private const string IconComponent = "BIMFlow.QuickAccessRibbon";
+
+    /// <summary>
+    /// pack:// URIs (used by LoadIcon below) only resolve once WPF's pack
+    /// UriParser has been registered — which normally happens automatically
+    /// the first time a System.Windows.Application is constructed, but this
+    /// add-in never constructs one (Revit hosts its own message loop; every
+    /// window in this codebase is a bare System.Windows.Window shown via
+    /// ShowDialog, not an Application-owned one). Merely reading
+    /// Application.Current — even though it's null here — still runs
+    /// Application's static constructor, which is what actually registers
+    /// the scheme, so this is enough without ever creating a real instance.
+    /// A static constructor guarantees it runs exactly once, before the
+    /// first time anything on this type is touched (including the first
+    /// ApplyIcon call), with no explicit call needed at any call site.
+    /// </summary>
+    static RibbonBuilder()
+    {
+        _ = System.Windows.Application.Current;
+    }
 
     public static RibbonPanel EnsurePanel(UIControlledApplication app, string panelName)
     {
@@ -54,29 +73,45 @@ public static class RibbonBuilder
     }
 
     /// <summary>
-    /// Looks up "&lt;iconKey&gt;_16.png" / "_32.png" next to the add-in's own
-    /// DLL, in an "Icons" subfolder (pre-baked PNGs, not rendered at
-    /// runtime — see plugins/src/Shared/Icons and the CI packaging step
-    /// that copies them alongside every DLL). Missing files are skipped
-    /// silently; a button without an icon still works, just plainer. Takes
-    /// the common ButtonData base (not PushButtonData specifically) so the
-    /// same call works for a PulldownButtonData too.
+    /// Loads "&lt;iconKey&gt;_16.png" / "_32.png" from this project's own
+    /// embedded Resources (plugins/src/QuickAccessRibbon/Resources/Icons —
+    /// see that folder and this project's csproj Resource item), via a
+    /// pack://application:,,,/BIMFlow.QuickAccessRibbon;component/... URI
+    /// rather than a loose file next to some add-in's DLL: every icon this
+    /// ribbon ever shows is built here, in this one assembly, so embedding
+    /// them here means they can never go missing at install time the way a
+    /// loose-file copy step could silently drop one. Takes the common
+    /// ButtonData base (not PushButtonData specifically) so the same call
+    /// works for a PulldownButtonData too. Any failure to load (a typo'd
+    /// iconKey, a genuinely missing resource) is caught and skipped, same
+    /// as the old "missing file" tolerance — a button without an icon still
+    /// works, just plainer.
     /// </summary>
-    public static void ApplyIcon(ButtonData data, string assemblyLocation, string iconKey)
+    public static void ApplyIcon(ButtonData data, string iconKey)
     {
-        var iconsDir = Path.Combine(Path.GetDirectoryName(assemblyLocation)!, "Icons");
-        var small = Path.Combine(iconsDir, $"{iconKey}_16.png");
-        var large = Path.Combine(iconsDir, $"{iconKey}_32.png");
-
-        if (File.Exists(small)) data.Image = LoadIcon(small);
-        if (File.Exists(large)) data.LargeImage = LoadIcon(large);
+        if (TryLoadIcon(iconKey, 16, out var small)) data.Image = small;
+        if (TryLoadIcon(iconKey, 32, out var large)) data.LargeImage = large;
     }
 
-    private static BitmapImage LoadIcon(string path)
+    private static bool TryLoadIcon(string iconKey, int size, out BitmapImage? image)
+    {
+        try
+        {
+            image = LoadIcon(new Uri($"pack://application:,,,/{IconComponent};component/Resources/Icons/{iconKey}_{size}.png"));
+            return true;
+        }
+        catch (Exception)
+        {
+            image = null;
+            return false;
+        }
+    }
+
+    private static BitmapImage LoadIcon(Uri uri)
     {
         var image = new BitmapImage();
         image.BeginInit();
-        image.UriSource = new Uri(path);
+        image.UriSource = uri;
         image.CacheOption = BitmapCacheOption.OnLoad;
         image.EndInit();
         image.Freeze();

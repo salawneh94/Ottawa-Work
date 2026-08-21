@@ -75,13 +75,11 @@ jobs:
             }
           }
 
-          # Ribbon icons are pre-baked PNGs (plugins/src/Shared/RibbonBuilder.cs
-          # loads them from an "Icons" subfolder next to each add-in's own DLL,
-          # not rendered at runtime), so they ship from source rather than any
-          # single project's build output.
-          $iconsDist = Join-Path $dist "Icons"
-          New-Item -ItemType Directory -Path $iconsDist -Force | Out-Null
-          Copy-Item -Path plugins/src/Shared/Icons/*.png -Destination $iconsDist -Force
+          # Ribbon icons are embedded resources inside BIMFlow.QuickAccessRibbon.dll
+          # itself now (plugins/src/QuickAccessRibbon/Resources/Icons, loaded via
+          # pack:// URI by RibbonBuilder.cs) rather than loose files copied
+          # alongside every add-in — that DLL is already copied into $dist by
+          # the loop above, so there's nothing extra to stage here.
 
           # Same deal for the branded-export logo (BrandedXlsx.cs loads it
           # from a "Branding" subfolder next to BIMFlow.Shared.dll).

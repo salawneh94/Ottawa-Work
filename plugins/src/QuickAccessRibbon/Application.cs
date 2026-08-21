@@ -65,7 +65,7 @@ public class Application : IExternalApplication
     private static void AddPulldown(RibbonPanel panel, string groupName, List<RosterEntry> entries, string ownAssembly)
     {
         var pulldownData = new PulldownButtonData($"Ribbon{groupName}Pulldown", groupName);
-        RibbonBuilder.ApplyIcon(pulldownData, ownAssembly, groupName);
+        RibbonBuilder.ApplyIcon(pulldownData, groupName);
 
         if (panel.AddItem(pulldownData) is not PulldownButton pulldown) return;
         foreach (var entry in entries)
@@ -77,7 +77,7 @@ public class Application : IExternalApplication
         var assembly = RibbonBuilder.SiblingAssembly(ownAssembly, $"BIMFlow.{entry.Folder}.dll");
         var commandClass = $"BIMFlow.{entry.Folder}.Command";
         var data = new PushButtonData($"Ribbon{entry.Folder}", entry.Text, assembly, commandClass) { ToolTip = entry.Tooltip };
-        RibbonBuilder.ApplyIcon(data, ownAssembly, entry.Folder);
+        RibbonBuilder.ApplyIcon(data, entry.Folder);
         return data;
     }
 

@@ -129,10 +129,12 @@ To build it yourself instead:
    relative to the manifest's own folder), so copy every plugin's output
    DLL and `.addin` file — flattened into one folder, not kept in separate
    per-plugin subfolders — into `%AppData%\Autodesk\Revit\Addins\<version>\`.
-5. Also copy `plugins/src/Shared/Icons/` into an `Icons` subfolder there —
-   `RibbonBuilder.ApplyIcon` loads each button's icon from
-   `Icons\<key>_16.png` / `_32.png` next to the DLLs. Pre-baked PNGs, not
-   rendered at runtime; see the file for why.
+5. Ribbon icons need no separate copy step — they're embedded resources
+   inside `BIMFlow.QuickAccessRibbon.dll` itself
+   (`plugins/src/QuickAccessRibbon/Resources/Icons`), loaded via a
+   `pack://application:,,,/BIMFlow.QuickAccessRibbon;component/...` URI by
+   `RibbonBuilder.ApplyIcon`. Building and copying that one DLL (step 4) is
+   enough; see the file for why.
 
 ### Targeting an older Revit version
 
