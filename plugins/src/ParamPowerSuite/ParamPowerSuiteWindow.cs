@@ -18,13 +18,13 @@ using GridUnitType = System.Windows.GridUnitType;
 using UIElement = System.Windows.UIElement;
 
 using Autodesk.Revit.DB;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.ParamPowerSuite;
+namespace OttawaWork.ParamPowerSuite;
 
 /// <summary>
 /// A multi-tab parameter workbench, not a one-shot dialog: unlike every
-/// other BIMFlow window (which computes a pending action and hands it to
+/// other Ottawa Tools window (which computes a pending action and hands it to
 /// Command.cs to write inside a single transaction, then closes), this
 /// window stays open across many independent Apply clicks — Bulk Set, then
 /// maybe Find/Replace, then Combine, all in the same session against the
@@ -40,7 +40,7 @@ namespace BIMFlow.ParamPowerSuite;
 /// bottom status bar showing the running Applied/Skipped/Failed counts from
 /// the most recent action.
 /// </summary>
-public partial class ParamPowerSuiteWindow : BimFlowWindow
+public partial class ParamPowerSuiteWindow : OttawaWorkWindow
 {
     private static readonly string[] TabNames =
     {
@@ -49,11 +49,11 @@ public partial class ParamPowerSuiteWindow : BimFlowWindow
 
     private readonly Document _doc;
     private readonly Dictionary<BuiltInCategory, CheckBox> _scopeCategoryChecks = new();
-    private readonly ComboBox _levelBox = BimFlowUi.ComboBox();
+    private readonly ComboBox _levelBox = OttawaWorkUi.ComboBox();
     private readonly List<ElementId?> _levelIdsByIndex = new();
     private readonly StackPanel _familyTypePanel = new();
-    private readonly TextBlock _scopeStatusText = BimFlowUi.FieldLabel("No elements loaded yet.");
-    private readonly TextBlock _statusText = new() { FontSize = 11, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), VerticalAlignment = VerticalAlignment.Center };
+    private readonly TextBlock _scopeStatusText = OttawaWorkUi.FieldLabel("No elements loaded yet.");
+    private readonly TextBlock _statusText = new() { FontSize = 11, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), VerticalAlignment = VerticalAlignment.Center };
     private readonly Dictionary<string, Button> _navButtons = new();
     private readonly Dictionary<string, UIElement> _tabPanels = new();
     private readonly List<ComboBox> _parameterDependentComboBoxes = new();
@@ -73,7 +73,7 @@ public partial class ParamPowerSuiteWindow : BimFlowWindow
         root.Children.Add(sidebar);
 
         var mainStack = new StackPanel { Margin = new Thickness(16, 0, 0, 0) };
-        mainStack.Children.Add(BimFlowUi.TitleBar("🧰", "Param Power Suite", "Bulk-edit parameters across every loaded element: set, find/replace, transform, copy, combine, jam to shared, or create a new bound parameter."));
+        mainStack.Children.Add(OttawaWorkUi.TitleBar("🧰", "Param Power Suite", "Bulk-edit parameters across every loaded element: set, find/replace, transform, copy, combine, jam to shared, or create a new bound parameter."));
         mainStack.Children.Add(BuildNavBar());
 
         var tabHost = new Grid { Margin = new Thickness(0, 12, 0, 0) };
@@ -114,7 +114,7 @@ public partial class ParamPowerSuiteWindow : BimFlowWindow
         var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 0) };
         foreach (var name in TabNames)
         {
-            var button = BimFlowUi.SecondaryButton(name);
+            var button = OttawaWorkUi.SecondaryButton(name);
             button.Margin = new Thickness(0, 0, 8, 0);
             button.Click += (_, _) => ShowTab(name);
             _navButtons[name] = button;
@@ -129,7 +129,7 @@ public partial class ParamPowerSuiteWindow : BimFlowWindow
             panel.Visibility = tabName == name ? Visibility.Visible : Visibility.Collapsed;
 
         foreach (var (tabName, button) in _navButtons)
-            BimFlowUi.SetToggleActive(button, tabName == name);
+            OttawaWorkUi.SetToggleActive(button, tabName == name);
     }
 
     // ---------------- Shared left sidebar (element scope) ----------------
@@ -138,10 +138,10 @@ public partial class ParamPowerSuiteWindow : BimFlowWindow
     {
         var stack = new StackPanel();
 
-        stack.Children.Add(BimFlowUi.SectionHeader("Categories"));
+        stack.Children.Add(OttawaWorkUi.SectionHeader("Categories"));
         var toggleRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 8) };
-        var allButton = BimFlowUi.SecondaryButton("All");
-        var noneButton = BimFlowUi.SecondaryButton("None");
+        var allButton = OttawaWorkUi.SecondaryButton("All");
+        var noneButton = OttawaWorkUi.SecondaryButton("None");
         allButton.Margin = new Thickness(0, 0, 6, 0);
         allButton.Click += (_, _) => SetAllCategories(true);
         noneButton.Click += (_, _) => SetAllCategories(false);
@@ -153,20 +153,20 @@ public partial class ParamPowerSuiteWindow : BimFlowWindow
         var categoryList = new StackPanel();
         foreach (var (label, builtIn) in CommonCategories.Roster)
         {
-            var check = BimFlowUi.CheckBoxItem(label);
+            var check = OttawaWorkUi.CheckBoxItem(label);
             check.FontSize = 12;
             check.Margin = new Thickness(0, 2, 0, 2);
             _scopeCategoryChecks[builtIn] = check;
             categoryList.Children.Add(check);
         }
         categoryScroll.Content = categoryList;
-        stack.Children.Add(BimFlowUi.Card(categoryScroll, padding: 8));
+        stack.Children.Add(OttawaWorkUi.Card(categoryScroll, padding: 8));
 
-        stack.Children.Add(BimFlowUi.SectionHeader("Level", BimFlowUi.TextSecondary));
+        stack.Children.Add(OttawaWorkUi.SectionHeader("Level", OttawaWorkUi.TextSecondary));
         _levelBox.Margin = new Thickness(0, 4, 0, 12);
         stack.Children.Add(_levelBox);
 
-        var loadButton = BimFlowUi.PrimaryButton("Load elements");
+        var loadButton = OttawaWorkUi.PrimaryButton("Load elements");
         loadButton.Click += (_, _) => LoadElements();
         stack.Children.Add(loadButton);
 
@@ -174,11 +174,11 @@ public partial class ParamPowerSuiteWindow : BimFlowWindow
         _scopeStatusText.TextWrapping = TextWrapping.Wrap;
         stack.Children.Add(_scopeStatusText);
 
-        stack.Children.Add(BimFlowUi.SectionHeader("Loaded families / types"));
+        stack.Children.Add(OttawaWorkUi.SectionHeader("Loaded families / types"));
         var typeScroll = new ScrollViewer { MaxHeight = 320, Content = _familyTypePanel };
-        stack.Children.Add(BimFlowUi.Card(typeScroll, padding: 8));
+        stack.Children.Add(OttawaWorkUi.Card(typeScroll, padding: 8));
 
-        return BimFlowUi.Card(stack, padding: 14);
+        return OttawaWorkUi.Card(stack, padding: 14);
     }
 
     private void SetAllCategories(bool isChecked)
@@ -235,7 +235,7 @@ public partial class ParamPowerSuiteWindow : BimFlowWindow
 
         if (groups.Count == 0)
         {
-            _familyTypePanel.Children.Add(BimFlowUi.FieldLabel("(no elements loaded)"));
+            _familyTypePanel.Children.Add(OttawaWorkUi.FieldLabel("(no elements loaded)"));
             return;
         }
 
@@ -245,7 +245,7 @@ public partial class ParamPowerSuiteWindow : BimFlowWindow
             {
                 Text = $"{group.FamilyName} : {group.TypeName} ({group.Count})",
                 FontSize = 11,
-                Foreground = BimFlowUi.BrushOf(BimFlowUi.TextPrimary),
+                Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextPrimary),
                 TextWrapping = TextWrapping.Wrap,
                 Margin = new Thickness(0, 2, 0, 2),
             });
@@ -283,15 +283,15 @@ public partial class ParamPowerSuiteWindow : BimFlowWindow
     {
         var border = new Border
         {
-            Background = BimFlowUi.BrushOf(BimFlowUi.CardBackgroundAlt),
-            BorderBrush = BimFlowUi.BrushOf(BimFlowUi.BorderColor),
+            Background = OttawaWorkUi.BrushOf(OttawaWorkUi.CardBackgroundAlt),
+            BorderBrush = OttawaWorkUi.BrushOf(OttawaWorkUi.BorderColor),
             BorderThickness = new Thickness(1),
             CornerRadius = new System.Windows.CornerRadius(8),
             Padding = new Thickness(12, 8, 12, 8),
             Margin = new Thickness(0, 12, 0, 0),
         };
 
-        var closeButton = BimFlowUi.SecondaryButton("Close");
+        var closeButton = OttawaWorkUi.SecondaryButton("Close");
         closeButton.HorizontalAlignment = HorizontalAlignment.Right;
         closeButton.Click += (_, _) => { DialogResult = true; Close(); };
 
@@ -329,26 +329,26 @@ public partial class ParamPowerSuiteWindow : BimFlowWindow
         var panel = new StackPanel();
         if (changes.Count == 0)
         {
-            panel.Children.Add(BimFlowUi.FieldLabel("No changes — nothing would be modified with the current settings."));
+            panel.Children.Add(OttawaWorkUi.FieldLabel("No changes — nothing would be modified with the current settings."));
             return panel;
         }
 
         foreach (var change in changes.Take(maxRows))
         {
             var row = new StackPanel { Margin = new Thickness(0, 0, 0, 8) };
-            row.Children.Add(new TextBlock { Text = change.ElementLabel, FontSize = 10, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary) });
+            row.Children.Add(new TextBlock { Text = change.ElementLabel, FontSize = 10, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary) });
             row.Children.Add(new TextBlock
             {
                 Text = $"\"{change.OldValue}\"  →  \"{change.NewValue}\"",
                 FontSize = 12,
-                Foreground = BimFlowUi.BrushOf(BimFlowUi.TextPrimary),
+                Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextPrimary),
                 TextWrapping = TextWrapping.Wrap,
             });
             panel.Children.Add(row);
         }
 
         if (changes.Count > maxRows)
-            panel.Children.Add(BimFlowUi.FieldLabel($"…and {changes.Count - maxRows} more not shown (all {changes.Count} will still be applied)."));
+            panel.Children.Add(OttawaWorkUi.FieldLabel($"…and {changes.Count - maxRows} more not shown (all {changes.Count} will still be applied)."));
 
         return panel;
     }

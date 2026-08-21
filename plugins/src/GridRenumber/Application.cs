@@ -1,8 +1,8 @@
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.GridRenumber;
+namespace OttawaWork.GridRenumber;
 
-public class Application : BimFlowApplication
+public class Application : OttawaWorkApplication
 {
     protected override string PanelName => "Renumbering & Productivity";
     protected override string ButtonInternalName => "GridRenumberButton";

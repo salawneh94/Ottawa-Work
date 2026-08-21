@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OttawaWork.LegendBuilder</RootNamespace>
+    <AssemblyName>OttawaWork.LegendBuilder</AssemblyName>
+    <!-- WPF for SimplePickerDialog, now in OttawaWork.Shared as WPF; see OttawaWork.Shared's csproj comment. -->
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\OttawaWork.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="LegendBuilder.addin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

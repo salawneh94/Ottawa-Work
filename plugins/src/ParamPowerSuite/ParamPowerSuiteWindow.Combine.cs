@@ -9,15 +9,15 @@ using TextWrapping = System.Windows.TextWrapping;
 using UIElement = System.Windows.UIElement;
 
 using Autodesk.Revit.DB;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.ParamPowerSuite;
+namespace OttawaWork.ParamPowerSuite;
 
 public partial class ParamPowerSuiteWindow
 {
-    private readonly TextBox _combineTemplateBox = BimFlowUi.TextBox();
-    private readonly ComboBox _combineTargetBox = BimFlowUi.ComboBox();
-    private readonly TextBlock _combineLiveResultText = new() { FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = BimFlowUi.BrushOf(BimFlowUi.Success) };
+    private readonly TextBox _combineTemplateBox = OttawaWorkUi.TextBox();
+    private readonly ComboBox _combineTargetBox = OttawaWorkUi.ComboBox();
+    private readonly TextBlock _combineLiveResultText = new() { FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.Success) };
     private readonly StackPanel _combinePreviewPanel = new();
     private List<ParamChangePreview> _combinePendingChanges = new();
 
@@ -26,30 +26,30 @@ public partial class ParamPowerSuiteWindow
         _parameterDependentComboBoxes.Add(_combineTargetBox);
 
         var stack = new StackPanel();
-        stack.Children.Add(BimFlowUi.SectionHeader("Combine (Tokens)"));
-        stack.Children.Add(BimFlowUi.FieldLabel("Template — use {Type Name}, {Family Name}, {Level}, or any parameter name in braces, e.g. \"{Type Name} - {Mark}\""));
+        stack.Children.Add(OttawaWorkUi.SectionHeader("Combine (Tokens)"));
+        stack.Children.Add(OttawaWorkUi.FieldLabel("Template — use {Type Name}, {Family Name}, {Level}, or any parameter name in braces, e.g. \"{Type Name} - {Mark}\""));
         _combineTemplateBox.TextChanged += (_, _) => RefreshCombineLivePreview();
         stack.Children.Add(_combineTemplateBox);
 
-        stack.Children.Add(BimFlowUi.FieldLabel("Target parameter"));
+        stack.Children.Add(OttawaWorkUi.FieldLabel("Target parameter"));
         _combineTargetBox.SelectionChanged += (_, _) => RefreshCombineLivePreview();
         stack.Children.Add(_combineTargetBox);
 
-        stack.Children.Add(BimFlowUi.FieldLabel("Live result (first loaded element)"));
-        stack.Children.Add(BimFlowUi.Card(_combineLiveResultText));
+        stack.Children.Add(OttawaWorkUi.FieldLabel("Live result (first loaded element)"));
+        stack.Children.Add(OttawaWorkUi.Card(_combineLiveResultText));
 
         var buttonRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 16, 0, 12) };
-        var previewButton = BimFlowUi.SecondaryButton("Preview all");
+        var previewButton = OttawaWorkUi.SecondaryButton("Preview all");
         previewButton.Margin = new Thickness(0, 0, 8, 0);
         previewButton.Click += (_, _) => PreviewCombine();
-        var applyButton = BimFlowUi.PrimaryButton("Apply");
+        var applyButton = OttawaWorkUi.PrimaryButton("Apply");
         applyButton.Click += (_, _) => ApplyCombine();
         buttonRow.Children.Add(previewButton);
         buttonRow.Children.Add(applyButton);
         stack.Children.Add(buttonRow);
 
         var scroll = new ScrollViewer { MaxHeight = 260, Content = _combinePreviewPanel };
-        stack.Children.Add(BimFlowUi.Card(scroll, padding: 10));
+        stack.Children.Add(OttawaWorkUi.Card(scroll, padding: 10));
 
         return stack;
     }

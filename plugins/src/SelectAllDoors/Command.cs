@@ -1,13 +1,13 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.SelectAllDoors;
+namespace OttawaWork.SelectAllDoors;
 
 /// <summary>One click sets the active selection to every door visible in the active view — see QuickSelectEngine.</summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "selectalldoors";
 
@@ -16,7 +16,7 @@ public class Command : BimFlowCommand
         var uiDoc = commandData.Application.ActiveUIDocument;
         var count = QuickSelectEngine.SelectDoors(uiDoc, QuickSelectEngine.Side.Any);
         if (count == 0)
-            TaskDialog.Show("BIMFlow — All Doors", "No doors are visible in the active view.");
+            TaskDialog.Show("Ottawa Tools — All Doors", "No doors are visible in the active view.");
         return Result.Succeeded;
     }
 }

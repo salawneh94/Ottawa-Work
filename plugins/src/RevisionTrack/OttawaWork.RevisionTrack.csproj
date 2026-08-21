@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OttawaWork.RevisionTrack</RootNamespace>
+    <AssemblyName>OttawaWork.RevisionTrack</AssemblyName>
+    <!-- WPF for the dark-themed dialog (RevisionTrackWindow); see OttawaWork.Shared's csproj comment. -->
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\OttawaWork.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="RevisionTrack.addin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

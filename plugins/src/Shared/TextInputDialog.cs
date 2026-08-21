@@ -4,7 +4,7 @@ using Orientation = System.Windows.Controls.Orientation;
 using HorizontalAlignment = System.Windows.HorizontalAlignment;
 using Thickness = System.Windows.Thickness;
 
-namespace BIMFlow.Shared;
+namespace OttawaWork.Shared;
 
 /// <summary>Minimal single-line text prompt — dark themed, replacing the old bare WinForms Form.</summary>
 public static class TextInputDialog
@@ -15,22 +15,22 @@ public static class TextInputDialog
         return window.ShowDialog() == true ? window.Value : null;
     }
 
-    private class PromptWindow : BimFlowWindow
+    private class PromptWindow : OttawaWorkWindow
     {
-        private readonly TextBox _textBox = BimFlowUi.TextBox();
+        private readonly TextBox _textBox = OttawaWorkUi.TextBox();
 
         public string Value { get; private set; } = "";
 
         public PromptWindow(string title, string label, string defaultValue) : base(title, minWidth: 320)
         {
             var root = new StackPanel();
-            root.Children.Add(BimFlowUi.FieldLabel(label));
+            root.Children.Add(OttawaWorkUi.FieldLabel(label));
             _textBox.Text = defaultValue;
             root.Children.Add(_textBox);
 
             var buttonRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 16, 0, 0) };
-            var cancelButton = BimFlowUi.SecondaryButton("Cancel");
-            var okButton = BimFlowUi.PrimaryButton("OK");
+            var cancelButton = OttawaWorkUi.SecondaryButton("Cancel");
+            var okButton = OttawaWorkUi.PrimaryButton("OK");
             cancelButton.Margin = new Thickness(0, 0, 10, 0);
             cancelButton.Click += (_, _) => { DialogResult = false; Close(); };
             okButton.Click += (_, _) => { Value = _textBox.Text.Trim(); DialogResult = true; Close(); };

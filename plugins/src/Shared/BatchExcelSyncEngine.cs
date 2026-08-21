@@ -1,6 +1,6 @@
 using Autodesk.Revit.DB;
 
-namespace BIMFlow.Shared;
+namespace OttawaWork.Shared;
 
 public enum SyncScope { Instances, Types }
 public enum DiffStatus { Changed, TypeChange, Conflict, Same }

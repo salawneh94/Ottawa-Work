@@ -1,8 +1,8 @@
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.NamingConventionAudit;
+namespace OttawaWork.NamingConventionAudit;
 
-public class Application : BimFlowApplication
+public class Application : OttawaWorkApplication
 {
     protected override string PanelName => "Model QA/QC & Cleanup";
     protected override string ButtonInternalName => "NamingConventionAuditButton";

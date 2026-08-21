@@ -1,9 +1,9 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.RevisionTrack;
+namespace OttawaWork.RevisionTrack;
 
 /// <summary>
 /// Bulk-adds a revision (new or existing) to a chosen set of sheets'
@@ -13,7 +13,7 @@ namespace BIMFlow.RevisionTrack;
 /// isn't something this can safely generate automatically.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "revisiontrack";
 
@@ -36,7 +36,7 @@ public class Command : BimFlowCommand
 
         if (sheets.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — RevisionTrack", "No sheets were found in this project.");
+            TaskDialog.Show("Ottawa Tools — RevisionTrack", "No sheets were found in this project.");
             return Result.Succeeded;
         }
 
@@ -47,7 +47,7 @@ public class Command : BimFlowCommand
         if (window.SelectedSheets.Count == 0)
             return Result.Succeeded;
 
-        using var transaction = new Transaction(doc, "BIMFlow: Add Revision to Sheets");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Add Revision to Sheets");
         transaction.Start();
         try
         {
@@ -80,7 +80,7 @@ public class Command : BimFlowCommand
             throw;
         }
 
-        TaskDialog.Show("BIMFlow — RevisionTrack", $"Added the revision to {window.SelectedSheets.Count} sheet(s).");
+        TaskDialog.Show("Ottawa Tools — RevisionTrack", $"Added the revision to {window.SelectedSheets.Count} sheet(s).");
         return Result.Succeeded;
     }
 }

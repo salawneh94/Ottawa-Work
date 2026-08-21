@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace BIMFlow.Shared;
+namespace OttawaWork.Shared;
 
 /// <summary>Shared find/replace + prefix/suffix renaming rule used by every batch-rename tool.</summary>
 public static class RenameRules

@@ -13,9 +13,9 @@ using WpfColor = System.Windows.Media.Color;
 using SolidColorBrush = System.Windows.Media.SolidColorBrush;
 
 using RevitColor = Autodesk.Revit.DB.Color;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.PointCloudColorizer;
+namespace OttawaWork.PointCloudColorizer;
 
 public enum PointCloudColorAction { ApplyColor, ResetToDefault }
 public enum PointCloudScope { AllInView, SelectedOnly }
@@ -25,7 +25,7 @@ public enum PointCloudScope { AllInView, SelectedOnly }
 /// with a scope choice (every point cloud in the view, or just the
 /// selected ones) — Apply Color / Reset to Default.
 /// </summary>
-public class PointCloudColorWindow : BimFlowWindow
+public class PointCloudColorWindow : OttawaWorkWindow
 {
     private static readonly (string Name, RevitColor Color)[] Presets =
     {
@@ -38,7 +38,7 @@ public class PointCloudColorWindow : BimFlowWindow
         ("Yellow", new RevitColor(230, 190, 30)),
     };
 
-    private readonly TextBlock _selectedLabel = new() { FontSize = 13, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextPrimary) };
+    private readonly TextBlock _selectedLabel = new() { FontSize = 13, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextPrimary) };
     private readonly Border _selectedSwatch = new() { Width = 32, Height = 32, CornerRadius = new CornerRadius(6), Margin = new Thickness(0, 0, 10, 0) };
     private readonly RadioButton _allBox;
     private readonly RadioButton _selectedOnlyBox;
@@ -47,13 +47,13 @@ public class PointCloudColorWindow : BimFlowWindow
     public PointCloudScope Scope { get; private set; } = PointCloudScope.AllInView;
     public PointCloudColorAction ChosenAction { get; private set; }
 
-    public PointCloudColorWindow(bool hasSelection) : base("BIMFlow — Point Cloud Color", minWidth: 380)
+    public PointCloudColorWindow(bool hasSelection) : base("Ottawa Tools — Point Cloud Color", minWidth: 380)
     {
         var root = new StackPanel();
-        root.Children.Add(BimFlowUi.TitleBar("🌈", "Point Cloud Color", "Override point cloud display color in the active view."));
+        root.Children.Add(OttawaWorkUi.TitleBar("🌈", "Point Cloud Color", "Override point cloud display color in the active view."));
 
         var paletteStack = new StackPanel();
-        paletteStack.Children.Add(BimFlowUi.SectionHeader("Colour palette"));
+        paletteStack.Children.Add(OttawaWorkUi.SectionHeader("Colour palette"));
         var swatchRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 12) };
         foreach (var (name, color) in Presets)
         {
@@ -64,7 +64,7 @@ public class PointCloudColorWindow : BimFlowWindow
                 CornerRadius = new CornerRadius(6),
                 Margin = new Thickness(0, 0, 8, 0),
                 Background = new SolidColorBrush(WpfColor.FromRgb(color.Red, color.Green, color.Blue)),
-                BorderBrush = BimFlowUi.BrushOf(BimFlowUi.BorderColor),
+                BorderBrush = OttawaWorkUi.BrushOf(OttawaWorkUi.BorderColor),
                 BorderThickness = new Thickness(1),
                 Cursor = System.Windows.Input.Cursors.Hand,
             };
@@ -73,7 +73,7 @@ public class PointCloudColorWindow : BimFlowWindow
         }
         paletteStack.Children.Add(swatchRow);
 
-        var customButton = BimFlowUi.SecondaryButton("Pick custom color...");
+        var customButton = OttawaWorkUi.SecondaryButton("Pick custom color...");
         customButton.HorizontalAlignment = HorizontalAlignment.Left;
         customButton.Click += (_, _) =>
         {
@@ -82,7 +82,7 @@ public class PointCloudColorWindow : BimFlowWindow
                 SetSelectedColor("Custom", new RevitColor(dialog.Color.R, dialog.Color.G, dialog.Color.B));
         };
         paletteStack.Children.Add(customButton);
-        root.Children.Add(BimFlowUi.Card(paletteStack));
+        root.Children.Add(OttawaWorkUi.Card(paletteStack));
 
         var selectedStack = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 0), VerticalAlignment = VerticalAlignment.Center };
         selectedStack.Children.Add(_selectedSwatch);
@@ -90,18 +90,18 @@ public class PointCloudColorWindow : BimFlowWindow
         root.Children.Add(selectedStack);
 
         var scopeStack = new StackPanel { Margin = new Thickness(0, 16, 0, 0) };
-        scopeStack.Children.Add(BimFlowUi.SectionHeader("Scope"));
-        _allBox = BimFlowUi.RadioButtonItem("All point clouds in view", "pc-scope", isChecked: true);
-        _selectedOnlyBox = BimFlowUi.RadioButtonItem("Selected point clouds only", "pc-scope");
+        scopeStack.Children.Add(OttawaWorkUi.SectionHeader("Scope"));
+        _allBox = OttawaWorkUi.RadioButtonItem("All point clouds in view", "pc-scope", isChecked: true);
+        _selectedOnlyBox = OttawaWorkUi.RadioButtonItem("Selected point clouds only", "pc-scope");
         _selectedOnlyBox.IsEnabled = hasSelection;
         scopeStack.Children.Add(_allBox);
         scopeStack.Children.Add(_selectedOnlyBox);
         root.Children.Add(scopeStack);
 
         var buttonRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 20, 0, 0) };
-        var cancelButton = BimFlowUi.SecondaryButton("Cancel");
-        var resetButton = BimFlowUi.SecondaryButton("Reset to default");
-        var applyButton = BimFlowUi.PrimaryButton("Apply color");
+        var cancelButton = OttawaWorkUi.SecondaryButton("Cancel");
+        var resetButton = OttawaWorkUi.SecondaryButton("Reset to default");
+        var applyButton = OttawaWorkUi.PrimaryButton("Apply color");
         cancelButton.Margin = new Thickness(0, 0, 8, 0);
         resetButton.Margin = new Thickness(0, 0, 8, 0);
         cancelButton.Click += (_, _) => { DialogResult = false; Close(); };

@@ -1,13 +1,13 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 using System.Windows.Forms;
 // UseWPF+UseWindowsForms together drops System.IO from implicit global
 // usings (see Shared/LicenseStore.cs) — needed here for Path.
 using Path = System.IO.Path;
 
-namespace BIMFlow.Excel2Revit;
+namespace OttawaWork.Excel2Revit;
 
 /// <summary>
 /// Export mode: dumps a chosen schedule to a branded Excel workbook via
@@ -24,7 +24,7 @@ namespace BIMFlow.Excel2Revit;
 /// the whole point of Mark numbering) rather than via Element ID.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "excel2revit";
 
@@ -35,7 +35,7 @@ public class Command : BimFlowCommand
 
         var choice = MessageBox.Show(
             "Export a schedule to Excel?\n\nChoose \"No\" to import parameter values from an edited export instead.",
-            "BIMFlow — Excel2Revit",
+            "Ottawa Tools — Excel2Revit",
             MessageBoxButtons.YesNoCancel);
 
         if (choice == DialogResult.Cancel) return Result.Cancelled;
@@ -54,7 +54,7 @@ public class Command : BimFlowCommand
 
         if (schedules.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — Excel2Revit", "No schedules were found in this project.");
+            TaskDialog.Show("Ottawa Tools — Excel2Revit", "No schedules were found in this project.");
             return Result.Succeeded;
         }
 
@@ -86,7 +86,7 @@ public class Command : BimFlowCommand
         pickerWindow.SelectedSchedule.Export(folder, fileNameOnly + ".csv", options);
         var xlsxPath = BrandedXlsx.ReplaceCsvWithBrandedXlsx(csvPath, pickerWindow.SelectedSchedule.Name, doc.Title);
 
-        TaskDialog.Show("BIMFlow — Excel2Revit", $"Exported \"{pickerWindow.SelectedSchedule.Name}\" to:\n{xlsxPath}");
+        TaskDialog.Show("Ottawa Tools — Excel2Revit", $"Exported \"{pickerWindow.SelectedSchedule.Name}\" to:\n{xlsxPath}");
         return Result.Succeeded;
     }
 
@@ -102,7 +102,7 @@ public class Command : BimFlowCommand
         var table = BrandedXlsx.ReadTable(openDialog.FileName);
         if (table is null || table.Value.Headers.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — Excel2Revit", "This file doesn't look like a BIMFlow export — no header row was found.");
+            TaskDialog.Show("Ottawa Tools — Excel2Revit", "This file doesn't look like a Batch Excel Sync export — no header row was found.");
             return Result.Cancelled;
         }
 
@@ -113,7 +113,7 @@ public class Command : BimFlowCommand
         var updatedRows = 0;
         var updatedFields = 0;
 
-        using var transaction = new Transaction(doc, "BIMFlow: Import Parameter Values");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Import Parameter Values");
         transaction.Start();
         try
         {
@@ -163,7 +163,7 @@ public class Command : BimFlowCommand
             throw;
         }
 
-        TaskDialog.Show("BIMFlow — Excel2Revit", $"Updated {updatedFields} field(s) across {updatedRows} element(s).");
+        TaskDialog.Show("Ottawa Tools — Excel2Revit", $"Updated {updatedFields} field(s) across {updatedRows} element(s).");
         return Result.Succeeded;
     }
 

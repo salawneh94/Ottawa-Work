@@ -1,9 +1,9 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.LegendPlacer;
+namespace OttawaWork.LegendPlacer;
 
 /// <summary>
 /// Batch-places one legend view onto many sheets at the same position.
@@ -12,7 +12,7 @@ namespace BIMFlow.LegendPlacer;
 /// worth automating.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "legendplacer";
 
@@ -30,7 +30,7 @@ public class Command : BimFlowCommand
 
         if (legends.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — LegendPlacer", "No legend views were found in this project.");
+            TaskDialog.Show("Ottawa Tools — LegendPlacer", "No legend views were found in this project.");
             return Result.Succeeded;
         }
 
@@ -50,7 +50,7 @@ public class Command : BimFlowCommand
         var placed = 0;
         var skipped = 0;
 
-        using var transaction = new Transaction(doc, "BIMFlow: Place Legend on Sheets");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Place Legend on Sheets");
         transaction.Start();
         try
         {
@@ -75,7 +75,7 @@ public class Command : BimFlowCommand
         }
 
         TaskDialog.Show(
-            "BIMFlow — LegendPlacer",
+            "Ottawa Tools — LegendPlacer",
             $"Placed the legend on {placed} sheet(s).{(skipped > 0 ? $" Skipped {skipped} (already placed there)." : "")}");
 
         return Result.Succeeded;

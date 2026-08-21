@@ -2,12 +2,12 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.RoomRenumber;
+namespace OttawaWork.RoomRenumber;
 
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "roomrenumber";
 
@@ -31,7 +31,7 @@ public class Command : BimFlowCommand
 
         if (rooms.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — Room Renumber", "No placed rooms found in the current selection or model.");
+            TaskDialog.Show("Ottawa Tools — Room Renumber", "No placed rooms found in the current selection or model.");
             return Result.Succeeded;
         }
 
@@ -49,7 +49,7 @@ public class Command : BimFlowCommand
             number += window.Increment;
         }
 
-        using var transaction = new Transaction(doc, "BIMFlow: Renumber Rooms");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Renumber Rooms");
         transaction.Start();
         try
         {
@@ -62,7 +62,7 @@ public class Command : BimFlowCommand
             throw;
         }
 
-        TaskDialog.Show("BIMFlow — Room Renumber", $"Renumbered {renames.Count} room(s).");
+        TaskDialog.Show("Ottawa Tools — Room Renumber", $"Renumbered {renames.Count} room(s).");
         return Result.Succeeded;
     }
 

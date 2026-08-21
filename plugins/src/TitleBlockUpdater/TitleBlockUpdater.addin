@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RevitAddIns>
   <AddIn Type="Application">
-    <Name>BIMFlow — TitleBlockUpdater</Name>
-    <Assembly>BIMFlow.TitleBlockUpdater.dll</Assembly>
+    <Name>Ottawa Tools — TitleBlockUpdater</Name>
+    <Assembly>OttawaWork.TitleBlockUpdater.dll</Assembly>
     <AddInId>{b618d201-73bd-44ee-8e7f-f1b32b76c6de}</AddInId>
-    <FullClassName>BIMFlow.TitleBlockUpdater.Application</FullClassName>
-    <VendorId>BIMFlow</VendorId>
-    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+    <FullClassName>OttawaWork.TitleBlockUpdater.Application</FullClassName>
+    <VendorId>Ottawa Ingenieure</VendorId>
+    <VendorDescription>Ottawa Ingenieure (internal tool)</VendorDescription>
   </AddIn>
 </RevitAddIns>

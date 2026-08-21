@@ -9,7 +9,7 @@ using RevitBinding = Autodesk.Revit.DB.Binding;
 using System.IO;
 using Autodesk.Revit.DB;
 
-namespace BIMFlow.Shared;
+namespace OttawaWork.Shared;
 
 public static partial class ParamPowerSuiteEngine
 {

@@ -2,9 +2,9 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.PointClouds;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.PointCloudColorizer;
+namespace OttawaWork.PointCloudColorizer;
 
 /// <summary>
 /// Applies a chosen override color (preset swatch or custom) to point
@@ -15,7 +15,7 @@ namespace BIMFlow.PointCloudColorizer;
 /// closest safe equivalent.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "pointcloudcolorizer";
 
@@ -39,7 +39,7 @@ public class Command : BimFlowCommand
 
         if (allInstances.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — Point Cloud Color", "No point cloud links are visible in the active view.");
+            TaskDialog.Show("Ottawa Tools — Point Cloud Color", "No point cloud links are visible in the active view.");
             return Result.Succeeded;
         }
 
@@ -49,13 +49,13 @@ public class Command : BimFlowCommand
 
         if (instances.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — Point Cloud Color", "No point cloud instances are selected.");
+            TaskDialog.Show("Ottawa Tools — Point Cloud Color", "No point cloud instances are selected.");
             return Result.Succeeded;
         }
 
         using var transaction = new Transaction(doc, window.ChosenAction == PointCloudColorAction.ResetToDefault
-            ? "BIMFlow: Reset Point Cloud Color"
-            : "BIMFlow: Apply Point Cloud Color");
+            ? "Ottawa Tools: Reset Point Cloud Color"
+            : "Ottawa Tools: Apply Point Cloud Color");
         transaction.Start();
         try
         {
@@ -82,7 +82,7 @@ public class Command : BimFlowCommand
         }
 
         TaskDialog.Show(
-            "BIMFlow — Point Cloud Color",
+            "Ottawa Tools — Point Cloud Color",
             window.ChosenAction == PointCloudColorAction.ResetToDefault
                 ? $"Reset {instances.Count} point cloud instance(s) to default display."
                 : $"Applied the chosen color to {instances.Count} point cloud instance(s).");

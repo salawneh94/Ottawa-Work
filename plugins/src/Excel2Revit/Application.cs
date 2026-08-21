@@ -1,8 +1,8 @@
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.Excel2Revit;
+namespace OttawaWork.Excel2Revit;
 
-public class Application : BimFlowApplication
+public class Application : OttawaWorkApplication
 {
     protected override string PanelName => "Data & Coordination";
     protected override string ButtonInternalName => "Excel2RevitButton";

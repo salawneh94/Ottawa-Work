@@ -5,14 +5,14 @@ using Path = System.IO.Path;
 using System.Windows.Media.Imaging;
 using Autodesk.Revit.UI;
 
-namespace BIMFlow.Shared;
+namespace OttawaWork.Shared;
 
 /// <summary>
 /// Every add-in in this internal Ottawa-Work build contributes into the same
 /// "Ottawa Tools" ribbon tab — the unlicensed, ribbon-restricted fork of
-/// BIMFlow.Shared's RibbonBuilder, which uses a "BIMFlow" tab and the full
+/// OttawaWork.Shared's RibbonBuilder, which uses a "Ottawa Tools" tab and the full
 /// 75+ plugin roster instead. This build's ribbon is driven from
-/// OttawaRoster (not PluginRoster) in BIMFlow.QuickAccessRibbon's
+/// OttawaRoster (not PluginRoster) in OttawaWork.QuickAccessRibbon's
 /// Application.cs, restricted to the internal firm's own curated tool set.
 ///
 /// An earlier version routed each category through one shared button that
@@ -25,7 +25,7 @@ namespace BIMFlow.Shared;
 ///
 /// A later version had every plugin's own Application.cs add its own button
 /// here directly (RibbonBuilder.AddButton). That's gone too, in favor of
-/// BIMFlow.QuickAccessRibbon building the whole ribbon in one centralized
+/// OttawaWork.QuickAccessRibbon building the whole ribbon in one centralized
 /// pass — see that project's Application.cs for why (matching a native
 /// Revit ribbon's mix of large/stacked buttons needs the full roster of a
 /// panel up front, not 73 independent add-ins each adding one button with
@@ -36,7 +36,7 @@ namespace BIMFlow.Shared;
 public static class RibbonBuilder
 {
     private const string TabName = "Ottawa Tools";
-    private const string IconComponent = "BIMFlow.QuickAccessRibbon";
+    private const string IconComponent = "OttawaWork.QuickAccessRibbon";
 
     /// <summary>
     /// pack:// URIs (used by LoadIcon below) only resolve once WPF's pack
@@ -76,7 +76,7 @@ public static class RibbonBuilder
     /// Loads "&lt;iconKey&gt;_16.png" / "_32.png" from this project's own
     /// embedded Resources (plugins/src/QuickAccessRibbon/Resources/Icons/3d —
     /// see that folder and this project's csproj Resource item), via a
-    /// pack://application:,,,/BIMFlow.QuickAccessRibbon;component/... URI
+    /// pack://application:,,,/OttawaWork.QuickAccessRibbon;component/... URI
     /// rather than a loose file next to some add-in's DLL: every icon this
     /// ribbon ever shows is built here, in this one assembly, so embedding
     /// them here means they can never go missing at install time the way a
@@ -122,7 +122,7 @@ public static class RibbonBuilder
 
     /// <summary>
     /// Resolves another plugin's DLL from this add-in's own assembly
-    /// location. Every BIMFlow DLL and .addin lands flat in the same
+    /// location. Every OttawaWork DLL and .addin lands flat in the same
     /// install folder (see plugins/README.md), so a sibling plugin's
     /// assembly is just its own filename next to this one.
     /// </summary>

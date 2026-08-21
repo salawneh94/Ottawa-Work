@@ -1,8 +1,8 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.HighlightDashboard;
+namespace OttawaWork.HighlightDashboard;
 
 /// <summary>
 /// Opens the Highlight dashboard, then — if the user picked a card — posts
@@ -17,7 +17,7 @@ namespace BIMFlow.HighlightDashboard;
 /// highlight/select/color-code logic of its own, at all.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "highlightdashboard";
 

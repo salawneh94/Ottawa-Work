@@ -1,13 +1,13 @@
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.QuickAccessRibbon;
+namespace OttawaWork.QuickAccessRibbon;
 
 /// <summary>
 /// Builds the "Ottawa Tools" ribbon tab in one pass, restricted to the
 /// internal firm's own curated roster (OttawaRoster) — not the full 75+
 /// plugin BIMFlow catalog (PluginRoster), which this build never references.
-/// Individual plugins' own BimFlowApplication.OnStartup no longer adds
+/// Individual plugins' own OttawaWorkApplication.OnStartup no longer adds
 /// anything to the ribbon (see that file); it's all driven from
 /// OttawaRoster.Entries here instead, referencing each plugin's own Command
 /// class in its own DLL via RibbonBuilder.SiblingAssembly, the same cross-
@@ -78,8 +78,8 @@ public class Application : IExternalApplication
 
     private static PushButtonData SiblingButtonData(RosterEntry entry, string ownAssembly)
     {
-        var assembly = RibbonBuilder.SiblingAssembly(ownAssembly, $"BIMFlow.{entry.Folder}.dll");
-        var commandClass = $"BIMFlow.{entry.Folder}.Command";
+        var assembly = RibbonBuilder.SiblingAssembly(ownAssembly, $"OttawaWork.{entry.Folder}.dll");
+        var commandClass = $"OttawaWork.{entry.Folder}.Command";
         var data = new PushButtonData($"Ribbon{entry.Folder}", entry.Text, assembly, commandClass) { ToolTip = entry.Tooltip };
         RibbonBuilder.ApplyIcon(data, entry.Folder);
         return data;

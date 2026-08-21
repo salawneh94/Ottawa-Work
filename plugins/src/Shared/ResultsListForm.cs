@@ -13,7 +13,7 @@ using Cursors = System.Windows.Input.Cursors;
 
 using Autodesk.Revit.DB;
 
-namespace BIMFlow.Shared;
+namespace OttawaWork.Shared;
 
 public record ResultRow(string[] Cells, List<ElementId> ElementIds);
 
@@ -24,7 +24,7 @@ public record ResultRow(string[] Cells, List<ElementId> ElementIds);
 /// (WPF has ListView/GridView, but a plain row list is far less risky to
 /// blind-author correctly than data-bound columns).
 /// </summary>
-public class ResultsListForm : BimFlowWindow
+public class ResultsListForm : OttawaWorkWindow
 {
     private readonly List<(Border RowBorder, ResultRow Row)> _rows = new();
     private readonly HashSet<int> _selectedIndices = new();
@@ -39,7 +39,7 @@ public class ResultsListForm : BimFlowWindow
         string actionButtonText = "Select in model") : base(title, minWidth: 560)
     {
         var root = new StackPanel();
-        root.Children.Add(BimFlowUi.TitleBar("📋", title, summary));
+        root.Children.Add(OttawaWorkUi.TitleBar("📋", title, summary));
 
         var columnWidth = Math.Max(100, 520.0 / Math.Max(columnHeaders.Length, 1));
 
@@ -54,7 +54,7 @@ public class ResultsListForm : BimFlowWindow
                 Width = columnWidth,
                 FontSize = 10,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary),
+                Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary),
                 TextTrimming = TextTrimming.CharacterEllipsis,
             });
         }
@@ -72,7 +72,7 @@ public class ResultsListForm : BimFlowWindow
                     Text = cell,
                     Width = columnWidth,
                     FontSize = 12,
-                    Foreground = BimFlowUi.BrushOf(BimFlowUi.TextPrimary),
+                    Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextPrimary),
                     TextTrimming = TextTrimming.CharacterEllipsis,
                     Margin = new Thickness(0, 0, 8, 0),
                 });
@@ -80,8 +80,8 @@ public class ResultsListForm : BimFlowWindow
 
             var rowBorder = new Border
             {
-                Background = BimFlowUi.BrushOf(BimFlowUi.CardBackgroundAlt),
-                BorderBrush = BimFlowUi.BrushOf(BimFlowUi.BorderColor),
+                Background = OttawaWorkUi.BrushOf(OttawaWorkUi.CardBackgroundAlt),
+                BorderBrush = OttawaWorkUi.BrushOf(OttawaWorkUi.BorderColor),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(6),
                 Padding = new Thickness(8, 6, 8, 6),
@@ -96,21 +96,21 @@ public class ResultsListForm : BimFlowWindow
             _rows.Add((rowBorder, row));
         }
         var scroll = new ScrollViewer { MaxHeight = 380, Content = rowsStack };
-        listStack.Children.Add(BimFlowUi.Card(scroll, padding: 8));
+        listStack.Children.Add(OttawaWorkUi.Card(scroll, padding: 8));
         root.Children.Add(listStack);
 
         var hint = new TextBlock
         {
             Text = "Click row(s) to select a subset — leave none selected to act on all.",
             FontSize = 10,
-            Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary),
+            Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary),
             Margin = new Thickness(0, 8, 0, 0),
         };
         root.Children.Add(hint);
 
         var buttonRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 12, 0, 0) };
-        var closeButton = BimFlowUi.SecondaryButton("Close");
-        var actionButton = BimFlowUi.PrimaryButton(actionButtonText);
+        var closeButton = OttawaWorkUi.SecondaryButton("Close");
+        var actionButton = OttawaWorkUi.PrimaryButton(actionButtonText);
         closeButton.Margin = new Thickness(0, 0, 10, 0);
         closeButton.Click += (_, _) => { DialogResult = false; Close(); };
         actionButton.Click += (_, _) =>
@@ -134,13 +134,13 @@ public class ResultsListForm : BimFlowWindow
         if (!_selectedIndices.Add(index))
         {
             _selectedIndices.Remove(index);
-            rowBorder.Background = BimFlowUi.BrushOf(BimFlowUi.CardBackgroundAlt);
-            rowBorder.BorderBrush = BimFlowUi.BrushOf(BimFlowUi.BorderColor);
+            rowBorder.Background = OttawaWorkUi.BrushOf(OttawaWorkUi.CardBackgroundAlt);
+            rowBorder.BorderBrush = OttawaWorkUi.BrushOf(OttawaWorkUi.BorderColor);
         }
         else
         {
-            rowBorder.Background = BimFlowUi.BrushOf(BimFlowUi.AccentSoft);
-            rowBorder.BorderBrush = BimFlowUi.BrushOf(BimFlowUi.Accent);
+            rowBorder.Background = OttawaWorkUi.BrushOf(OttawaWorkUi.AccentSoft);
+            rowBorder.BorderBrush = OttawaWorkUi.BrushOf(OttawaWorkUi.Accent);
         }
     }
 }

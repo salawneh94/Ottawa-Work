@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RevitAddIns>
   <AddIn Type="Application">
-    <Name>BIMFlow — Scope Box Sync</Name>
-    <Assembly>BIMFlow.ScopeBoxSync.dll</Assembly>
+    <Name>Ottawa Tools — Scope Box Sync</Name>
+    <Assembly>OttawaWork.ScopeBoxSync.dll</Assembly>
     <AddInId>{dbc8985c-ed59-4e1e-a1a6-9675587e9c29}</AddInId>
-    <FullClassName>BIMFlow.ScopeBoxSync.Application</FullClassName>
-    <VendorId>BIMFlow</VendorId>
-    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+    <FullClassName>OttawaWork.ScopeBoxSync.Application</FullClassName>
+    <VendorId>Ottawa Ingenieure</VendorId>
+    <VendorDescription>Ottawa Ingenieure (internal tool)</VendorDescription>
   </AddIn>
 </RevitAddIns>

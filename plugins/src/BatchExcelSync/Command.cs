@@ -1,19 +1,19 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.BatchExcelSync;
+namespace OttawaWork.BatchExcelSync;
 
 /// <summary>
 /// Opens the Batch Excel Sync workspace (scope + parameter picker + import
 /// &amp; diff, all in BatchExcelSyncWindow). Export and re-import/diff are pure
 /// file I/O the window handles itself; only the final commit touches the
 /// model, so that happens here, in its own transaction, after the window
-/// closes — same split every other BIMFlow dialog uses.
+/// closes — same split every other Ottawa Tools dialog uses.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "batchexcelsync";
 
@@ -27,7 +27,7 @@ public class Command : BimFlowCommand
         if (!window.Committed) return Result.Cancelled;
 
         BatchExcelSyncEngine.CommitResult result;
-        using var transaction = new Transaction(doc, "BIMFlow: Commit Batch Excel Sync Changes");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Commit Batch Excel Sync Changes");
         transaction.Start();
         try
         {
@@ -37,7 +37,7 @@ public class Command : BimFlowCommand
         catch (Exception ex)
         {
             transaction.RollBack();
-            TaskDialog.Show("BIMFlow — Batch Excel Sync", $"Couldn't commit changes: {ex.Message}");
+            TaskDialog.Show("Ottawa Tools — Batch Excel Sync", $"Couldn't commit changes: {ex.Message}");
             return Result.Failed;
         }
 
@@ -48,7 +48,7 @@ public class Command : BimFlowCommand
             foreach (var group in result.Failures.GroupBy(f => f.Reason).OrderByDescending(g => g.Count()).Take(5))
                 summary += $"\n• {group.Count()}x — {group.Key} (e.g. \"{group.First().NewValue}\" → {group.First().ParamName} on {group.First().ElementLabel})";
         }
-        TaskDialog.Show("BIMFlow — Batch Excel Sync", summary);
+        TaskDialog.Show("Ottawa Tools — Batch Excel Sync", summary);
         return Result.Succeeded;
     }
 }

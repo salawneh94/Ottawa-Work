@@ -1,7 +1,7 @@
 using System.IO;
 using Autodesk.Revit.DB;
 
-namespace BIMFlow.Shared;
+namespace OttawaWork.Shared;
 
 public enum QuantityUnit { SquareMeters, CubicMeters, Meters, Count }
 
@@ -50,7 +50,7 @@ public record KostengruppeTotal(string Code, string Name, QuantityUnit Unit, dou
 public static class Din276Engine
 {
     public const string ParameterOverrideName = "Kostengruppe";
-    private const string SharedParameterGroupName = "BIMFlow";
+    private const string SharedParameterGroupName = "Ottawa Tools";
 
     public static readonly KostengruppeDef[] Kostengruppen =
     {
@@ -234,18 +234,18 @@ public static class Din276Engine
     /// bound (by this tool on a previous run, or by hand via Manage →
     /// Project Parameters), this is a no-op and returns true immediately.
     ///
-    /// Otherwise it creates a Text parameter through a small BIMFlow-owned
+    /// Otherwise it creates a Text parameter through a small Ottawa Tools-owned
     /// shared parameter file (the only API-supported way to add a project
     /// parameter programmatically — Revit has no "create a pure project
     /// parameter" call) kept at a fixed per-user path
-    /// (%AppData%\BIMFlow\Din276SharedParameters.txt) rather than a temp
+    /// (%AppData%\Ottawa Tools\Din276SharedParameters.txt) rather than a temp
     /// file, so re-running this on the same or a different project reuses
     /// the exact same parameter definition (same GUID) instead of minting a
     /// lookalike duplicate each time. The parameter still shows up under
     /// "Project Parameters" in Manage, same as any other.
     ///
     /// Application.SharedParametersFilename is a global, session-wide Revit
-    /// setting — temporarily pointing it at BIMFlow's own file could
+    /// setting — temporarily pointing it at this tool's own file could
     /// otherwise clobber a firm's own shared-parameter-file setting for the
     /// rest of the session, so the previous value is always restored
     /// afterward, success or failure, via try/finally.
@@ -295,7 +295,7 @@ public static class Din276Engine
 
     private static string OwnSharedParameterFilePath()
     {
-        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "BIMFlow");
+        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ottawa Tools");
         Directory.CreateDirectory(folder);
 
         var path = Path.Combine(folder, "Din276SharedParameters.txt");

@@ -13,7 +13,7 @@ using TextChangedEventArgs = System.Windows.Controls.TextChangedEventArgs;
 
 using Autodesk.Revit.DB;
 
-namespace BIMFlow.Shared;
+namespace OttawaWork.Shared;
 
 public record ElementRenamePlan(Element Element, string NewName);
 
@@ -24,14 +24,14 @@ public record ElementRenamePlan(Element Element, string NewName);
 /// WinForms DataGridView dialog with a scrollable list of rows built once
 /// and refreshed in place as the rules change.
 /// </summary>
-public class ElementRenamerForm : BimFlowWindow
+public class ElementRenamerForm : OttawaWorkWindow
 {
     private readonly List<Element> _elements;
     private readonly List<(CheckBox Include, Element Element, TextBlock Preview)> _rows = new();
-    private readonly TextBox _findBox = BimFlowUi.TextBox();
-    private readonly TextBox _replaceBox = BimFlowUi.TextBox();
-    private readonly TextBox _prefixBox = BimFlowUi.TextBox();
-    private readonly TextBox _suffixBox = BimFlowUi.TextBox();
+    private readonly TextBox _findBox = OttawaWorkUi.TextBox();
+    private readonly TextBox _replaceBox = OttawaWorkUi.TextBox();
+    private readonly TextBox _prefixBox = OttawaWorkUi.TextBox();
+    private readonly TextBox _suffixBox = OttawaWorkUi.TextBox();
     private readonly CheckBox _regexCheck;
     private readonly TextBlock _statusLabel;
     private readonly System.Windows.Controls.Button _renameButton;
@@ -41,7 +41,7 @@ public class ElementRenamerForm : BimFlowWindow
         _elements = elements;
 
         var root = new StackPanel();
-        root.Children.Add(BimFlowUi.TitleBar("✏️", title, $"{elements.Count} element(s) — set a rename rule and review the preview below."));
+        root.Children.Add(OttawaWorkUi.TitleBar("✏️", title, $"{elements.Count} element(s) — set a rename rule and review the preview below."));
 
         var rulesStack = new StackPanel();
         var row1 = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 8) };
@@ -54,9 +54,9 @@ public class ElementRenamerForm : BimFlowWindow
         row2.Children.Add(LabeledField("Suffix", _suffixBox));
         rulesStack.Children.Add(row2);
 
-        _regexCheck = BimFlowUi.CheckBoxItem("Use regular expression");
+        _regexCheck = OttawaWorkUi.CheckBoxItem("Use regular expression");
         rulesStack.Children.Add(_regexCheck);
-        root.Children.Add(BimFlowUi.Card(rulesStack));
+        root.Children.Add(OttawaWorkUi.Card(rulesStack));
 
         foreach (var box in new[] { _findBox, _replaceBox, _prefixBox, _suffixBox })
         {
@@ -67,14 +67,14 @@ public class ElementRenamerForm : BimFlowWindow
         _regexCheck.Unchecked += (_, _) => RefreshPreview();
 
         var listStack = new StackPanel { Margin = new Thickness(0, 12, 0, 0) };
-        listStack.Children.Add(BimFlowUi.SectionHeader("Preview"));
+        listStack.Children.Add(OttawaWorkUi.SectionHeader("Preview"));
         var rowsStack = new StackPanel();
         foreach (var element in elements)
         {
-            var includeBox = BimFlowUi.CheckBoxItem("", isChecked: true);
-            var original = new TextBlock { Text = element.Name, FontSize = 12, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), Width = 180, VerticalAlignment = VerticalAlignment.Center };
-            var arrow = new TextBlock { Text = "→", FontSize = 12, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), Margin = new Thickness(6, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center };
-            var preview = new TextBlock { Text = element.Name, FontSize = 12, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextPrimary), FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center };
+            var includeBox = OttawaWorkUi.CheckBoxItem("", isChecked: true);
+            var original = new TextBlock { Text = element.Name, FontSize = 12, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), Width = 180, VerticalAlignment = VerticalAlignment.Center };
+            var arrow = new TextBlock { Text = "→", FontSize = 12, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), Margin = new Thickness(6, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center };
+            var preview = new TextBlock { Text = element.Name, FontSize = 12, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextPrimary), FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center };
 
             var rowPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 3, 0, 3) };
             rowPanel.Children.Add(includeBox);
@@ -89,15 +89,15 @@ public class ElementRenamerForm : BimFlowWindow
             _rows.Add((includeBox, element, preview));
         }
         var scroll = new ScrollViewer { MaxHeight = 300, Content = rowsStack };
-        listStack.Children.Add(BimFlowUi.Card(scroll, padding: 8));
+        listStack.Children.Add(OttawaWorkUi.Card(scroll, padding: 8));
         root.Children.Add(listStack);
 
-        _statusLabel = new TextBlock { FontSize = 11, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), Margin = new Thickness(0, 10, 0, 0) };
+        _statusLabel = new TextBlock { FontSize = 11, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), Margin = new Thickness(0, 10, 0, 0) };
         root.Children.Add(_statusLabel);
 
         var buttonRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 12, 0, 0) };
-        var cancelButton = BimFlowUi.SecondaryButton("Cancel");
-        _renameButton = BimFlowUi.PrimaryButton("Rename");
+        var cancelButton = OttawaWorkUi.SecondaryButton("Cancel");
+        _renameButton = OttawaWorkUi.PrimaryButton("Rename");
         cancelButton.Margin = new Thickness(0, 0, 10, 0);
         cancelButton.Click += (_, _) => { DialogResult = false; Close(); };
         _renameButton.Click += (_, _) => { DialogResult = true; Close(); };
@@ -114,7 +114,7 @@ public class ElementRenamerForm : BimFlowWindow
         box.Width = 200;
         box.Margin = new Thickness(0, 0, 16, 0);
         var stack = new StackPanel();
-        stack.Children.Add(BimFlowUi.FieldLabel(label));
+        stack.Children.Add(OttawaWorkUi.FieldLabel(label));
         stack.Children.Add(box);
         return stack;
     }
@@ -147,14 +147,14 @@ public class ElementRenamerForm : BimFlowWindow
         if (hasCollision)
         {
             _statusLabel.Text = "Some new names collide — adjust the rule before renaming.";
-            _statusLabel.Foreground = BimFlowUi.BrushOf(BimFlowUi.Danger);
+            _statusLabel.Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.Danger);
             _renameButton.IsEnabled = false;
         }
         else
         {
             var count = _rows.Count(r => r.Include.IsChecked == true);
             _statusLabel.Text = $"{count} element(s) will be renamed.";
-            _statusLabel.Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary);
+            _statusLabel.Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary);
             _renameButton.IsEnabled = true;
         }
     }

@@ -29,37 +29,37 @@ jobs:
       # Nice3point.Revit.Api NuGet packages (see plugins/Directory.Build.props)
       # instead of a local Revit install, so this needs no Revit license.
       - name: Restore
-        run: dotnet restore plugins/BIMFlow.sln
+        run: dotnet restore plugins/OttawaWork.sln
 
       - name: Build
-        run: dotnet build plugins/BIMFlow.sln --no-restore --configuration Debug
+        run: dotnet build plugins/OttawaWork.sln --no-restore --configuration Debug
 
       # Flat-folder layout: every plugin's .addin manifest references its
       # own DLL by bare filename, resolved relative to the manifest's own
       # directory — so the manifest and every DLL it needs (including the
-      # shared BIMFlow.Shared.dll dependency) have to land in the same
+      # shared OttawaWork.Shared.dll dependency) have to land in the same
       # folder for Revit to find them. This is a compile-verified build
       # only — it hasn't been run inside Revit, see plugins/README.md.
       - name: Package built add-ins
         if: success()
         shell: pwsh
         run: |
-          $dist = "dist/BIMFlow-Addins-2025"
+          $dist = "dist/OttawaTools-Addins-2025"
           New-Item -ItemType Directory -Path $dist -Force | Out-Null
 
           # Search recursively rather than assuming bin/Debug directly —
           # Platforms/PlatformTarget=x64 in Directory.Build.props can add an
           # extra bin\x64\Debug\ segment MSBuild doesn't document loudly.
           #
-          # "*.dll" (not just "BIMFlow.*.dll") on purpose: BIMFlow.Shared
+          # "*.dll" (not just "OttawaWork.*.dll") on purpose: OttawaWork.Shared
           # pulls in ClosedXML (BrandedXlsx.cs) plus ClosedXML's own runtime
           # dependencies (DocumentFormat.OpenXml[.Framework], ExcelNumberFormat,
           # RBush, SixLabors.Fonts, System.IO.Packaging, ClosedXML.Parser) —
           # those copy-local into every plugin's own bin output alongside
-          # BIMFlow.Shared.dll (via CopyLocalLockFileAssemblies on Shared's
+          # OttawaWork.Shared.dll (via CopyLocalLockFileAssemblies on Shared's
           # csproj — see that file's comment for why that flag is the part
           # that actually makes them exist on disk). Filtering to
-          # "BIMFlow.*.dll" silently dropped all of them from the shipped
+          # "OttawaWork.*.dll" silently dropped all of them from the shipped
           # add-in folder, so any plugin calling BrandedXlsx would find no
           # ClosedXML.dll at all, or fall back to whatever unrelated
           # same-named DLL happened to already be in the user's shared
@@ -75,14 +75,14 @@ jobs:
             }
           }
 
-          # Ribbon icons are embedded resources inside BIMFlow.QuickAccessRibbon.dll
+          # Ribbon icons are embedded resources inside OttawaWork.QuickAccessRibbon.dll
           # itself now (plugins/src/QuickAccessRibbon/Resources/Icons, loaded via
           # pack:// URI by RibbonBuilder.cs) rather than loose files copied
           # alongside every add-in — that DLL is already copied into $dist by
           # the loop above, so there's nothing extra to stage here.
 
           # Same deal for the branded-export logo (BrandedXlsx.cs loads it
-          # from a "Branding" subfolder next to BIMFlow.Shared.dll).
+          # from a "Branding" subfolder next to OttawaWork.Shared.dll).
           $brandingDist = Join-Path $dist "Branding"
           New-Item -ItemType Directory -Path $brandingDist -Force | Out-Null
           Copy-Item -Path plugins/src/Shared/Branding/*.png -Destination $brandingDist -Force
@@ -97,16 +97,16 @@ jobs:
           }
 
           Set-Content -Path "$dist/README.txt" -Value @"
-          BIMFlow Revit add-ins — Revit 2025 build (commit $env:GITHUB_SHA)
+          Ottawa Tools Revit add-ins — Revit 2025 build (commit $env:GITHUB_SHA)
 
-          Easiest install: run BIMFlow-Setup-2025.exe (next to this folder
-          in the same CI artifact set, or the bimflow-installer-2025
+          Easiest install: run OttawaTools-Setup-2025.exe (next to this folder
+          in the same CI artifact set, or the ottawatools-installer-2025
           artifact) and restart Revit.
 
           Manual install, if you'd rather not run the installer:
           1. Copy every file in this folder into:
              %AppData%\Autodesk\Revit\Addins\2025\
-          2. Restart Revit. All plugins appear under one BIMFlow ribbon tab.
+          2. Restart Revit. All plugins appear under one Ottawa Tools ribbon tab.
 
           This is a compile-verified build only (CI is green) — none of
           these add-ins have been functionally tested by running them
@@ -117,8 +117,8 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: bimflow-addins-2025
-          path: dist/BIMFlow-Addins-2025
+          name: ottawatools-addins-2025
+          path: dist/OttawaTools-Addins-2025
           retention-days: 30
 
       # windows-latest normally ships Inno Setup already, but installing it
@@ -129,8 +129,8 @@ jobs:
         shell: pwsh
         run: choco install --no-progress -y innosetup
 
-      # Packages dist/BIMFlow-Addins-2025 into a single one-click installer
-      # (see plugins/installer/BIMFlow.iss) — the "one-installer, many-tools"
+      # Packages dist/OttawaTools-Addins-2025 into a single one-click installer
+      # (see plugins/installer/OttawaTools.iss) — the "one-installer, many-tools"
       # model the top-level README describes, instead of the manual
       # copy-into-AddIns-folder step README.txt above still documents as a
       # fallback.
@@ -138,12 +138,12 @@ jobs:
         if: success()
         shell: pwsh
         run: |
-          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" plugins\installer\BIMFlow.iss
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" plugins\installer\OttawaTools.iss
 
       - name: Upload installer artifact
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: bimflow-installer-2025
-          path: dist/BIMFlow-Setup-2025.exe
+          name: ottawatools-installer-2025
+          path: dist/OttawaTools-Setup-2025.exe
           retention-days: 30

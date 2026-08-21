@@ -1,13 +1,13 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.SelectExtWalls;
+namespace OttawaWork.SelectExtWalls;
 
 /// <summary>One click sets the active selection to every exterior wall visible in the active view — see QuickSelectEngine.</summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "selectextwalls";
 
@@ -16,7 +16,7 @@ public class Command : BimFlowCommand
         var uiDoc = commandData.Application.ActiveUIDocument;
         var count = QuickSelectEngine.SelectWalls(uiDoc, QuickSelectEngine.Side.Exterior);
         if (count == 0)
-            TaskDialog.Show("BIMFlow — Ext Walls", "No exterior walls are visible in the active view.");
+            TaskDialog.Show("Ottawa Tools — Ext Walls", "No exterior walls are visible in the active view.");
         return Result.Succeeded;
     }
 }

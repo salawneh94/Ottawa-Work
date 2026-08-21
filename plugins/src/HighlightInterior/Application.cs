@@ -1,8 +1,8 @@
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.HighlightInterior;
+namespace OttawaWork.HighlightInterior;
 
-public class Application : BimFlowApplication
+public class Application : OttawaWorkApplication
 {
     protected override string PanelName => "Highlight";
     protected override string ButtonInternalName => "HighlightInteriorButton";

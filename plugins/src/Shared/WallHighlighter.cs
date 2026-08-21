@@ -1,6 +1,6 @@
 using Autodesk.Revit.DB;
 
-namespace BIMFlow.Shared;
+namespace OttawaWork.Shared;
 
 /// <summary>
 /// Shared by HighlightExterior/HighlightInterior (the reference tool's

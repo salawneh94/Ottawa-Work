@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
 
-namespace BIMFlow.Shared;
+namespace OttawaWork.Shared;
 
 public readonly record struct ParamOpResult(int Applied, int Skipped, int Failed);
 
@@ -27,7 +27,7 @@ public enum CopyMode { Overwrite, Append }
 /// can show what WOULD change before anything is touched. Apply/ApplyChanges
 /// do the actual Parameter writes and are only ever called from inside a
 /// Transaction opened by ParamPowerSuiteWindow itself (see that class's doc
-/// comment for why this tool departs from every other BIMFlow dialog's
+/// comment for why this tool departs from every other Ottawa Tools dialog's
 /// "window never touches the model, Command.cs always transacts" split —
 /// this is a multi-action workbench you keep open across several Apply
 /// clicks, not a single one-shot dialog).

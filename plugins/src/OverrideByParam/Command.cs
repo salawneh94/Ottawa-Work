@@ -1,13 +1,13 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 using System.Windows.Forms;
 // UseWPF+UseWindowsForms together drops System.IO from implicit global
 // usings (see Shared/LicenseStore.cs) — needed here for Path.
 using Path = System.IO.Path;
 
-namespace BIMFlow.OverrideByParam;
+namespace OttawaWork.OverrideByParam;
 
 /// <summary>
 /// Colors elements of a chosen category in the active view by a chosen
@@ -19,9 +19,9 @@ namespace BIMFlow.OverrideByParam;
 /// clear the filters this tool created.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
-    private const string FilterPrefix = "BIMFlow: ";
+    private const string FilterPrefix = "Ottawa Tools: ";
 
     protected override string PluginSlug => "overridebyparam";
 
@@ -65,7 +65,7 @@ public class Command : BimFlowCommand
             .OfCategoryId(category.Id)
             .ToList();
 
-        using var transaction = new Transaction(doc, "BIMFlow: Preview Color Code");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Preview Color Code");
         transaction.Start();
         try
         {
@@ -87,12 +87,12 @@ public class Command : BimFlowCommand
             }
 
             transaction.Commit();
-            TaskDialog.Show("BIMFlow — Color Code", $"Previewed {applied} element(s) directly in the active view. Nothing was saved as a filter — use \"Apply as filters\" to make it persistent, or re-run Preview/Clear to change it.");
+            TaskDialog.Show("Ottawa Tools — Color Code", $"Previewed {applied} element(s) directly in the active view. Nothing was saved as a filter — use \"Apply as filters\" to make it persistent, or re-run Preview/Clear to change it.");
         }
         catch (Exception ex)
         {
             transaction.RollBack();
-            TaskDialog.Show("BIMFlow — Color Code", $"Couldn't preview: {ex.Message}");
+            TaskDialog.Show("Ottawa Tools — Color Code", $"Couldn't preview: {ex.Message}");
             return Result.Failed;
         }
 
@@ -115,13 +115,13 @@ public class Command : BimFlowCommand
 
         if (sample is null)
         {
-            TaskDialog.Show("BIMFlow — Color Code", "Couldn't find that parameter on any element of this category in the active view.");
+            TaskDialog.Show("Ottawa Tools — Color Code", "Couldn't find that parameter on any element of this category in the active view.");
             return Result.Cancelled;
         }
 
         var namePrefix = $"{FilterPrefix}{category.Name}: {paramName} = ";
 
-        using var transaction = new Transaction(doc, "BIMFlow: Apply Color Code Filters");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Apply Color Code Filters");
         transaction.Start();
         try
         {
@@ -161,12 +161,12 @@ public class Command : BimFlowCommand
             }
 
             transaction.Commit();
-            TaskDialog.Show("BIMFlow — Color Code", $"Applied {applied} filter(s) for \"{paramName}\" on {category.Name} to the active view.");
+            TaskDialog.Show("Ottawa Tools — Color Code", $"Applied {applied} filter(s) for \"{paramName}\" on {category.Name} to the active view.");
         }
         catch (Exception ex)
         {
             transaction.RollBack();
-            TaskDialog.Show("BIMFlow — Color Code", $"Couldn't apply filters: {ex.Message}");
+            TaskDialog.Show("Ottawa Tools — Color Code", $"Couldn't apply filters: {ex.Message}");
             return Result.Failed;
         }
 
@@ -204,17 +204,17 @@ public class Command : BimFlowCommand
         }
         catch (Exception ex)
         {
-            TaskDialog.Show("BIMFlow — Color Code", $"Export failed: {ex.Message}");
+            TaskDialog.Show("Ottawa Tools — Color Code", $"Export failed: {ex.Message}");
             return Result.Failed;
         }
 
-        TaskDialog.Show("BIMFlow — Color Code", $"Exported the active view to:\n{folder}\n\n(Revit names the file after the view; check that folder if \"{fileNameOnly}.png\" isn't there exactly.)");
+        TaskDialog.Show("Ottawa Tools — Color Code", $"Exported the active view to:\n{folder}\n\n(Revit names the file after the view; check that folder if \"{fileNameOnly}.png\" isn't there exactly.)");
         return Result.Succeeded;
     }
 
     private Result ClearFilters(Document doc, View view)
     {
-        using var transaction = new Transaction(doc, "BIMFlow: Clear Color Code Filters");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Clear Color Code Filters");
         transaction.Start();
         var removed = 0;
         try
@@ -232,11 +232,11 @@ public class Command : BimFlowCommand
         catch (Exception ex)
         {
             transaction.RollBack();
-            TaskDialog.Show("BIMFlow — Color Code", $"Couldn't clear filters: {ex.Message}");
+            TaskDialog.Show("Ottawa Tools — Color Code", $"Couldn't clear filters: {ex.Message}");
             return Result.Failed;
         }
 
-        TaskDialog.Show("BIMFlow — Color Code", $"Removed {removed} BIMFlow filter(s) from the active view.");
+        TaskDialog.Show("Ottawa Tools — Color Code", $"Removed {removed} Ottawa Tools filter(s) from the active view.");
         return Result.Succeeded;
     }
 }

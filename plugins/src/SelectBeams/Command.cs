@@ -1,13 +1,13 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.SelectBeams;
+namespace OttawaWork.SelectBeams;
 
 /// <summary>One click sets the active selection to every beam visible in the active view — see QuickSelectEngine.</summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "selectbeams";
 
@@ -16,7 +16,7 @@ public class Command : BimFlowCommand
         var uiDoc = commandData.Application.ActiveUIDocument;
         var count = QuickSelectEngine.SelectCategory(uiDoc, BuiltInCategory.OST_StructuralFraming);
         if (count == 0)
-            TaskDialog.Show("BIMFlow — Beams", "No beams are visible in the active view.");
+            TaskDialog.Show("Ottawa Tools — Beams", "No beams are visible in the active view.");
         return Result.Succeeded;
     }
 }

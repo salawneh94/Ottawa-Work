@@ -2,9 +2,9 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.PurgePro;
+namespace OttawaWork.PurgePro;
 
 /// <summary>
 /// Launches Revit's own Purge Unused command (still an interactive dialog —
@@ -13,7 +13,7 @@ namespace BIMFlow.PurgePro;
 /// a second or third pass routinely finds more once containers empty out.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "purgepro";
 
@@ -22,7 +22,7 @@ public class Command : BimFlowCommand
         var session = new PurgeSession(commandData.Application);
         if (!session.TryStart(out var reason))
         {
-            TaskDialog.Show("BIMFlow — Purge Pro", reason);
+            TaskDialog.Show("Ottawa Tools — Purge Pro", reason);
             return Result.Cancelled;
         }
 
@@ -70,7 +70,7 @@ internal sealed class PurgeSession
 
         var removed = _beforeCount - CountElements();
 
-        var dialog = new TaskDialog("BIMFlow — Purge Pro")
+        var dialog = new TaskDialog("Ottawa Tools — Purge Pro")
         {
             MainInstruction = removed > 0 ? $"Removed {removed} element(s)." : "No unused elements were removed.",
             MainContent = removed > 0

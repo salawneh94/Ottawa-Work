@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RevitAddIns>
   <AddIn Type="Application">
-    <Name>BIMFlow — Grid Renumber</Name>
-    <Assembly>BIMFlow.GridRenumber.dll</Assembly>
+    <Name>Ottawa Tools — Grid Renumber</Name>
+    <Assembly>OttawaWork.GridRenumber.dll</Assembly>
     <AddInId>{003c7422-0ee4-49dd-bc96-44a3602de37f}</AddInId>
-    <FullClassName>BIMFlow.GridRenumber.Application</FullClassName>
-    <VendorId>BIMFlow</VendorId>
-    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+    <FullClassName>OttawaWork.GridRenumber.Application</FullClassName>
+    <VendorId>Ottawa Ingenieure</VendorId>
+    <VendorDescription>Ottawa Ingenieure (internal tool)</VendorDescription>
   </AddIn>
 </RevitAddIns>

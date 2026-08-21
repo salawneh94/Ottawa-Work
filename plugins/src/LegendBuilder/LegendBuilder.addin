@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RevitAddIns>
   <AddIn Type="Application">
-    <Name>BIMFlow — LegendBuilder</Name>
-    <Assembly>BIMFlow.LegendBuilder.dll</Assembly>
+    <Name>Ottawa Tools — LegendBuilder</Name>
+    <Assembly>OttawaWork.LegendBuilder.dll</Assembly>
     <AddInId>{d76f5232-6cf6-4f40-9dcb-c0a97fa0e17a}</AddInId>
-    <FullClassName>BIMFlow.LegendBuilder.Application</FullClassName>
-    <VendorId>BIMFlow</VendorId>
-    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+    <FullClassName>OttawaWork.LegendBuilder.Application</FullClassName>
+    <VendorId>Ottawa Ingenieure</VendorId>
+    <VendorDescription>Ottawa Ingenieure (internal tool)</VendorDescription>
   </AddIn>
 </RevitAddIns>

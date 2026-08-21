@@ -7,16 +7,16 @@ using Thickness = System.Windows.Thickness;
 using UIElement = System.Windows.UIElement;
 
 using Autodesk.Revit.DB;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.ParamPowerSuite;
+namespace OttawaWork.ParamPowerSuite;
 
 public partial class ParamPowerSuiteWindow
 {
-    private readonly ComboBox _copySourceBox = BimFlowUi.ComboBox();
-    private readonly ComboBox _copyTargetBox = BimFlowUi.ComboBox();
-    private readonly Button _copyOverwriteButton = BimFlowUi.SecondaryButton("Overwrite");
-    private readonly Button _copyAppendButton = BimFlowUi.SecondaryButton("Append");
+    private readonly ComboBox _copySourceBox = OttawaWorkUi.ComboBox();
+    private readonly ComboBox _copyTargetBox = OttawaWorkUi.ComboBox();
+    private readonly Button _copyOverwriteButton = OttawaWorkUi.SecondaryButton("Overwrite");
+    private readonly Button _copyAppendButton = OttawaWorkUi.SecondaryButton("Append");
     private CopyMode _copyMode = CopyMode.Overwrite;
     private readonly StackPanel _copyPreviewPanel = new();
     private List<ParamChangePreview> _copyPendingChanges = new();
@@ -27,11 +27,11 @@ public partial class ParamPowerSuiteWindow
         _parameterDependentComboBoxes.Add(_copyTargetBox);
 
         var stack = new StackPanel();
-        stack.Children.Add(BimFlowUi.SectionHeader("Copy A → B"));
+        stack.Children.Add(OttawaWorkUi.SectionHeader("Copy A → B"));
 
-        stack.Children.Add(BimFlowUi.FieldLabel("Source parameter (A)"));
+        stack.Children.Add(OttawaWorkUi.FieldLabel("Source parameter (A)"));
         stack.Children.Add(_copySourceBox);
-        stack.Children.Add(BimFlowUi.FieldLabel("Target parameter (B)"));
+        stack.Children.Add(OttawaWorkUi.FieldLabel("Target parameter (B)"));
         stack.Children.Add(_copyTargetBox);
 
         var modeRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 12) };
@@ -44,17 +44,17 @@ public partial class ParamPowerSuiteWindow
         SetCopyMode(CopyMode.Overwrite);
 
         var buttonRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 12) };
-        var previewButton = BimFlowUi.SecondaryButton("Preview");
+        var previewButton = OttawaWorkUi.SecondaryButton("Preview");
         previewButton.Margin = new Thickness(0, 0, 8, 0);
         previewButton.Click += (_, _) => PreviewCopy();
-        var applyButton = BimFlowUi.PrimaryButton("Apply");
+        var applyButton = OttawaWorkUi.PrimaryButton("Apply");
         applyButton.Click += (_, _) => ApplyCopy();
         buttonRow.Children.Add(previewButton);
         buttonRow.Children.Add(applyButton);
         stack.Children.Add(buttonRow);
 
         var scroll = new ScrollViewer { MaxHeight = 260, Content = _copyPreviewPanel };
-        stack.Children.Add(BimFlowUi.Card(scroll, padding: 10));
+        stack.Children.Add(OttawaWorkUi.Card(scroll, padding: 10));
 
         return stack;
     }
@@ -62,8 +62,8 @@ public partial class ParamPowerSuiteWindow
     private void SetCopyMode(CopyMode mode)
     {
         _copyMode = mode;
-        BimFlowUi.SetToggleActive(_copyOverwriteButton, mode == CopyMode.Overwrite);
-        BimFlowUi.SetToggleActive(_copyAppendButton, mode == CopyMode.Append);
+        OttawaWorkUi.SetToggleActive(_copyOverwriteButton, mode == CopyMode.Overwrite);
+        OttawaWorkUi.SetToggleActive(_copyAppendButton, mode == CopyMode.Append);
     }
 
     private void PreviewCopy()

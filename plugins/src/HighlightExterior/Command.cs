@@ -1,13 +1,13 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.HighlightExterior;
+namespace OttawaWork.HighlightExterior;
 
 /// <summary>One click colors every exterior wall in the active view red, a second click clears it — see WallHighlighter.</summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "highlightexterior";
 
@@ -22,11 +22,11 @@ public class Command : BimFlowCommand
         var analysis = WallHighlighter.Analyze(doc, view, WallFunction.Exterior, ExteriorColor);
         if (analysis.Walls.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — HL Exterior", "No exterior walls are visible in the active view.");
+            TaskDialog.Show("Ottawa Tools — HL Exterior", "No exterior walls are visible in the active view.");
             return Result.Succeeded;
         }
 
-        using var transaction = new Transaction(doc, analysis.CurrentlyOn ? "BIMFlow: Clear HL Exterior" : "BIMFlow: HL Exterior");
+        using var transaction = new Transaction(doc, analysis.CurrentlyOn ? "Ottawa Tools: Clear HL Exterior" : "Ottawa Tools: HL Exterior");
         transaction.Start();
         try
         {
@@ -40,7 +40,7 @@ public class Command : BimFlowCommand
         }
 
         TaskDialog.Show(
-            "BIMFlow — HL Exterior",
+            "Ottawa Tools — HL Exterior",
             analysis.CurrentlyOn
                 ? $"Cleared the highlight on {analysis.Walls.Count} exterior wall(s)."
                 : $"Highlighted {analysis.Walls.Count} exterior wall(s) in red.");

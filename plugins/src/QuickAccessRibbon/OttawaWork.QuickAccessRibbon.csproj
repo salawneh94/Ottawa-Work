@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OttawaWork.QuickAccessRibbon</RootNamespace>
+    <AssemblyName>OttawaWork.QuickAccessRibbon</AssemblyName>
+    <!-- Needed so ribbon icon PNGs under Resources/Icons compile into this
+         assembly's own pack-URI-addressable resource stream (a plain
+         ProjectReference to Shared, which already has UseWPF, only flows
+         the WPF assembly references transitively for compiling against —
+         it doesn't run Shared's WPF resource-embedding build step for this
+         project too). See RibbonBuilder.cs's LoadIcon for why this project
+         is where the icons live now instead of loose files. -->
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\OttawaWork.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="QuickAccessRibbon.addin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Ribbon icon PNGs, embedded (not copied loose) — RibbonBuilder loads
+         these via pack://application:,,,/OttawaWork.QuickAccessRibbon;component/...
+         The "3d" subfolder holds the real hand-drawn pictogram set (a wall
+         glyph, spreadsheet grid, wrench, stair, etc. per tool) that replaced
+         the original placeholder 2-letter monogram badges. -->
+    <Resource Include="Resources\Icons\3d\*.png" />
+  </ItemGroup>
+
+</Project>

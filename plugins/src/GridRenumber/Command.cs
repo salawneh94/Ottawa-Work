@@ -1,9 +1,9 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.GridRenumber;
+namespace OttawaWork.GridRenumber;
 
 /// <summary>
 /// Batch-renames grids or levels using the same find/replace/prefix/suffix
@@ -11,7 +11,7 @@ namespace BIMFlow.GridRenumber;
 /// or levels, otherwise every grid and level in the model.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "gridrenumber";
 
@@ -36,22 +36,22 @@ public class Command : BimFlowCommand
 
         if (elements.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — Grid Renumber", "No grids or levels found in the current selection or model.");
+            TaskDialog.Show("Ottawa Tools — Grid Renumber", "No grids or levels found in the current selection or model.");
             return Result.Succeeded;
         }
 
-        var window = new ElementRenamerForm("BIMFlow — Grid Renumber", elements);
+        var window = new ElementRenamerForm("Ottawa Tools — Grid Renumber", elements);
         if (window.ShowDialog() != true)
             return Result.Cancelled;
 
         var renamePlan = window.BuildRenamePlan();
         if (renamePlan.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — Grid Renumber", "No grids or levels matched the rename rule.");
+            TaskDialog.Show("Ottawa Tools — Grid Renumber", "No grids or levels matched the rename rule.");
             return Result.Succeeded;
         }
 
-        using var transaction = new Transaction(doc, "BIMFlow: Renumber Grids/Levels");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Renumber Grids/Levels");
         transaction.Start();
         try
         {
@@ -65,7 +65,7 @@ public class Command : BimFlowCommand
             throw;
         }
 
-        TaskDialog.Show("BIMFlow — Grid Renumber", $"Renamed {renamePlan.Count} element(s).");
+        TaskDialog.Show("Ottawa Tools — Grid Renumber", $"Renamed {renamePlan.Count} element(s).");
         return Result.Succeeded;
     }
 }

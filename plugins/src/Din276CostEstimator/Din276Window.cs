@@ -12,9 +12,9 @@ using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 using WinFormsDialogResult = System.Windows.Forms.DialogResult;
 
 using Autodesk.Revit.DB;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.Din276CostEstimator;
+namespace OttawaWork.Din276CostEstimator;
 
 public enum CostScope { WholeProject, ActiveView }
 
@@ -31,15 +31,15 @@ public enum CostScope { WholeProject, ActiveView }
 /// PendingAssignments/AssignRequested; Command.cs does the actual writes
 /// in its own transaction after this window closes.
 /// </summary>
-public class Din276Window : BimFlowWindow
+public class Din276Window : OttawaWorkWindow
 {
     private readonly Document _doc;
     private readonly View _activeView;
-    private readonly Button _projectButton = BimFlowUi.SecondaryButton("Whole project");
-    private readonly Button _viewButton = BimFlowUi.SecondaryButton("Active view");
+    private readonly Button _projectButton = OttawaWorkUi.SecondaryButton("Whole project");
+    private readonly Button _viewButton = OttawaWorkUi.SecondaryButton("Active view");
     private readonly StackPanel _tablePanel = new();
-    private readonly TextBlock _grandTotalText = new() { FontSize = 20, FontWeight = System.Windows.FontWeights.Bold, Foreground = BimFlowUi.BrushOf(BimFlowUi.Accent) };
-    private readonly TextBlock _statusText = new() { FontSize = 10, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), Margin = new Thickness(0, 8, 0, 0), TextWrapping = TextWrapping.Wrap };
+    private readonly TextBlock _grandTotalText = new() { FontSize = 20, FontWeight = System.Windows.FontWeights.Bold, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.Accent) };
+    private readonly TextBlock _statusText = new() { FontSize = 10, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), Margin = new Thickness(0, 8, 0, 0), TextWrapping = TextWrapping.Wrap };
 
     private CostScope _scope = CostScope.WholeProject;
     private List<KostengruppeTotal> _totals = new();
@@ -55,9 +55,9 @@ public class Din276Window : BimFlowWindow
         _activeView = activeView;
 
         var root = new StackPanel();
-        root.Children.Add(BimFlowUi.TitleBar("💶", "DIN 276 Cost Estimator", "Classify elements into Kostengruppen, enter your own unit rates, and get a live estimate."));
+        root.Children.Add(OttawaWorkUi.TitleBar("💶", "DIN 276 Cost Estimator", "Classify elements into Kostengruppen, enter your own unit rates, and get a live estimate."));
 
-        root.Children.Add(BimFlowUi.SectionHeader("Scope"));
+        root.Children.Add(OttawaWorkUi.SectionHeader("Scope"));
         var scopeRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 16) };
         _projectButton.Margin = new Thickness(0, 0, 8, 0);
         _projectButton.Click += (_, _) => SetScope(CostScope.WholeProject);
@@ -66,30 +66,30 @@ public class Din276Window : BimFlowWindow
         scopeRow.Children.Add(_viewButton);
         root.Children.Add(scopeRow);
 
-        root.Children.Add(BimFlowUi.SectionHeader("Kostengruppen"));
+        root.Children.Add(OttawaWorkUi.SectionHeader("Kostengruppen"));
         var headerRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(4, 0, 4, 4) };
-        headerRow.Children.Add(new TextBlock { Text = "KG", FontSize = 9, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), Width = 36 });
-        headerRow.Children.Add(new TextBlock { Text = "BEZEICHNUNG", FontSize = 9, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), Width = 190 });
-        headerRow.Children.Add(new TextBlock { Text = "MENGE", FontSize = 9, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), Width = 90 });
-        headerRow.Children.Add(new TextBlock { Text = "€/EINHEIT", FontSize = 9, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), Width = 90 });
-        headerRow.Children.Add(new TextBlock { Text = "SUMME", FontSize = 9, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), Width = 100 });
+        headerRow.Children.Add(new TextBlock { Text = "KG", FontSize = 9, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), Width = 36 });
+        headerRow.Children.Add(new TextBlock { Text = "BEZEICHNUNG", FontSize = 9, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), Width = 190 });
+        headerRow.Children.Add(new TextBlock { Text = "MENGE", FontSize = 9, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), Width = 90 });
+        headerRow.Children.Add(new TextBlock { Text = "€/EINHEIT", FontSize = 9, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), Width = 90 });
+        headerRow.Children.Add(new TextBlock { Text = "SUMME", FontSize = 9, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), Width = 100 });
         root.Children.Add(headerRow);
 
         var scroll = new ScrollViewer { MaxHeight = 360, Content = _tablePanel };
-        root.Children.Add(BimFlowUi.Card(scroll, padding: 8));
+        root.Children.Add(OttawaWorkUi.Card(scroll, padding: 8));
 
         var totalRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 12, 0, 0) };
-        totalRow.Children.Add(new TextBlock { Text = "GESAMTSUMME  ", FontSize = 12, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), VerticalAlignment = VerticalAlignment.Center });
+        totalRow.Children.Add(new TextBlock { Text = "GESAMTSUMME  ", FontSize = 12, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), VerticalAlignment = VerticalAlignment.Center });
         totalRow.Children.Add(_grandTotalText);
         root.Children.Add(totalRow);
 
         root.Children.Add(_statusText);
 
         var buttonRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 16, 0, 0) };
-        var closeButton = BimFlowUi.SecondaryButton("Close");
-        var importButton = BimFlowUi.SecondaryButton("Import rates");
-        var exportButton = BimFlowUi.SecondaryButton("Export report");
-        var assignButton = BimFlowUi.SuccessButton("Assign to elements");
+        var closeButton = OttawaWorkUi.SecondaryButton("Close");
+        var importButton = OttawaWorkUi.SecondaryButton("Import rates");
+        var exportButton = OttawaWorkUi.SecondaryButton("Export report");
+        var assignButton = OttawaWorkUi.SuccessButton("Assign to elements");
         closeButton.Margin = new Thickness(0, 0, 8, 0);
         importButton.Margin = new Thickness(0, 0, 8, 0);
         exportButton.Margin = new Thickness(0, 0, 8, 0);
@@ -106,7 +106,7 @@ public class Din276Window : BimFlowWindow
         {
             Text = "Assign to elements writes each element's resolved KG code onto its own 'Kostengruppe' parameter (project/shared parameter must already exist — elements without it are skipped).",
             FontSize = 9,
-            Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary),
+            Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary),
             Margin = new Thickness(0, 6, 0, 0),
             TextWrapping = TextWrapping.Wrap,
             HorizontalAlignment = HorizontalAlignment.Right,
@@ -121,8 +121,8 @@ public class Din276Window : BimFlowWindow
     private void SetScope(CostScope scope)
     {
         _scope = scope;
-        BimFlowUi.SetToggleActive(_projectButton, scope == CostScope.WholeProject);
-        BimFlowUi.SetToggleActive(_viewButton, scope == CostScope.ActiveView);
+        OttawaWorkUi.SetToggleActive(_projectButton, scope == CostScope.WholeProject);
+        OttawaWorkUi.SetToggleActive(_viewButton, scope == CostScope.ActiveView);
         Recalculate();
     }
 
@@ -150,16 +150,16 @@ public class Din276Window : BimFlowWindow
         foreach (var total in _totals)
         {
             var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 3, 0, 3) };
-            row.Children.Add(new TextBlock { Text = total.Code, FontSize = 12, FontWeight = System.Windows.FontWeights.SemiBold, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextPrimary), Width = 36 });
-            row.Children.Add(new TextBlock { Text = total.Name, FontSize = 11, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextPrimary), Width = 190, TextWrapping = TextWrapping.Wrap });
-            row.Children.Add(new TextBlock { Text = $"{total.Quantity:0.0} {Din276Engine.UnitLabel(total.Unit)}", FontSize = 11, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), Width = 90, VerticalAlignment = VerticalAlignment.Center });
+            row.Children.Add(new TextBlock { Text = total.Code, FontSize = 12, FontWeight = System.Windows.FontWeights.SemiBold, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextPrimary), Width = 36 });
+            row.Children.Add(new TextBlock { Text = total.Name, FontSize = 11, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextPrimary), Width = 190, TextWrapping = TextWrapping.Wrap });
+            row.Children.Add(new TextBlock { Text = $"{total.Quantity:0.0} {Din276Engine.UnitLabel(total.Unit)}", FontSize = 11, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), Width = 90, VerticalAlignment = VerticalAlignment.Center });
 
-            var rateBox = BimFlowUi.TextBox();
+            var rateBox = OttawaWorkUi.TextBox();
             rateBox.Width = 80;
             rateBox.Margin = new Thickness(0, 0, 10, 0);
             rateBox.Text = _rates.TryGetValue(total.Code, out var rate) ? rate.ToString("0.##") : "0";
 
-            var subtotalText = new TextBlock { Text = FormatEuro(total.Subtotal), FontSize = 11, FontWeight = System.Windows.FontWeights.SemiBold, Foreground = BimFlowUi.BrushOf(BimFlowUi.Success), Width = 100, VerticalAlignment = VerticalAlignment.Center };
+            var subtotalText = new TextBlock { Text = FormatEuro(total.Subtotal), FontSize = 11, FontWeight = System.Windows.FontWeights.SemiBold, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.Success), Width = 100, VerticalAlignment = VerticalAlignment.Center };
 
             var code = total.Code;
             rateBox.TextChanged += (_, _) => OnRateChanged(code, rateBox, subtotalText);
@@ -257,7 +257,7 @@ public class Din276Window : BimFlowWindow
     }
 
     /// <summary>Confirms, then hands the currently-classified elements off to Command.cs to actually write —
-    /// this window never touches the model itself, matching every other BIMFlow dialog's transaction split.</summary>
+    /// this window never touches the model itself, matching every other Ottawa Tools dialog's transaction split.</summary>
     private void RequestAssign()
     {
         if (_quantities.Count == 0)

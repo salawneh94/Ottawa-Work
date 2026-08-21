@@ -1,8 +1,8 @@
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.SelectWindows;
+namespace OttawaWork.SelectWindows;
 
-public class Application : BimFlowApplication
+public class Application : OttawaWorkApplication
 {
     protected override string PanelName => "Select";
     protected override string ButtonInternalName => "SelectWindowsButton";

@@ -1,13 +1,13 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 using System.Windows.Forms;
 // UseWPF+UseWindowsForms together drops System.IO from implicit global
 // usings (see Shared/LicenseStore.cs) — needed here for Path.
 using Path = System.IO.Path;
 
-namespace BIMFlow.IFCExportQA;
+namespace OttawaWork.IFCExportQA;
 
 /// <summary>
 /// Runs Revit's own IFC export with a chosen version, after showing a
@@ -21,7 +21,7 @@ namespace BIMFlow.IFCExportQA;
 /// cleanly" half confidently.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "ifcexportqa";
 
@@ -39,7 +39,7 @@ public class Command : BimFlowCommand
 
         if (categorySummary.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — IFCExportQA", "No model elements were found to export.");
+            TaskDialog.Show("Ottawa Tools — IFCExportQA", "No model elements were found to export.");
             return Result.Succeeded;
         }
 
@@ -65,7 +65,7 @@ public class Command : BimFlowCommand
             matchesByRule = IfcClassMapper.Match(doc, mappingWindow.Rules);
             notOwned = IfcClassMapper.RequestOwnership(doc, matchesByRule);
 
-            using var mappingTransaction = new Transaction(doc, "BIMFlow: Apply IFC Class Mapping");
+            using var mappingTransaction = new Transaction(doc, "Ottawa Tools: Apply IFC Class Mapping");
             mappingTransaction.Start();
             try
             {
@@ -79,12 +79,12 @@ public class Command : BimFlowCommand
                     mappingSummary += $"\n\n{skippedTotal} matching type(s) are checked out by another user right now and were skipped — re-run once they're synced and relinquished.";
                 if (unmatched.Count > 0)
                     mappingSummary += $"\n\nNo matching family/type name found for: {string.Join(", ", unmatched)}";
-                TaskDialog.Show("BIMFlow — IFCExportQA", mappingSummary);
+                TaskDialog.Show("Ottawa Tools — IFCExportQA", mappingSummary);
             }
             catch (Exception ex)
             {
                 mappingTransaction.RollBack();
-                TaskDialog.Show("BIMFlow — IFCExportQA", $"Couldn't apply IFC class mapping: {ex.Message}");
+                TaskDialog.Show("Ottawa Tools — IFCExportQA", $"Couldn't apply IFC class mapping: {ex.Message}");
                 return Result.Failed;
             }
         }
@@ -124,7 +124,7 @@ public class Command : BimFlowCommand
         var folder = Path.GetDirectoryName(saveDialog.FileName)!;
         var fileNameOnly = Path.GetFileNameWithoutExtension(saveDialog.FileName);
 
-        using var transaction = new Transaction(doc, "BIMFlow: Export IFC");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Export IFC");
         transaction.Start();
         try
         {
@@ -134,7 +134,7 @@ public class Command : BimFlowCommand
         catch (Exception ex)
         {
             transaction.RollBack();
-            TaskDialog.Show("BIMFlow — IFCExportQA", $"Export failed: {ex.Message}");
+            TaskDialog.Show("Ottawa Tools — IFCExportQA", $"Export failed: {ex.Message}");
             return Result.Failed;
         }
 
@@ -151,7 +151,7 @@ public class Command : BimFlowCommand
             summary += $"\n\nRewrote {rewrittenCount} of {guidToClass.Count} mapped element(s) to their target IFC class directly in the file.";
         }
 
-        TaskDialog.Show("BIMFlow — IFCExportQA", summary);
+        TaskDialog.Show("Ottawa Tools — IFCExportQA", summary);
         return Result.Succeeded;
     }
 }

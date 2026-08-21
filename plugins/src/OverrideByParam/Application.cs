@@ -1,8 +1,8 @@
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.OverrideByParam;
+namespace OttawaWork.OverrideByParam;
 
-public class Application : BimFlowApplication
+public class Application : OttawaWorkApplication
 {
     protected override string PanelName => "Highlight";
     protected override string ButtonInternalName => "OverrideByParamButton";

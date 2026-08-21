@@ -1,9 +1,9 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.PlansPerRoom;
+namespace OttawaWork.PlansPerRoom;
 
 /// <summary>
 /// Opens the Plans Per Room dialog (naming/numbering templates, which view
@@ -11,7 +11,7 @@ namespace BIMFlow.PlansPerRoom;
 /// then generates one sheet per checked room via RoomPlanGenerator.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "plansperroom";
 
@@ -23,7 +23,7 @@ public class Command : BimFlowCommand
         var rooms = RoomPlanGenerator.CollectRooms(doc);
         if (rooms.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — Plans Per Room", "No rooms were found in this project.");
+            TaskDialog.Show("Ottawa Tools — Plans Per Room", "No rooms were found in this project.");
             return Result.Succeeded;
         }
 
@@ -32,7 +32,7 @@ public class Command : BimFlowCommand
         if (!window.Generated) return Result.Cancelled;
 
         RoomPlanResult result;
-        using var transaction = new Transaction(doc, "BIMFlow: Generate Plans Per Room");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Generate Plans Per Room");
         transaction.Start();
         try
         {
@@ -49,7 +49,7 @@ public class Command : BimFlowCommand
         if (result.Skipped > 0) summary += $"\nSkipped {result.Skipped} room(s) without usable geometry.";
         if (result.Warnings.Count > 0) summary += "\n\n" + string.Join("\n", result.Warnings.Distinct());
 
-        TaskDialog.Show("BIMFlow — Plans Per Room", summary);
+        TaskDialog.Show("Ottawa Tools — Plans Per Room", summary);
         return Result.Succeeded;
     }
 }

@@ -1,8 +1,8 @@
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.ParamPowerSuite;
+namespace OttawaWork.ParamPowerSuite;
 
-public class Application : BimFlowApplication
+public class Application : OttawaWorkApplication
 {
     protected override string PanelName => "Parameters";
     protected override string ButtonInternalName => "ParamPowerSuiteButton";

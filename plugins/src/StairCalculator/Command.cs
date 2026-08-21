@@ -2,9 +2,9 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.StairCalculator;
+namespace OttawaWork.StairCalculator;
 
 /// <summary>
 /// Checks every stair's actual riser height and tread depth (Revit's own
@@ -15,7 +15,7 @@ namespace BIMFlow.StairCalculator;
 /// deliberately framed as a rule-of-thumb flag, not a pass/fail code audit.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "staircalculator";
     private const double ComfortMinMm = 610.0;
@@ -33,7 +33,7 @@ public class Command : BimFlowCommand
 
         if (stairs.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — StairCalculator", "No stairs were found in this project.");
+            TaskDialog.Show("Ottawa Tools — StairCalculator", "No stairs were found in this project.");
             return Result.Succeeded;
         }
 
@@ -68,14 +68,14 @@ public class Command : BimFlowCommand
 
         if (rows.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — StairCalculator", "Found stairs, but none had readable actual riser height/tread depth values.");
+            TaskDialog.Show("Ottawa Tools — StairCalculator", "Found stairs, but none had readable actual riser height/tread depth values.");
             return Result.Succeeded;
         }
 
         var flaggedCount = rows.Count(r => r.Cells[4].StartsWith("Outside"));
 
         var results = new ResultsListForm(
-            "BIMFlow — StairCalculator Results",
+            "Ottawa Tools — StairCalculator Results",
             $"{stairsChecked} stair(s) checked, {flaggedCount} outside the 610-635mm 2R+G comfort band. " +
             "This is a design-proportion guideline, not a certified code compliance check — verify against your local building code.",
             new[] { "Stair", "Riser", "Tread", "2R+G", "Result" },

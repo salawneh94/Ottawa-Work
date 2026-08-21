@@ -6,43 +6,43 @@ using HorizontalAlignment = System.Windows.HorizontalAlignment;
 using Thickness = System.Windows.Thickness;
 using RoutedEventArgs = System.Windows.RoutedEventArgs;
 
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.NamingConventionAudit;
+namespace OttawaWork.NamingConventionAudit;
 
 public enum NamingTarget { Views, Sheets, FamilyTypes }
 
 /// <summary>Target + regex pattern picker — dark themed, replacing the old WinForms TableLayoutPanel dialog.</summary>
-public class NamingRuleWindow : BimFlowWindow
+public class NamingRuleWindow : OttawaWorkWindow
 {
-    private readonly ComboBox _targetBox = BimFlowUi.ComboBox();
-    private readonly TextBox _patternBox = BimFlowUi.TextBox();
+    private readonly ComboBox _targetBox = OttawaWorkUi.ComboBox();
+    private readonly TextBox _patternBox = OttawaWorkUi.TextBox();
 
     public NamingTarget? Target { get; private set; }
     public string Pattern { get; private set; } = "";
 
-    public NamingRuleWindow() : base("BIMFlow — NamingConventionAudit", minWidth: 380)
+    public NamingRuleWindow() : base("Ottawa Tools — NamingConventionAudit", minWidth: 380)
     {
         _patternBox.Text = "^[A-Z0-9_-]+$";
 
         var root = new StackPanel();
-        root.Children.Add(BimFlowUi.TitleBar("🔡", "Naming Convention Audit", "Names that DON'T match the pattern will be flagged."));
+        root.Children.Add(OttawaWorkUi.TitleBar("🔡", "Naming Convention Audit", "Names that DON'T match the pattern will be flagged."));
 
         var fieldsStack = new StackPanel();
-        fieldsStack.Children.Add(BimFlowUi.FieldLabel("Check"));
+        fieldsStack.Children.Add(OttawaWorkUi.FieldLabel("Check"));
         _targetBox.Items.Add("Views");
         _targetBox.Items.Add("Sheets");
         _targetBox.Items.Add("Family Types");
         _targetBox.SelectedIndex = 0;
         fieldsStack.Children.Add(_targetBox);
-        fieldsStack.Children.Add(BimFlowUi.FieldLabel("Must match regex"));
+        fieldsStack.Children.Add(OttawaWorkUi.FieldLabel("Must match regex"));
         fieldsStack.Children.Add(_patternBox);
-        fieldsStack.Children.Add(BimFlowUi.FieldLabel("Example: ^\\d{2,3} - .+$ for \"101 - Floor Plan\""));
-        root.Children.Add(BimFlowUi.Card(fieldsStack));
+        fieldsStack.Children.Add(OttawaWorkUi.FieldLabel("Example: ^\\d{2,3} - .+$ for \"101 - Floor Plan\""));
+        root.Children.Add(OttawaWorkUi.Card(fieldsStack));
 
         var buttonRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 20, 0, 0) };
-        var cancelButton = BimFlowUi.SecondaryButton("Cancel");
-        var runButton = BimFlowUi.PrimaryButton("Run audit");
+        var cancelButton = OttawaWorkUi.SecondaryButton("Cancel");
+        var runButton = OttawaWorkUi.PrimaryButton("Run audit");
         cancelButton.Margin = new Thickness(0, 0, 10, 0);
         cancelButton.Click += (_, _) => { DialogResult = false; Close(); };
         runButton.Click += RunButton_Click;

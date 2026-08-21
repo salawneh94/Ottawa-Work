@@ -1,7 +1,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.PointClouds;
 
-namespace BIMFlow.Shared;
+namespace OttawaWork.Shared;
 
 public enum HeatmapStatus { Ok, Monitor, Review, NoCoverage }
 

@@ -7,10 +7,10 @@ using Thickness = System.Windows.Thickness;
 
 using Autodesk.Revit.DB;
 
-namespace BIMFlow.Shared;
+namespace OttawaWork.Shared;
 
 /// <summary>Reusable "pick one or more target views" checklist dialog — dark themed, replacing the old WinForms CheckedListBox dialog.</summary>
-public class ViewPickerForm : BimFlowWindow
+public class ViewPickerForm : OttawaWorkWindow
 {
     private readonly List<(CheckBox CheckBox, View View)> _checks = new();
 
@@ -19,22 +19,22 @@ public class ViewPickerForm : BimFlowWindow
     public ViewPickerForm(string title, string instructions, List<View> candidateViews) : base(title, minWidth: 380)
     {
         var root = new StackPanel();
-        root.Children.Add(BimFlowUi.TitleBar("👁️", title, instructions));
+        root.Children.Add(OttawaWorkUi.TitleBar("👁️", title, instructions));
 
         var checklistStack = new StackPanel();
         foreach (var view in candidateViews)
         {
-            var checkBox = BimFlowUi.CheckBoxItem(view.Name);
+            var checkBox = OttawaWorkUi.CheckBoxItem(view.Name);
             checklistStack.Children.Add(checkBox);
             _checks.Add((checkBox, view));
         }
         var scroll = new ScrollViewer { MaxHeight = 340, Content = checklistStack };
-        root.Children.Add(BimFlowUi.Card(scroll, padding: 8));
+        root.Children.Add(OttawaWorkUi.Card(scroll, padding: 8));
 
         var buttonRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 16, 0, 0) };
-        var cancelButton = BimFlowUi.SecondaryButton("Cancel");
-        var allButton = BimFlowUi.SecondaryButton("Select all");
-        var okButton = BimFlowUi.PrimaryButton("OK");
+        var cancelButton = OttawaWorkUi.SecondaryButton("Cancel");
+        var allButton = OttawaWorkUi.SecondaryButton("Select all");
+        var okButton = OttawaWorkUi.PrimaryButton("OK");
         cancelButton.Margin = new Thickness(0, 0, 10, 0);
         allButton.Margin = new Thickness(0, 0, 10, 0);
         cancelButton.Click += (_, _) => { DialogResult = false; Close(); };

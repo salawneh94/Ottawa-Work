@@ -1,4 +1,4 @@
-namespace BIMFlow.Shared;
+namespace OttawaWork.Shared;
 
 /// <summary>
 /// Revit rejects duplicate Mark/Number/Name values within their uniqueness
@@ -11,7 +11,7 @@ public static class TwoPassRenamer
 {
     public static void Apply(IReadOnlyList<(Action<string> setValue, string newValue)> renames)
     {
-        var tempPrefix = $"__bimflow_tmp_{Guid.NewGuid():N}_";
+        var tempPrefix = $"__ottawatools_tmp_{Guid.NewGuid():N}_";
 
         for (var i = 0; i < renames.Count; i++)
             renames[i].setValue(tempPrefix + i);

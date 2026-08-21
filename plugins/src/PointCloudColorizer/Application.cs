@@ -1,8 +1,8 @@
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.PointCloudColorizer;
+namespace OttawaWork.PointCloudColorizer;
 
-public class Application : BimFlowApplication
+public class Application : OttawaWorkApplication
 {
     protected override string PanelName => "Highlight";
     protected override string ButtonInternalName => "PointCloudColorizerButton";

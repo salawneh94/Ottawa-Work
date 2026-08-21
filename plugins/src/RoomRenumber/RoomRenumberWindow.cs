@@ -6,9 +6,9 @@ using HorizontalAlignment = System.Windows.HorizontalAlignment;
 using Thickness = System.Windows.Thickness;
 using RoutedEventArgs = System.Windows.RoutedEventArgs;
 
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.RoomRenumber;
+namespace OttawaWork.RoomRenumber;
 
 public enum SortDirection
 {
@@ -17,46 +17,46 @@ public enum SortDirection
 }
 
 /// <summary>Direction + prefix/start/increment picker — dark themed, replacing the old WinForms TableLayoutPanel dialog.</summary>
-public class RoomRenumberWindow : BimFlowWindow
+public class RoomRenumberWindow : OttawaWorkWindow
 {
     private readonly RadioButton _topToBottomRadio;
-    private readonly TextBox _prefixBox = BimFlowUi.TextBox();
-    private readonly TextBox _startBox = BimFlowUi.TextBox();
-    private readonly TextBox _incrementBox = BimFlowUi.TextBox();
+    private readonly TextBox _prefixBox = OttawaWorkUi.TextBox();
+    private readonly TextBox _startBox = OttawaWorkUi.TextBox();
+    private readonly TextBox _incrementBox = OttawaWorkUi.TextBox();
 
     public SortDirection Direction { get; private set; } = SortDirection.LeftToRightThenTopToBottom;
     public string Prefix { get; private set; } = "";
     public int StartNumber { get; private set; } = 100;
     public int Increment { get; private set; } = 1;
 
-    public RoomRenumberWindow(int roomCount) : base("BIMFlow — Room Renumber", minWidth: 380)
+    public RoomRenumberWindow(int roomCount) : base("Ottawa Tools — Room Renumber", minWidth: 380)
     {
         _startBox.Text = "100";
         _incrementBox.Text = "1";
 
         var root = new StackPanel();
-        root.Children.Add(BimFlowUi.TitleBar("🔢", "Room Renumber", $"{roomCount} room(s) will be renumbered."));
+        root.Children.Add(OttawaWorkUi.TitleBar("🔢", "Room Renumber", $"{roomCount} room(s) will be renumbered."));
 
         var directionStack = new StackPanel();
-        directionStack.Children.Add(BimFlowUi.FieldLabel("Direction"));
-        var leftToRightRadio = BimFlowUi.RadioButtonItem("Left → right, then top → bottom", "direction", isChecked: true);
-        _topToBottomRadio = BimFlowUi.RadioButtonItem("Top → bottom, then left → right", "direction");
+        directionStack.Children.Add(OttawaWorkUi.FieldLabel("Direction"));
+        var leftToRightRadio = OttawaWorkUi.RadioButtonItem("Left → right, then top → bottom", "direction", isChecked: true);
+        _topToBottomRadio = OttawaWorkUi.RadioButtonItem("Top → bottom, then left → right", "direction");
         directionStack.Children.Add(leftToRightRadio);
         directionStack.Children.Add(_topToBottomRadio);
-        root.Children.Add(BimFlowUi.Card(directionStack));
+        root.Children.Add(OttawaWorkUi.Card(directionStack));
 
         var fieldsStack = new StackPanel { Margin = new Thickness(0, 12, 0, 0) };
-        fieldsStack.Children.Add(BimFlowUi.FieldLabel("Prefix"));
+        fieldsStack.Children.Add(OttawaWorkUi.FieldLabel("Prefix"));
         fieldsStack.Children.Add(_prefixBox);
-        fieldsStack.Children.Add(BimFlowUi.FieldLabel("Start number"));
+        fieldsStack.Children.Add(OttawaWorkUi.FieldLabel("Start number"));
         fieldsStack.Children.Add(_startBox);
-        fieldsStack.Children.Add(BimFlowUi.FieldLabel("Increment"));
+        fieldsStack.Children.Add(OttawaWorkUi.FieldLabel("Increment"));
         fieldsStack.Children.Add(_incrementBox);
-        root.Children.Add(BimFlowUi.Card(fieldsStack));
+        root.Children.Add(OttawaWorkUi.Card(fieldsStack));
 
         var buttonRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 20, 0, 0) };
-        var cancelButton = BimFlowUi.SecondaryButton("Cancel");
-        var renumberButton = BimFlowUi.PrimaryButton("Renumber");
+        var cancelButton = OttawaWorkUi.SecondaryButton("Cancel");
+        var renumberButton = OttawaWorkUi.PrimaryButton("Renumber");
         cancelButton.Margin = new Thickness(0, 0, 10, 0);
         cancelButton.Click += (_, _) => { DialogResult = false; Close(); };
         renumberButton.Click += RenumberButton_Click;

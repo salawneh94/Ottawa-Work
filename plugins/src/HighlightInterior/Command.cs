@@ -1,13 +1,13 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.HighlightInterior;
+namespace OttawaWork.HighlightInterior;
 
 /// <summary>One click colors every interior wall in the active view blue, a second click clears it — see WallHighlighter.</summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "highlightinterior";
 
@@ -22,11 +22,11 @@ public class Command : BimFlowCommand
         var analysis = WallHighlighter.Analyze(doc, view, WallFunction.Interior, InteriorColor);
         if (analysis.Walls.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — HL Interior", "No interior walls are visible in the active view.");
+            TaskDialog.Show("Ottawa Tools — HL Interior", "No interior walls are visible in the active view.");
             return Result.Succeeded;
         }
 
-        using var transaction = new Transaction(doc, analysis.CurrentlyOn ? "BIMFlow: Clear HL Interior" : "BIMFlow: HL Interior");
+        using var transaction = new Transaction(doc, analysis.CurrentlyOn ? "Ottawa Tools: Clear HL Interior" : "Ottawa Tools: HL Interior");
         transaction.Start();
         try
         {
@@ -40,7 +40,7 @@ public class Command : BimFlowCommand
         }
 
         TaskDialog.Show(
-            "BIMFlow — HL Interior",
+            "Ottawa Tools — HL Interior",
             analysis.CurrentlyOn
                 ? $"Cleared the highlight on {analysis.Walls.Count} interior wall(s)."
                 : $"Highlighted {analysis.Walls.Count} interior wall(s) in blue.");

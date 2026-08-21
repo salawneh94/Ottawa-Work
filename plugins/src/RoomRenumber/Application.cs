@@ -1,8 +1,8 @@
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.RoomRenumber;
+namespace OttawaWork.RoomRenumber;
 
-public class Application : BimFlowApplication
+public class Application : OttawaWorkApplication
 {
     protected override string PanelName => "Renumbering & Productivity";
     protected override string ButtonInternalName => "RoomRenumberButton";

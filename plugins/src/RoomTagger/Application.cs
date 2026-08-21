@@ -1,8 +1,8 @@
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.RoomTagger;
+namespace OttawaWork.RoomTagger;
 
-public class Application : BimFlowApplication
+public class Application : OttawaWorkApplication
 {
     protected override string PanelName => "Rooms";
     protected override string ButtonInternalName => "RoomTaggerButton";

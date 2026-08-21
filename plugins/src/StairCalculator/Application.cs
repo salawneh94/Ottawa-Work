@@ -1,8 +1,8 @@
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.StairCalculator;
+namespace OttawaWork.StairCalculator;
 
-public class Application : BimFlowApplication
+public class Application : OttawaWorkApplication
 {
     protected override string PanelName => "Model QA/QC & Cleanup";
     protected override string ButtonInternalName => "StairCalculatorButton";

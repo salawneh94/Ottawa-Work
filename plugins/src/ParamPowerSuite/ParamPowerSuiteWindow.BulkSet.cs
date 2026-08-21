@@ -4,23 +4,23 @@ using Thickness = System.Windows.Thickness;
 using UIElement = System.Windows.UIElement;
 
 using Autodesk.Revit.DB;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.ParamPowerSuite;
+namespace OttawaWork.ParamPowerSuite;
 
 public partial class ParamPowerSuiteWindow
 {
-    private readonly TextBox _bulkCommentsBox = BimFlowUi.TextBox();
-    private readonly TextBox _bulkMarkBox = BimFlowUi.TextBox();
-    private readonly TextBox _bulkTypeCommentsBox = BimFlowUi.TextBox();
-    private readonly TextBox _bulkKeynoteBox = BimFlowUi.TextBox();
-    private readonly TextBox _bulkDescriptionBox = BimFlowUi.TextBox();
+    private readonly TextBox _bulkCommentsBox = OttawaWorkUi.TextBox();
+    private readonly TextBox _bulkMarkBox = OttawaWorkUi.TextBox();
+    private readonly TextBox _bulkTypeCommentsBox = OttawaWorkUi.TextBox();
+    private readonly TextBox _bulkKeynoteBox = OttawaWorkUi.TextBox();
+    private readonly TextBox _bulkDescriptionBox = OttawaWorkUi.TextBox();
 
     private UIElement BuildBulkSetTab()
     {
         var stack = new StackPanel();
-        stack.Children.Add(BimFlowUi.SectionHeader("Bulk Set"));
-        stack.Children.Add(BimFlowUi.FieldLabel("Sets the same value on every loaded element for each field below — leave a field empty to skip it entirely (an empty box never clears an existing value)."));
+        stack.Children.Add(OttawaWorkUi.SectionHeader("Bulk Set"));
+        stack.Children.Add(OttawaWorkUi.FieldLabel("Sets the same value on every loaded element for each field below — leave a field empty to skip it entirely (an empty box never clears an existing value)."));
 
         var fieldsStack = new StackPanel { Margin = new Thickness(0, 10, 0, 0) };
         AddBulkField(fieldsStack, "Comments", _bulkCommentsBox);
@@ -28,9 +28,9 @@ public partial class ParamPowerSuiteWindow
         AddBulkField(fieldsStack, "Type Comments", _bulkTypeCommentsBox);
         AddBulkField(fieldsStack, "Keynote", _bulkKeynoteBox);
         AddBulkField(fieldsStack, "Description", _bulkDescriptionBox);
-        stack.Children.Add(BimFlowUi.Card(fieldsStack));
+        stack.Children.Add(OttawaWorkUi.Card(fieldsStack));
 
-        var applyButton = BimFlowUi.PrimaryButton("Apply bulk set");
+        var applyButton = OttawaWorkUi.PrimaryButton("Apply bulk set");
         applyButton.Margin = new Thickness(0, 16, 0, 0);
         applyButton.Click += (_, _) => ApplyBulkSet();
         stack.Children.Add(applyButton);
@@ -40,7 +40,7 @@ public partial class ParamPowerSuiteWindow
 
     private static void AddBulkField(StackPanel parent, string label, TextBox box)
     {
-        parent.Children.Add(BimFlowUi.FieldLabel(label));
+        parent.Children.Add(OttawaWorkUi.FieldLabel(label));
         parent.Children.Add(box);
     }
 

@@ -2,10 +2,10 @@
 <RevitAddIns>
   <AddIn Type="Application">
     <Name>Ottawa Tools — Param Power Suite</Name>
-    <Assembly>BIMFlow.ParamPowerSuite.dll</Assembly>
+    <Assembly>OttawaWork.ParamPowerSuite.dll</Assembly>
     <AddInId>{ec10c16b-991f-4289-bb73-afd075775150}</AddInId>
-    <FullClassName>BIMFlow.ParamPowerSuite.Application</FullClassName>
-    <VendorId>BIMFlow</VendorId>
-    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+    <FullClassName>OttawaWork.ParamPowerSuite.Application</FullClassName>
+    <VendorId>Ottawa Ingenieure</VendorId>
+    <VendorDescription>Ottawa Ingenieure (internal tool)</VendorDescription>
   </AddIn>
 </RevitAddIns>

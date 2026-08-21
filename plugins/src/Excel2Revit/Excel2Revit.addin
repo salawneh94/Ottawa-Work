@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RevitAddIns>
   <AddIn Type="Application">
-    <Name>BIMFlow — Excel2Revit</Name>
-    <Assembly>BIMFlow.Excel2Revit.dll</Assembly>
+    <Name>Ottawa Tools — Excel2Revit</Name>
+    <Assembly>OttawaWork.Excel2Revit.dll</Assembly>
     <AddInId>{ad1981f8-338a-48d7-bd2a-a6f10171d065}</AddInId>
-    <FullClassName>BIMFlow.Excel2Revit.Application</FullClassName>
-    <VendorId>BIMFlow</VendorId>
-    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+    <FullClassName>OttawaWork.Excel2Revit.Application</FullClassName>
+    <VendorId>Ottawa Ingenieure</VendorId>
+    <VendorDescription>Ottawa Ingenieure (internal tool)</VendorDescription>
   </AddIn>
 </RevitAddIns>

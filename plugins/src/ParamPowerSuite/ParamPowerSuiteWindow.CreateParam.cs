@@ -11,51 +11,51 @@ using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 using WinFormsDialogResult = System.Windows.Forms.DialogResult;
 
 using Autodesk.Revit.DB;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.ParamPowerSuite;
+namespace OttawaWork.ParamPowerSuite;
 
 public partial class ParamPowerSuiteWindow
 {
-    private readonly TextBox _createParamFilePathBox = BimFlowUi.TextBox();
-    private readonly TextBox _createParamGroupNameBox = BimFlowUi.TextBox();
-    private readonly TextBox _createParamNameBox = BimFlowUi.TextBox();
-    private readonly ComboBox _createParamDataTypeBox = BimFlowUi.ComboBox();
-    private readonly ComboBox _createParamGroupTypeBox = BimFlowUi.ComboBox();
-    private readonly Button _createParamInstanceButton = BimFlowUi.SecondaryButton("Instance");
-    private readonly Button _createParamTypeButton = BimFlowUi.SecondaryButton("Type");
+    private readonly TextBox _createParamFilePathBox = OttawaWorkUi.TextBox();
+    private readonly TextBox _createParamGroupNameBox = OttawaWorkUi.TextBox();
+    private readonly TextBox _createParamNameBox = OttawaWorkUi.TextBox();
+    private readonly ComboBox _createParamDataTypeBox = OttawaWorkUi.ComboBox();
+    private readonly ComboBox _createParamGroupTypeBox = OttawaWorkUi.ComboBox();
+    private readonly Button _createParamInstanceButton = OttawaWorkUi.SecondaryButton("Instance");
+    private readonly Button _createParamTypeButton = OttawaWorkUi.SecondaryButton("Type");
     private bool _createParamIsInstance = true;
     private readonly Dictionary<BuiltInCategory, CheckBox> _createParamCategoryChecks = new();
 
     private UIElement BuildCreateParamTab()
     {
         var stack = new StackPanel();
-        stack.Children.Add(BimFlowUi.SectionHeader("Create Param"));
-        stack.Children.Add(BimFlowUi.FieldLabel("Creates a new parameter (or reuses one already in the file) and binds it into this project — the standard way to add a project parameter through the API, since there's no direct 'create a pure project parameter' call."));
+        stack.Children.Add(OttawaWorkUi.SectionHeader("Create Param"));
+        stack.Children.Add(OttawaWorkUi.FieldLabel("Creates a new parameter (or reuses one already in the file) and binds it into this project — the standard way to add a project parameter through the API, since there's no direct 'create a pure project parameter' call."));
 
-        stack.Children.Add(BimFlowUi.FieldLabel("Shared parameter file (picks an existing one, or starts a new one at the path you type)"));
+        stack.Children.Add(OttawaWorkUi.FieldLabel("Shared parameter file (picks an existing one, or starts a new one at the path you type)"));
         var fileRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 10) };
         _createParamFilePathBox.Width = 320;
         _createParamFilePathBox.Margin = new Thickness(0, 0, 8, 0);
-        var browseButton = BimFlowUi.SecondaryButton("Browse");
+        var browseButton = OttawaWorkUi.SecondaryButton("Browse");
         browseButton.Click += (_, _) => BrowseCreateParamSharedParameterFile();
         fileRow.Children.Add(_createParamFilePathBox);
         fileRow.Children.Add(browseButton);
         stack.Children.Add(fileRow);
 
-        stack.Children.Add(BimFlowUi.FieldLabel("Group (within the shared parameter file)"));
-        _createParamGroupNameBox.Text = "BIMFlow";
+        stack.Children.Add(OttawaWorkUi.FieldLabel("Group (within the shared parameter file)"));
+        _createParamGroupNameBox.Text = "Ottawa Tools";
         stack.Children.Add(_createParamGroupNameBox);
 
-        stack.Children.Add(BimFlowUi.FieldLabel("Parameter name"));
+        stack.Children.Add(OttawaWorkUi.FieldLabel("Parameter name"));
         stack.Children.Add(_createParamNameBox);
 
-        stack.Children.Add(BimFlowUi.FieldLabel("Data type"));
+        stack.Children.Add(OttawaWorkUi.FieldLabel("Data type"));
         _createParamDataTypeBox.Items.AddRange(ParamPowerSuiteEngine.DataTypeOptions.Select(o => (object)o.Label));
         _createParamDataTypeBox.SelectedIndex = 0;
         stack.Children.Add(_createParamDataTypeBox);
 
-        stack.Children.Add(BimFlowUi.FieldLabel("Discipline / group"));
+        stack.Children.Add(OttawaWorkUi.FieldLabel("Discipline / group"));
         _createParamGroupTypeBox.Items.AddRange(ParamPowerSuiteEngine.ParameterGroupOptions.Select(o => (object)o.Label));
         _createParamGroupTypeBox.SelectedIndex = 0;
         stack.Children.Add(_createParamGroupTypeBox);
@@ -69,20 +69,20 @@ public partial class ParamPowerSuiteWindow
         stack.Children.Add(scopeRow);
         SetCreateParamScope(true);
 
-        stack.Children.Add(BimFlowUi.SectionHeader("Bind to categories"));
+        stack.Children.Add(OttawaWorkUi.SectionHeader("Bind to categories"));
         var categoryScroll = new ScrollViewer { MaxHeight = 160 };
         var categoryList = new StackPanel();
         foreach (var (label, builtIn) in CommonCategories.Roster)
         {
-            var check = BimFlowUi.CheckBoxItem(label);
+            var check = OttawaWorkUi.CheckBoxItem(label);
             check.FontSize = 12;
             _createParamCategoryChecks[builtIn] = check;
             categoryList.Children.Add(check);
         }
         categoryScroll.Content = categoryList;
-        stack.Children.Add(BimFlowUi.Card(categoryScroll, padding: 8));
+        stack.Children.Add(OttawaWorkUi.Card(categoryScroll, padding: 8));
 
-        var createButton = BimFlowUi.SuccessButton("Create + Bind");
+        var createButton = OttawaWorkUi.SuccessButton("Create + Bind");
         createButton.Margin = new Thickness(0, 16, 0, 0);
         createButton.Click += (_, _) => RunCreateParam();
         stack.Children.Add(createButton);
@@ -93,8 +93,8 @@ public partial class ParamPowerSuiteWindow
     private void SetCreateParamScope(bool isInstance)
     {
         _createParamIsInstance = isInstance;
-        BimFlowUi.SetToggleActive(_createParamInstanceButton, isInstance);
-        BimFlowUi.SetToggleActive(_createParamTypeButton, !isInstance);
+        OttawaWorkUi.SetToggleActive(_createParamInstanceButton, isInstance);
+        OttawaWorkUi.SetToggleActive(_createParamTypeButton, !isInstance);
     }
 
     private void BrowseCreateParamSharedParameterFile()
@@ -115,7 +115,7 @@ public partial class ParamPowerSuiteWindow
         if (categories.Count == 0) { SetStatus("Create Param: pick at least one category", 0, 0, 0); return; }
 
         var filePath = _createParamFilePathBox.Text.Trim();
-        var groupName = string.IsNullOrWhiteSpace(_createParamGroupNameBox.Text) ? "BIMFlow" : _createParamGroupNameBox.Text;
+        var groupName = string.IsNullOrWhiteSpace(_createParamGroupNameBox.Text) ? "Ottawa Tools" : _createParamGroupNameBox.Text;
         var dataType = ParamPowerSuiteEngine.DataTypeOptions[_createParamDataTypeBox.SelectedIndex].Type;
         var groupType = ParamPowerSuiteEngine.ParameterGroupOptions[_createParamGroupTypeBox.SelectedIndex].Group;
 

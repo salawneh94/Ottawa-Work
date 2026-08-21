@@ -2,9 +2,9 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.RoomTagger;
+namespace OttawaWork.RoomTagger;
 
 /// <summary>
 /// Batch-writes each room's number/name onto every element found inside it
@@ -16,7 +16,7 @@ namespace BIMFlow.RoomTagger;
 /// location curve's midpoint as the representative test point.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "roomtagger";
 
@@ -33,7 +33,7 @@ public class Command : BimFlowCommand
 
         if (rooms.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — RoomTagger", "No placed rooms were found in this project.");
+            TaskDialog.Show("Ottawa Tools — RoomTagger", "No placed rooms were found in this project.");
             return Result.Succeeded;
         }
 
@@ -43,7 +43,7 @@ public class Command : BimFlowCommand
 
         if (string.IsNullOrWhiteSpace(window.RoomNumberParameter) && string.IsNullOrWhiteSpace(window.RoomNameParameter))
         {
-            TaskDialog.Show("BIMFlow — RoomTagger", "Enter at least one target parameter name.");
+            TaskDialog.Show("Ottawa Tools — RoomTagger", "Enter at least one target parameter name.");
             return Result.Cancelled;
         }
 
@@ -58,7 +58,7 @@ public class Command : BimFlowCommand
         var noRoom = 0;
         var noParam = 0;
 
-        using var transaction = new Transaction(doc, "BIMFlow: Tag Elements With Room");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Tag Elements With Room");
         transaction.Start();
         try
         {
@@ -92,7 +92,7 @@ public class Command : BimFlowCommand
         }
 
         TaskDialog.Show(
-            "BIMFlow — RoomTagger",
+            "Ottawa Tools — RoomTagger",
             $"Tagged {tagged} element(s) with their room.\n" +
             $"{noRoom} element(s) weren't inside any room.\n" +
             $"{noParam} element(s) were inside a room but had neither target parameter — check the parameter names are spelled right and bound to these categories.");

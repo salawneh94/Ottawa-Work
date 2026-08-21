@@ -1,7 +1,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 
-namespace BIMFlow.Shared;
+namespace OttawaWork.Shared;
 
 public enum RoomPlanStatus { Valid, Unplaced, NotEnclosed }
 public enum KeyPlanCorner { TopLeft, TopRight, BottomLeft, BottomRight }
@@ -106,7 +106,7 @@ public static class RoomPlanGenerator
 
     public static void SaveFinishParameters(Document doc, Room room, string floor, string wall, string ceiling, string baseFinish)
     {
-        using var transaction = new Transaction(doc, "BIMFlow: Save Room Finish Parameters");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Save Room Finish Parameters");
         transaction.Start();
         SetIfExists(room, BuiltInParameter.ROOM_FINISH_FLOOR, floor);
         SetIfExists(room, BuiltInParameter.ROOM_FINISH_WALL, wall);

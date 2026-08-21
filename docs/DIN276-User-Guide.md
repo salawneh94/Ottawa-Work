@@ -67,8 +67,8 @@ binds it to every relevant model category (Walls, Floors, Ceilings, Roofs,
 Doors, Windows, Structural Columns, Structural Framing, and the MEP
 categories the built-in rule table covers) — so no element gets skipped
 just because nobody set the parameter up in Manage → Project Parameters
-first. It's created through a small BIMFlow-owned shared parameter file
-kept at a fixed location (`%AppData%\BIMFlow\Din276SharedParameters.txt`),
+first. It's created through a small Ottawa Tools-owned shared parameter file
+kept at a fixed location (`%AppData%\Ottawa Tools\Din276SharedParameters.txt`),
 so re-running this on the same project, or on a different one, reuses the
 exact same parameter definition rather than creating a lookalike duplicate
 each time — the parameter still appears as a normal project parameter under

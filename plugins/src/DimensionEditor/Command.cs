@@ -2,9 +2,9 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.DimensionEditor;
+namespace OttawaWork.DimensionEditor;
 
 /// <summary>
 /// Lets you edit a dimension's override value, prefix, and suffix directly —
@@ -12,7 +12,7 @@ namespace BIMFlow.DimensionEditor;
 /// single- and multi-segment dimensions, one editable row per segment.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "dimensioneditor";
 
@@ -37,7 +37,7 @@ public class Command : BimFlowCommand
 
         if (dimensions.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — DimensionEditor", "No dimensions were selected.");
+            TaskDialog.Show("Ottawa Tools — DimensionEditor", "No dimensions were selected.");
             return Result.Cancelled;
         }
 
@@ -79,7 +79,7 @@ public class Command : BimFlowCommand
         var edits = window.BuildEdits();
         var updated = 0;
 
-        using var transaction = new Transaction(doc, "BIMFlow: Edit Dimensions");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Edit Dimensions");
         transaction.Start();
         try
         {
@@ -110,7 +110,7 @@ public class Command : BimFlowCommand
             throw;
         }
 
-        TaskDialog.Show("BIMFlow — DimensionEditor", $"Updated {updated} of {rows.Count} dimension segment(s).");
+        TaskDialog.Show("Ottawa Tools — DimensionEditor", $"Updated {updated} of {rows.Count} dimension segment(s).");
         return Result.Succeeded;
     }
 

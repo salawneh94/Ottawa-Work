@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RevitAddIns>
   <AddIn Type="Application">
-    <Name>BIMFlow — Ceilings</Name>
-    <Assembly>BIMFlow.SelectCeilings.dll</Assembly>
+    <Name>Ottawa Tools — Ceilings</Name>
+    <Assembly>OttawaWork.SelectCeilings.dll</Assembly>
     <AddInId>{665ed705-fc5c-493e-b34a-c60ceee6c284}</AddInId>
-    <FullClassName>BIMFlow.SelectCeilings.Application</FullClassName>
-    <VendorId>BIMFlow</VendorId>
-    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+    <FullClassName>OttawaWork.SelectCeilings.Application</FullClassName>
+    <VendorId>Ottawa Ingenieure</VendorId>
+    <VendorDescription>Ottawa Ingenieure (internal tool)</VendorDescription>
   </AddIn>
 </RevitAddIns>

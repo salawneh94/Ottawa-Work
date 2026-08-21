@@ -1,13 +1,13 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.SelectCeilings;
+namespace OttawaWork.SelectCeilings;
 
 /// <summary>One click sets the active selection to every ceiling visible in the active view — see QuickSelectEngine.</summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "selectceilings";
 
@@ -16,7 +16,7 @@ public class Command : BimFlowCommand
         var uiDoc = commandData.Application.ActiveUIDocument;
         var count = QuickSelectEngine.SelectCategory(uiDoc, BuiltInCategory.OST_Ceilings);
         if (count == 0)
-            TaskDialog.Show("BIMFlow — Ceilings", "No ceilings are visible in the active view.");
+            TaskDialog.Show("Ottawa Tools — Ceilings", "No ceilings are visible in the active view.");
         return Result.Succeeded;
     }
 }

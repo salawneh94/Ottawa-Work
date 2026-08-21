@@ -1,7 +1,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 
-namespace BIMFlow.Shared;
+namespace OttawaWork.Shared;
 
 /// <summary>
 /// Shared by the "Select" ribbon panel's 12 quick-select buttons (All/Ext/Int

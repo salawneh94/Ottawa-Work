@@ -1,9 +1,9 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.TitleBlockUpdater;
+namespace OttawaWork.TitleBlockUpdater;
 
 /// <summary>
 /// Bulk-sets one title block parameter (project info, logo text, address,
@@ -13,7 +13,7 @@ namespace BIMFlow.TitleBlockUpdater;
 /// larger and riskier operation to automate confidently.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "titleblockupdater";
 
@@ -29,7 +29,7 @@ public class Command : BimFlowCommand
 
         if (instances.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — TitleBlockUpdater", "No title block instances were found in this project.");
+            TaskDialog.Show("Ottawa Tools — TitleBlockUpdater", "No title block instances were found in this project.");
             return Result.Succeeded;
         }
 
@@ -43,7 +43,7 @@ public class Command : BimFlowCommand
 
         if (editableParamNames.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — TitleBlockUpdater", "No editable text parameters were found on this title block.");
+            TaskDialog.Show("Ottawa Tools — TitleBlockUpdater", "No editable text parameters were found on this title block.");
             return Result.Succeeded;
         }
 
@@ -56,7 +56,7 @@ public class Command : BimFlowCommand
 
         var updated = 0;
 
-        using var transaction = new Transaction(doc, "BIMFlow: Update Title Blocks");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Update Title Blocks");
         transaction.Start();
         try
         {
@@ -77,7 +77,7 @@ public class Command : BimFlowCommand
             throw;
         }
 
-        TaskDialog.Show("BIMFlow — TitleBlockUpdater", $"Updated \"{window.SelectedParameterName}\" on {updated} title block(s).");
+        TaskDialog.Show("Ottawa Tools — TitleBlockUpdater", $"Updated \"{window.SelectedParameterName}\" on {updated} title block(s).");
         return Result.Succeeded;
     }
 }

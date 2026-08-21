@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RevitAddIns>
   <AddIn Type="Application">
-    <Name>BIMFlow — Unplaced Cleaner</Name>
-    <Assembly>BIMFlow.UnplacedCleaner.dll</Assembly>
+    <Name>Ottawa Tools — Unplaced Cleaner</Name>
+    <Assembly>OttawaWork.UnplacedCleaner.dll</Assembly>
     <AddInId>{578ace55-4230-4137-99e3-4e2abe6d1e13}</AddInId>
-    <FullClassName>BIMFlow.UnplacedCleaner.Application</FullClassName>
-    <VendorId>BIMFlow</VendorId>
-    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+    <FullClassName>OttawaWork.UnplacedCleaner.Application</FullClassName>
+    <VendorId>Ottawa Ingenieure</VendorId>
+    <VendorDescription>Ottawa Ingenieure (internal tool)</VendorDescription>
   </AddIn>
 </RevitAddIns>

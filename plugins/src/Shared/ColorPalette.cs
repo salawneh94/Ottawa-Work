@@ -1,6 +1,6 @@
 using Autodesk.Revit.DB;
 
-namespace BIMFlow.Shared;
+namespace OttawaWork.Shared;
 
 /// <summary>Named, visually distinct color sets for color-by-value overrides. Cycles if there are more values than colors.</summary>
 public static class ColorPalette

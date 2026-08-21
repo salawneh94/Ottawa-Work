@@ -1,8 +1,8 @@
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.SelectExtDoors;
+namespace OttawaWork.SelectExtDoors;
 
-public class Application : BimFlowApplication
+public class Application : OttawaWorkApplication
 {
     protected override string PanelName => "Select";
     protected override string ButtonInternalName => "SelectExtDoorsButton";

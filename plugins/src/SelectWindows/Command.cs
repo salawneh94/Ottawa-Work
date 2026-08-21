@@ -1,13 +1,13 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.SelectWindows;
+namespace OttawaWork.SelectWindows;
 
 /// <summary>One click sets the active selection to every window visible in the active view — see QuickSelectEngine.</summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "selectwindows";
 
@@ -16,7 +16,7 @@ public class Command : BimFlowCommand
         var uiDoc = commandData.Application.ActiveUIDocument;
         var count = QuickSelectEngine.SelectCategory(uiDoc, BuiltInCategory.OST_Windows);
         if (count == 0)
-            TaskDialog.Show("BIMFlow — Windows", "No windows are visible in the active view.");
+            TaskDialog.Show("Ottawa Tools — Windows", "No windows are visible in the active view.");
         return Result.Succeeded;
     }
 }

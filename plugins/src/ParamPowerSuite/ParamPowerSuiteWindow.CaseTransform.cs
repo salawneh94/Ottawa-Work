@@ -7,18 +7,18 @@ using Thickness = System.Windows.Thickness;
 using UIElement = System.Windows.UIElement;
 
 using Autodesk.Revit.DB;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.ParamPowerSuite;
+namespace OttawaWork.ParamPowerSuite;
 
 public partial class ParamPowerSuiteWindow
 {
     private const string CaseModeGroup = "ParamPowerSuiteCaseMode";
 
-    private readonly ComboBox _ctParamBox = BimFlowUi.ComboBox();
-    private readonly RadioButton _ctUpperOption = BimFlowUi.RadioButtonItem("UPPERCASE", CaseModeGroup, isChecked: true);
-    private readonly RadioButton _ctLowerOption = BimFlowUi.RadioButtonItem("lowercase", CaseModeGroup);
-    private readonly RadioButton _ctTitleOption = BimFlowUi.RadioButtonItem("Title Case", CaseModeGroup);
+    private readonly ComboBox _ctParamBox = OttawaWorkUi.ComboBox();
+    private readonly RadioButton _ctUpperOption = OttawaWorkUi.RadioButtonItem("UPPERCASE", CaseModeGroup, isChecked: true);
+    private readonly RadioButton _ctLowerOption = OttawaWorkUi.RadioButtonItem("lowercase", CaseModeGroup);
+    private readonly RadioButton _ctTitleOption = OttawaWorkUi.RadioButtonItem("Title Case", CaseModeGroup);
     private readonly StackPanel _ctPreviewPanel = new();
     private List<ParamChangePreview> _ctPendingChanges = new();
 
@@ -27,8 +27,8 @@ public partial class ParamPowerSuiteWindow
         _parameterDependentComboBoxes.Add(_ctParamBox);
 
         var stack = new StackPanel();
-        stack.Children.Add(BimFlowUi.SectionHeader("Case Transform"));
-        stack.Children.Add(BimFlowUi.FieldLabel("Target parameter (text-storage only)"));
+        stack.Children.Add(OttawaWorkUi.SectionHeader("Case Transform"));
+        stack.Children.Add(OttawaWorkUi.FieldLabel("Target parameter (text-storage only)"));
         stack.Children.Add(_ctParamBox);
 
         var modeRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 12) };
@@ -38,17 +38,17 @@ public partial class ParamPowerSuiteWindow
         stack.Children.Add(modeRow);
 
         var buttonRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 12) };
-        var previewButton = BimFlowUi.SecondaryButton("Preview");
+        var previewButton = OttawaWorkUi.SecondaryButton("Preview");
         previewButton.Margin = new Thickness(0, 0, 8, 0);
         previewButton.Click += (_, _) => PreviewCaseTransform();
-        var applyButton = BimFlowUi.PrimaryButton("Apply");
+        var applyButton = OttawaWorkUi.PrimaryButton("Apply");
         applyButton.Click += (_, _) => ApplyCaseTransform();
         buttonRow.Children.Add(previewButton);
         buttonRow.Children.Add(applyButton);
         stack.Children.Add(buttonRow);
 
         var scroll = new ScrollViewer { MaxHeight = 260, Content = _ctPreviewPanel };
-        stack.Children.Add(BimFlowUi.Card(scroll, padding: 10));
+        stack.Children.Add(OttawaWorkUi.Card(scroll, padding: 10));
 
         return stack;
     }

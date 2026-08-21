@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
 
-namespace BIMFlow.Shared;
+namespace OttawaWork.Shared;
 
 /// <summary>
 /// Rewrites entity class keywords directly in a freshly-exported .ifc

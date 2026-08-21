@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RevitAddIns>
   <AddIn Type="Application">
-    <Name>BIMFlow — PlansPerRoom</Name>
-    <Assembly>BIMFlow.PlansPerRoom.dll</Assembly>
+    <Name>Ottawa Tools — PlansPerRoom</Name>
+    <Assembly>OttawaWork.PlansPerRoom.dll</Assembly>
     <AddInId>{d227172d-85fc-4264-8a8f-1806cb8482f5}</AddInId>
-    <FullClassName>BIMFlow.PlansPerRoom.Application</FullClassName>
-    <VendorId>BIMFlow</VendorId>
-    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+    <FullClassName>OttawaWork.PlansPerRoom.Application</FullClassName>
+    <VendorId>Ottawa Ingenieure</VendorId>
+    <VendorDescription>Ottawa Ingenieure (internal tool)</VendorDescription>
   </AddIn>
 </RevitAddIns>

@@ -10,9 +10,9 @@ using CornerRadius = System.Windows.CornerRadius;
 using TextTrimming = System.Windows.TextTrimming;
 
 using Autodesk.Revit.DB;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.DimensionEditor;
+namespace OttawaWork.DimensionEditor;
 
 /// <summary>One editable row per dimension segment (or per dimension, for single-segment ones).</summary>
 public record DimensionEditRow(ElementId DimensionId, int? SegmentIndex, string ViewName, string CurrentValue, string Override, string Prefix, string Suffix);
@@ -23,28 +23,28 @@ public record DimensionEditRow(ElementId DimensionId, int? SegmentIndex, string 
 /// already on the dimension. Mirrors OverriddenDimensions' read side, but lets
 /// you actually change what a dimension shows instead of just flagging it.
 /// </summary>
-public class DimensionEditorWindow : BimFlowWindow
+public class DimensionEditorWindow : OttawaWorkWindow
 {
     private readonly List<(DimensionEditRow Seed, TextBox OverrideBox, TextBox PrefixBox, TextBox SuffixBox)> _rows = new();
 
-    public DimensionEditorWindow(List<DimensionEditRow> seeds) : base("BIMFlow — DimensionEditor", minWidth: 580)
+    public DimensionEditorWindow(List<DimensionEditRow> seeds) : base("Ottawa Tools — DimensionEditor", minWidth: 580)
     {
         var root = new StackPanel();
-        root.Children.Add(BimFlowUi.TitleBar("📝", "DimensionEditor",
+        root.Children.Add(OttawaWorkUi.TitleBar("📝", "DimensionEditor",
             $"{seeds.Count} dimension segment(s) selected — edit the override, prefix, or suffix, then click Apply. Leave Override blank to show the model-driven value again."));
 
         var rowsStack = new StackPanel();
         foreach (var seed in seeds)
         {
-            var overrideBox = BimFlowUi.TextBox();
+            var overrideBox = OttawaWorkUi.TextBox();
             overrideBox.Text = seed.Override;
             overrideBox.Width = 150;
 
-            var prefixBox = BimFlowUi.TextBox();
+            var prefixBox = OttawaWorkUi.TextBox();
             prefixBox.Text = seed.Prefix;
             prefixBox.Width = 100;
 
-            var suffixBox = BimFlowUi.TextBox();
+            var suffixBox = OttawaWorkUi.TextBox();
             suffixBox.Text = seed.Suffix;
             suffixBox.Width = 100;
 
@@ -54,7 +54,7 @@ public class DimensionEditorWindow : BimFlowWindow
                     ? $"{seed.ViewName} — Dimension {seed.DimensionId} · Segment {segmentIndex} · currently \"{seed.CurrentValue}\""
                     : $"{seed.ViewName} — Dimension {seed.DimensionId} · currently \"{seed.CurrentValue}\"",
                 FontSize = 12,
-                Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary),
+                Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary),
                 TextTrimming = TextTrimming.CharacterEllipsis,
                 Margin = new Thickness(0, 0, 0, 6),
             };
@@ -70,8 +70,8 @@ public class DimensionEditorWindow : BimFlowWindow
 
             var rowBorder = new Border
             {
-                Background = BimFlowUi.BrushOf(BimFlowUi.CardBackgroundAlt),
-                BorderBrush = BimFlowUi.BrushOf(BimFlowUi.BorderColor),
+                Background = OttawaWorkUi.BrushOf(OttawaWorkUi.CardBackgroundAlt),
+                BorderBrush = OttawaWorkUi.BrushOf(OttawaWorkUi.BorderColor),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(6),
                 Padding = new Thickness(10, 8, 10, 8),
@@ -84,11 +84,11 @@ public class DimensionEditorWindow : BimFlowWindow
         }
 
         var scroll = new ScrollViewer { MaxHeight = 400, Content = rowsStack };
-        root.Children.Add(BimFlowUi.Card(scroll, padding: 8));
+        root.Children.Add(OttawaWorkUi.Card(scroll, padding: 8));
 
         var buttonRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 12, 0, 0) };
-        var cancelButton = BimFlowUi.SecondaryButton("Cancel");
-        var applyButton = BimFlowUi.PrimaryButton("Apply");
+        var cancelButton = OttawaWorkUi.SecondaryButton("Cancel");
+        var applyButton = OttawaWorkUi.PrimaryButton("Apply");
         cancelButton.Margin = new Thickness(0, 0, 10, 0);
         cancelButton.Click += (_, _) => { DialogResult = false; Close(); };
         applyButton.Click += (_, _) => { DialogResult = true; Close(); };
@@ -103,7 +103,7 @@ public class DimensionEditorWindow : BimFlowWindow
     {
         box.Margin = new Thickness(0, 0, 12, 0);
         var stack = new StackPanel();
-        stack.Children.Add(BimFlowUi.FieldLabel(label));
+        stack.Children.Add(OttawaWorkUi.FieldLabel(label));
         stack.Children.Add(box);
         return stack;
     }

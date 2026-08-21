@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RevitAddIns>
   <AddIn Type="Application">
-    <Name>BIMFlow — LegendPlacer</Name>
-    <Assembly>BIMFlow.LegendPlacer.dll</Assembly>
+    <Name>Ottawa Tools — LegendPlacer</Name>
+    <Assembly>OttawaWork.LegendPlacer.dll</Assembly>
     <AddInId>{5b8f02c3-3926-4969-827e-b193f6b96662}</AddInId>
-    <FullClassName>BIMFlow.LegendPlacer.Application</FullClassName>
-    <VendorId>BIMFlow</VendorId>
-    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+    <FullClassName>OttawaWork.LegendPlacer.Application</FullClassName>
+    <VendorId>Ottawa Ingenieure</VendorId>
+    <VendorDescription>Ottawa Ingenieure (internal tool)</VendorDescription>
   </AddIn>
 </RevitAddIns>

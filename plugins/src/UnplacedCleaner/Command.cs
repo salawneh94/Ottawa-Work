@@ -2,9 +2,9 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.UnplacedCleaner;
+namespace OttawaWork.UnplacedCleaner;
 
 /// <summary>
 /// Finds Room elements that were created (via a schedule row, a copy/paste,
@@ -14,7 +14,7 @@ namespace BIMFlow.UnplacedCleaner;
 /// offering to delete anything.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "unplacedcleaner";
 
@@ -31,7 +31,7 @@ public class Command : BimFlowCommand
 
         if (unplacedRooms.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — Unplaced Cleaner", "No unplaced rooms were found in this project.");
+            TaskDialog.Show("Ottawa Tools — Unplaced Cleaner", "No unplaced rooms were found in this project.");
             return Result.Succeeded;
         }
 
@@ -43,7 +43,7 @@ public class Command : BimFlowCommand
         if (toDelete.Count == 0)
             return Result.Succeeded;
 
-        using var transaction = new Transaction(doc, "BIMFlow: Delete Unplaced Rooms");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Delete Unplaced Rooms");
         transaction.Start();
         try
         {
@@ -56,7 +56,7 @@ public class Command : BimFlowCommand
             throw;
         }
 
-        TaskDialog.Show("BIMFlow — Unplaced Cleaner", $"Deleted {toDelete.Count} unplaced room(s).");
+        TaskDialog.Show("Ottawa Tools — Unplaced Cleaner", $"Deleted {toDelete.Count} unplaced room(s).");
         return Result.Succeeded;
     }
 }

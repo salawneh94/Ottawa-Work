@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using ClosedXML.Excel;
 
-namespace BIMFlow.Shared;
+namespace OttawaWork.Shared;
 
 /// <summary>
 /// Writes real .xlsx reports styled to Ottawa Ingenieure's own table

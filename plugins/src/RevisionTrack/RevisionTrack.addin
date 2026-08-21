@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RevitAddIns>
   <AddIn Type="Application">
-    <Name>BIMFlow — RevisionTrack</Name>
-    <Assembly>BIMFlow.RevisionTrack.dll</Assembly>
+    <Name>Ottawa Tools — RevisionTrack</Name>
+    <Assembly>OttawaWork.RevisionTrack.dll</Assembly>
     <AddInId>{4ca42fbc-4198-40f1-b034-50941320a29a}</AddInId>
-    <FullClassName>BIMFlow.RevisionTrack.Application</FullClassName>
-    <VendorId>BIMFlow</VendorId>
-    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+    <FullClassName>OttawaWork.RevisionTrack.Application</FullClassName>
+    <VendorId>Ottawa Ingenieure</VendorId>
+    <VendorDescription>Ottawa Ingenieure (internal tool)</VendorDescription>
   </AddIn>
 </RevitAddIns>

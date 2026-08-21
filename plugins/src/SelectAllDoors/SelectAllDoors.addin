@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RevitAddIns>
   <AddIn Type="Application">
-    <Name>BIMFlow — All Doors</Name>
-    <Assembly>BIMFlow.SelectAllDoors.dll</Assembly>
+    <Name>Ottawa Tools — All Doors</Name>
+    <Assembly>OttawaWork.SelectAllDoors.dll</Assembly>
     <AddInId>{bb9dd5fd-4ec5-4735-9800-7a9fc5e24f0d}</AddInId>
-    <FullClassName>BIMFlow.SelectAllDoors.Application</FullClassName>
-    <VendorId>BIMFlow</VendorId>
-    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+    <FullClassName>OttawaWork.SelectAllDoors.Application</FullClassName>
+    <VendorId>Ottawa Ingenieure</VendorId>
+    <VendorDescription>Ottawa Ingenieure (internal tool)</VendorDescription>
   </AddIn>
 </RevitAddIns>

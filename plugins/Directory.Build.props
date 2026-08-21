@@ -16,7 +16,7 @@
     RevitApiPackageVersion is pinned exactly for 2025, not "2025.*" — Nice3point
     publishes a new package patch for every Autodesk-issued Revit 2025 Update 4
     hotfix build (2025.4.0, .20, .41, .50, .60 all exist), and each one bakes a
-    different RevitAPI/RevitAPIUI assembly version into every BIMFlow DLL's own
+    different RevitAPI/RevitAPIUI assembly version into every Ottawa Tools DLL's own
     reference metadata. Revit's add-in loader does a hard version-equality check
     between that and whatever build is actually installed, logs "Assembly
     version conflict" in the journal on any mismatch, and — confirmed from a
@@ -70,7 +70,7 @@
     <Using Include="System.Windows.Forms.Form" Alias="Form" />
     <Using Include="Autodesk.Revit.DB.Color" Alias="Color" />
     <Using Include="Autodesk.Revit.DB.View" Alias="View" />
-    <!-- BIMFlow.Shared.FilterRule (our own rule-builder type) collides with Revit's own FilterRule. -->
-    <Using Include="BIMFlow.Shared.FilterRule" Alias="FilterRule" />
+    <!-- OttawaWork.Shared.FilterRule (our own rule-builder type) collides with Revit's own FilterRule. -->
+    <Using Include="OttawaWork.Shared.FilterRule" Alias="FilterRule" />
   </ItemGroup>
 </Project>

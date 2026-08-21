@@ -6,36 +6,36 @@ using HorizontalAlignment = System.Windows.HorizontalAlignment;
 using Thickness = System.Windows.Thickness;
 using RoutedEventArgs = System.Windows.RoutedEventArgs;
 
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.TitleBlockUpdater;
+namespace OttawaWork.TitleBlockUpdater;
 
 /// <summary>Parameter + new value picker — dark themed, replacing the old WinForms TableLayoutPanel dialog.</summary>
-public class TitleBlockUpdaterWindow : BimFlowWindow
+public class TitleBlockUpdaterWindow : OttawaWorkWindow
 {
-    private readonly ComboBox _paramBox = BimFlowUi.ComboBox();
-    private readonly TextBox _valueBox = BimFlowUi.TextBox();
+    private readonly ComboBox _paramBox = OttawaWorkUi.ComboBox();
+    private readonly TextBox _valueBox = OttawaWorkUi.TextBox();
 
     public string? SelectedParameterName { get; private set; }
     public string NewValue { get; private set; } = "";
 
-    public TitleBlockUpdaterWindow(List<string> parameterNames, int instanceCount) : base("BIMFlow — TitleBlockUpdater", minWidth: 380)
+    public TitleBlockUpdaterWindow(List<string> parameterNames, int instanceCount) : base("Ottawa Tools — TitleBlockUpdater", minWidth: 380)
     {
         var root = new StackPanel();
-        root.Children.Add(BimFlowUi.TitleBar("🖼️", "Title Block Updater", $"{instanceCount} title block instance(s) in this project."));
+        root.Children.Add(OttawaWorkUi.TitleBar("🖼️", "Title Block Updater", $"{instanceCount} title block instance(s) in this project."));
 
         var fieldsStack = new StackPanel();
-        fieldsStack.Children.Add(BimFlowUi.FieldLabel("Parameter"));
+        fieldsStack.Children.Add(OttawaWorkUi.FieldLabel("Parameter"));
         _paramBox.Items.AddRange(parameterNames.Cast<object>().ToArray());
         if (_paramBox.Items.Count > 0) _paramBox.SelectedIndex = 0;
         fieldsStack.Children.Add(_paramBox);
-        fieldsStack.Children.Add(BimFlowUi.FieldLabel("New value"));
+        fieldsStack.Children.Add(OttawaWorkUi.FieldLabel("New value"));
         fieldsStack.Children.Add(_valueBox);
-        root.Children.Add(BimFlowUi.Card(fieldsStack));
+        root.Children.Add(OttawaWorkUi.Card(fieldsStack));
 
         var buttonRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 20, 0, 0) };
-        var cancelButton = BimFlowUi.SecondaryButton("Cancel");
-        var applyButton = BimFlowUi.PrimaryButton("Apply to all");
+        var cancelButton = OttawaWorkUi.SecondaryButton("Cancel");
+        var applyButton = OttawaWorkUi.PrimaryButton("Apply to all");
         cancelButton.Margin = new Thickness(0, 0, 10, 0);
         cancelButton.Click += (_, _) => { DialogResult = false; Close(); };
         applyButton.Click += ApplyButton_Click;

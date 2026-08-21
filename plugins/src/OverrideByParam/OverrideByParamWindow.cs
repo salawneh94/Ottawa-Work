@@ -16,9 +16,9 @@ using GridLength = System.Windows.GridLength;
 using TextWrapping = System.Windows.TextWrapping;
 
 using Autodesk.Revit.DB;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.OverrideByParam;
+namespace OttawaWork.OverrideByParam;
 
 public enum ColorCodeAction { Preview, ApplyFilters, ExportPng, ClearFilters }
 public enum ColorCodeMode { ColorAndTransparency, ColorOnly }
@@ -32,12 +32,12 @@ public enum ColorCodeMode { ColorAndTransparency, ColorOnly }
 /// (editable later in Visibility/Graphics), export the colored view as a
 /// PNG, or clear the filters this tool created.
 /// </summary>
-public class OverrideByParamWindow : BimFlowWindow
+public class OverrideByParamWindow : OttawaWorkWindow
 {
     public const string NoValueKey = "(No Value)";
 
     /// <summary>
-    /// The shared common-categories roster (BIMFlow.Shared.CommonCategories),
+    /// The shared common-categories roster (OttawaWork.Shared.CommonCategories),
     /// offered in the same fixed order every time regardless of what's
     /// actually in the model — matching the reference tool's Category
     /// dropdown. Categories with zero elements in the active view are still
@@ -50,19 +50,19 @@ public class OverrideByParamWindow : BimFlowWindow
     private readonly Document _doc;
     private readonly View _view;
     private readonly Dictionary<string, Category> _categoriesByName;
-    private readonly ComboBox _modeBox = BimFlowUi.ComboBox();
-    private readonly ComboBox _categoryBox = BimFlowUi.ComboBox();
-    private readonly TextBlock _categoryCountText = new() { FontSize = 10, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), Margin = new Thickness(0, -6, 0, 10) };
-    private readonly ComboBox _paramBox = BimFlowUi.ComboBox();
-    private readonly ComboBox _paletteBox = BimFlowUi.ComboBox();
+    private readonly ComboBox _modeBox = OttawaWorkUi.ComboBox();
+    private readonly ComboBox _categoryBox = OttawaWorkUi.ComboBox();
+    private readonly TextBlock _categoryCountText = new() { FontSize = 10, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), Margin = new Thickness(0, -6, 0, 10) };
+    private readonly ComboBox _paramBox = OttawaWorkUi.ComboBox();
+    private readonly ComboBox _paletteBox = OttawaWorkUi.ComboBox();
     private readonly StackPanel _paletteSwatchRow = new() { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 10) };
     private readonly Slider _transparencySlider = new() { Minimum = 0, Maximum = 100, Value = 0, TickFrequency = 5 };
-    private readonly TextBlock _transparencyReadout = new() { FontSize = 11, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
-    private readonly Button _wipeYesButton = BimFlowUi.SecondaryButton("Yes - Wipe");
-    private readonly Button _wipeNoButton = BimFlowUi.SecondaryButton("No - Keep");
+    private readonly TextBlock _transparencyReadout = new() { FontSize = 11, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
+    private readonly Button _wipeYesButton = OttawaWorkUi.SecondaryButton("Yes - Wipe");
+    private readonly Button _wipeNoButton = OttawaWorkUi.SecondaryButton("No - Keep");
     private readonly StackPanel _legendPanel = new();
-    private readonly TextBlock _legendSummaryBadgeText = new() { FontSize = 10, FontWeight = System.Windows.FontWeights.Medium, Foreground = BimFlowUi.BrushOf(BimFlowUi.Accent) };
-    private readonly TextBlock _legendCaption = new() { FontSize = 10, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), Margin = new Thickness(0, 8, 0, 0), TextWrapping = TextWrapping.Wrap };
+    private readonly TextBlock _legendSummaryBadgeText = new() { FontSize = 10, FontWeight = System.Windows.FontWeights.Medium, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.Accent) };
+    private readonly TextBlock _legendCaption = new() { FontSize = 10, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), Margin = new Thickness(0, 8, 0, 0), TextWrapping = TextWrapping.Wrap };
     private readonly Dictionary<string, (Autodesk.Revit.DB.Color Color, int Count, CheckBox Box)> _legendRows = new();
 
     private bool _wipeFirst = true;
@@ -76,7 +76,7 @@ public class OverrideByParamWindow : BimFlowWindow
     public bool WipeFirst { get; private set; }
     public ColorCodeAction ChosenAction { get; private set; }
 
-    public OverrideByParamWindow(Document doc, View view) : base("BIMFlow — Color Code", minWidth: 660)
+    public OverrideByParamWindow(Document doc, View view) : base("Ottawa Tools — Color Code", minWidth: 660)
     {
         _doc = doc;
         _view = view;
@@ -89,18 +89,18 @@ public class OverrideByParamWindow : BimFlowWindow
         }
 
         var root = new StackPanel();
-        root.Children.Add(BimFlowUi.TitleBar("🎨", "Color Code", "Color-code elements by parameter value using persistent view filters."));
+        root.Children.Add(OttawaWorkUi.TitleBar("🎨", "Color Code", "Color-code elements by parameter value using persistent view filters."));
 
         var columns = new StackPanel { Orientation = Orientation.Horizontal };
 
         var left = new StackPanel { Width = 300, Margin = new Thickness(0, 0, 16, 0) };
 
-        left.Children.Add(BimFlowUi.SectionHeader("Mode"));
+        left.Children.Add(OttawaWorkUi.SectionHeader("Mode"));
         _modeBox.Items.AddRange(new object[] { "Colour + Transparency", "Colour Only" });
         _modeBox.SelectedIndex = 0;
         left.Children.Add(_modeBox);
 
-        left.Children.Add(BimFlowUi.SectionHeader("Category"));
+        left.Children.Add(OttawaWorkUi.SectionHeader("Category"));
         var firstNonEmptyIndex = 0;
         for (var i = 0; i < CategoryRoster.Length; i++)
         {
@@ -114,7 +114,7 @@ public class OverrideByParamWindow : BimFlowWindow
                 Content = isEmpty ? $"{label} — 0 in view" : label,
                 Tag = label,
                 IsEnabled = !isEmpty,
-                Foreground = BimFlowUi.BrushOf(isEmpty ? BimFlowUi.TextSecondary : BimFlowUi.TextPrimary),
+                Foreground = OttawaWorkUi.BrushOf(isEmpty ? OttawaWorkUi.TextSecondary : OttawaWorkUi.TextPrimary),
                 FontStyle = isEmpty ? System.Windows.FontStyles.Italic : System.Windows.FontStyles.Normal,
             };
             _categoryBox.Items.Add(item);
@@ -124,18 +124,18 @@ public class OverrideByParamWindow : BimFlowWindow
         left.Children.Add(_categoryBox);
         left.Children.Add(_categoryCountText);
 
-        left.Children.Add(BimFlowUi.SectionHeader("Parameter"));
+        left.Children.Add(OttawaWorkUi.SectionHeader("Parameter"));
         _paramBox.SelectionChanged += (_, _) => RefreshLegend();
         left.Children.Add(_paramBox);
 
-        left.Children.Add(BimFlowUi.SectionHeader("Colour Palette"));
+        left.Children.Add(OttawaWorkUi.SectionHeader("Colour Palette"));
         _paletteBox.Items.AddRange(ColorPalette.Named.Keys.Cast<object>());
         _paletteBox.SelectedIndex = 0;
         _paletteBox.SelectionChanged += (_, _) => { RefreshPaletteSwatchRow(); RefreshLegend(); };
         left.Children.Add(_paletteBox);
         left.Children.Add(_paletteSwatchRow);
 
-        left.Children.Add(BimFlowUi.SectionHeader("Transparency"));
+        left.Children.Add(OttawaWorkUi.SectionHeader("Transparency"));
         var transparencyRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 12) };
         _transparencySlider.Width = 220;
         _transparencySlider.ValueChanged += (_, _) => _transparencyReadout.Text = $"{(int)_transparencySlider.Value}%";
@@ -144,8 +144,8 @@ public class OverrideByParamWindow : BimFlowWindow
         transparencyRow.Children.Add(_transparencyReadout);
         left.Children.Add(transparencyRow);
 
-        left.Children.Add(BimFlowUi.SectionHeader("Element Overrides"));
-        left.Children.Add(new TextBlock { Text = "Revit overrides beat filters. Wipe first?", FontSize = 11, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), Margin = new Thickness(0, 0, 0, 6), TextWrapping = TextWrapping.Wrap });
+        left.Children.Add(OttawaWorkUi.SectionHeader("Element Overrides"));
+        left.Children.Add(new TextBlock { Text = "Revit overrides beat filters. Wipe first?", FontSize = 11, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), Margin = new Thickness(0, 0, 0, 6), TextWrapping = TextWrapping.Wrap });
         var wipeRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 14) };
         _wipeYesButton.Margin = new Thickness(0, 0, 8, 0);
         _wipeYesButton.Click += (_, _) => SetWipeFirst(true);
@@ -155,7 +155,7 @@ public class OverrideByParamWindow : BimFlowWindow
         left.Children.Add(wipeRow);
         SetWipeFirst(true);
 
-        var previewButton = BimFlowUi.SecondaryButton("Preview");
+        var previewButton = OttawaWorkUi.SecondaryButton("Preview");
         previewButton.HorizontalAlignment = HorizontalAlignment.Stretch;
         previewButton.Click += (_, _) => Finish(ColorCodeAction.Preview);
         left.Children.Add(previewButton);
@@ -167,9 +167,9 @@ public class OverrideByParamWindow : BimFlowWindow
         var legendHeaderRow = new Grid();
         legendHeaderRow.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, System.Windows.GridUnitType.Star) });
         legendHeaderRow.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        var legendHeader = BimFlowUi.SectionHeader("Colour Legend");
+        var legendHeader = OttawaWorkUi.SectionHeader("Colour Legend");
         Grid.SetColumn((System.Windows.UIElement)legendHeader, 0);
-        var summaryBadge = BimFlowUi.Card(_legendSummaryBadgeText, padding: 4);
+        var summaryBadge = OttawaWorkUi.Card(_legendSummaryBadgeText, padding: 4);
         summaryBadge.CornerRadius = new System.Windows.CornerRadius(10);
         Grid.SetColumn(summaryBadge, 1);
         legendHeaderRow.Children.Add((System.Windows.UIElement)legendHeader);
@@ -178,14 +178,14 @@ public class OverrideByParamWindow : BimFlowWindow
 
         var linkRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 0, 0, 6) };
         linkRow.Children.Add(LinkText("All", () => { foreach (var row in _legendRows.Values) row.Box.IsChecked = true; RefreshLegendSummary(); }));
-        linkRow.Children.Add(new TextBlock { Text = " · ", FontSize = 11, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary) });
+        linkRow.Children.Add(new TextBlock { Text = " · ", FontSize = 11, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary) });
         linkRow.Children.Add(LinkText("None", () => { foreach (var row in _legendRows.Values) row.Box.IsChecked = false; RefreshLegendSummary(); }));
-        linkRow.Children.Add(new TextBlock { Text = " · ", FontSize = 11, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary) });
+        linkRow.Children.Add(new TextBlock { Text = " · ", FontSize = 11, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary) });
         linkRow.Children.Add(LinkText("Invert", () => { foreach (var row in _legendRows.Values) row.Box.IsChecked = row.Box.IsChecked != true; RefreshLegendSummary(); }));
         right.Children.Add(linkRow);
 
         var legendScroll = new ScrollViewer { MaxHeight = 300, Content = _legendPanel };
-        right.Children.Add(BimFlowUi.Card(legendScroll, padding: 8));
+        right.Children.Add(OttawaWorkUi.Card(legendScroll, padding: 8));
         right.Children.Add(_legendCaption);
 
         columns.Children.Add(right);
@@ -193,10 +193,10 @@ public class OverrideByParamWindow : BimFlowWindow
         root.Children.Add(columns);
 
         var buttonRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 20, 0, 0) };
-        var cancelButton = BimFlowUi.SecondaryButton("Cancel");
-        var clearButton = BimFlowUi.DangerButton("Clear filters");
-        var exportButton = BimFlowUi.SecondaryButton("Export PNG");
-        var applyButton = BimFlowUi.PrimaryButton("Apply as filters");
+        var cancelButton = OttawaWorkUi.SecondaryButton("Cancel");
+        var clearButton = OttawaWorkUi.DangerButton("Clear filters");
+        var exportButton = OttawaWorkUi.SecondaryButton("Export PNG");
+        var applyButton = OttawaWorkUi.PrimaryButton("Apply as filters");
         cancelButton.Margin = new Thickness(0, 0, 8, 0);
         clearButton.Margin = new Thickness(0, 0, 8, 0);
         exportButton.Margin = new Thickness(0, 0, 8, 0);
@@ -223,7 +223,7 @@ public class OverrideByParamWindow : BimFlowWindow
         {
             Text = text,
             FontSize = 11,
-            Foreground = BimFlowUi.BrushOf(BimFlowUi.Accent),
+            Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.Accent),
             TextDecorations = System.Windows.TextDecorations.Underline,
             Cursor = System.Windows.Input.Cursors.Hand,
         };
@@ -234,8 +234,8 @@ public class OverrideByParamWindow : BimFlowWindow
     private void SetWipeFirst(bool wipe)
     {
         _wipeFirst = wipe;
-        BimFlowUi.SetToggleActive(_wipeYesButton, wipe);
-        BimFlowUi.SetToggleActive(_wipeNoButton, !wipe);
+        OttawaWorkUi.SetToggleActive(_wipeYesButton, wipe);
+        OttawaWorkUi.SetToggleActive(_wipeNoButton, !wipe);
     }
 
     private void RefreshPaletteSwatchRow()
@@ -333,10 +333,10 @@ public class OverrideByParamWindow : BimFlowWindow
                 VerticalAlignment = VerticalAlignment.Center,
                 Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(color.Red, color.Green, color.Blue)),
             };
-            var box = BimFlowUi.CheckBoxItem(value, isChecked: true);
+            var box = OttawaWorkUi.CheckBoxItem(value, isChecked: true);
             box.FontStyle = isNoValue ? System.Windows.FontStyles.Italic : System.Windows.FontStyles.Normal;
             box.Click += (_, _) => RefreshLegendSummary();
-            var countText = new TextBlock { Text = count.ToString(), FontSize = 11, Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), HorizontalAlignment = HorizontalAlignment.Right, Width = 40 };
+            var countText = new TextBlock { Text = count.ToString(), FontSize = 11, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), HorizontalAlignment = HorizontalAlignment.Right, Width = 40 };
             row.Children.Add(swatch);
             row.Children.Add(box);
             row.Children.Add(countText);
@@ -345,7 +345,7 @@ public class OverrideByParamWindow : BimFlowWindow
         }
 
         if (byValue.Count == 0)
-            _legendPanel.Children.Add(new TextBlock { Text = "No elements of this category are in the active view.", Foreground = BimFlowUi.BrushOf(BimFlowUi.TextSecondary), FontSize = 12, TextWrapping = TextWrapping.Wrap });
+            _legendPanel.Children.Add(new TextBlock { Text = "No elements of this category are in the active view.", Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), FontSize = 12, TextWrapping = TextWrapping.Wrap });
 
         RefreshLegendSummary();
     }

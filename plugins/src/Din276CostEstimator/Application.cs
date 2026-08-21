@@ -1,8 +1,8 @@
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.Din276CostEstimator;
+namespace OttawaWork.Din276CostEstimator;
 
-public class Application : BimFlowApplication
+public class Application : OttawaWorkApplication
 {
     protected override string PanelName => "Parameters";
     protected override string ButtonInternalName => "Din276CostEstimatorButton";

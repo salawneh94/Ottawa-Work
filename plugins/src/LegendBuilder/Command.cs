@@ -1,9 +1,9 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.LegendBuilder;
+namespace OttawaWork.LegendBuilder;
 
 /// <summary>
 /// Duplicates a legend view you pick as a starting template, then places
@@ -14,7 +14,7 @@ namespace BIMFlow.LegendBuilder;
 /// the native "New Legend" ribbon command has under the hood.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "legendbuilder";
 
@@ -37,13 +37,13 @@ public class Command : BimFlowCommand
         if (legends.Count == 0)
         {
             TaskDialog.Show(
-                "BIMFlow — LegendBuilder",
+                "Ottawa Tools — LegendBuilder",
                 "No legend views were found to use as a starting point. Create one blank legend view first (View tab → Legends → Legend), then run this again.");
             return Result.Cancelled;
         }
 
         var picker = new SimplePickerDialog(
-            "BIMFlow — LegendBuilder",
+            "Ottawa Tools — LegendBuilder",
             "Duplicate which legend as the starting point?",
             legends.Select(v => v.Name).ToList());
 
@@ -72,14 +72,14 @@ public class Command : BimFlowCommand
 
         if (symbols.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — LegendBuilder", "No used detail component or annotation symbol types were found in the model.");
+            TaskDialog.Show("Ottawa Tools — LegendBuilder", "No used detail component or annotation symbol types were found in the model.");
             return Result.Succeeded;
         }
 
         var textNoteTypeId = doc.GetDefaultElementTypeId(ElementTypeGroup.TextNoteType);
         var placed = 0;
 
-        using var transaction = new Transaction(doc, "BIMFlow: Build Legend");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Build Legend");
         transaction.Start();
         try
         {
@@ -115,7 +115,7 @@ public class Command : BimFlowCommand
             throw;
         }
 
-        TaskDialog.Show("BIMFlow — LegendBuilder", $"Built a new legend with {placed} type(s) placed.");
+        TaskDialog.Show("Ottawa Tools — LegendBuilder", $"Built a new legend with {placed} type(s) placed.");
         return Result.Succeeded;
     }
 

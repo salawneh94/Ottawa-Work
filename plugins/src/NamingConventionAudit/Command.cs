@@ -1,10 +1,10 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 using System.Text.RegularExpressions;
 
-namespace BIMFlow.NamingConventionAudit;
+namespace OttawaWork.NamingConventionAudit;
 
 /// <summary>
 /// Checks view, sheet, or family type names against a regex pattern you
@@ -13,7 +13,7 @@ namespace BIMFlow.NamingConventionAudit;
 /// standard actually is.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "namingconventionaudit";
 
@@ -33,7 +33,7 @@ public class Command : BimFlowCommand
         }
         catch (ArgumentException ex)
         {
-            TaskDialog.Show("BIMFlow — NamingConventionAudit", $"That's not a valid regex: {ex.Message}");
+            TaskDialog.Show("Ottawa Tools — NamingConventionAudit", $"That's not a valid regex: {ex.Message}");
             return Result.Cancelled;
         }
 
@@ -47,7 +47,7 @@ public class Command : BimFlowCommand
 
         if (names.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — NamingConventionAudit", $"No {window.Target} were found in this project.");
+            TaskDialog.Show("Ottawa Tools — NamingConventionAudit", $"No {window.Target} were found in this project.");
             return Result.Succeeded;
         }
 
@@ -58,12 +58,12 @@ public class Command : BimFlowCommand
 
         if (rows.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — NamingConventionAudit", $"Checked {names.Count} name(s). All match the pattern.");
+            TaskDialog.Show("Ottawa Tools — NamingConventionAudit", $"Checked {names.Count} name(s). All match the pattern.");
             return Result.Succeeded;
         }
 
         var results = new ResultsListForm(
-            "BIMFlow — NamingConventionAudit Results",
+            "Ottawa Tools — NamingConventionAudit Results",
             $"{rows.Count} of {names.Count} {columnLabel.ToLower()} name(s) don't match \"{window.Pattern}\".",
             new[] { columnLabel, "Result" },
             rows,

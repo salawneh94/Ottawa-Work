@@ -1,9 +1,9 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.Din276CostEstimator;
+namespace OttawaWork.Din276CostEstimator;
 
 /// <summary>
 /// Opens the DIN 276 cost estimator. Classifying elements, computing
@@ -13,10 +13,10 @@ namespace BIMFlow.Din276CostEstimator;
 /// confirms and hands back which elements resolved to which Kostengruppe
 /// code (window.PendingAssignments); the actual writes happen here, in
 /// their own transaction with rollback on failure, same split every other
-/// BIMFlow dialog that can modify the model uses.
+/// Ottawa Tools dialog that can modify the model uses.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "din276costestimator";
 

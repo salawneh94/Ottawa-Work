@@ -8,17 +8,17 @@ using Thickness = System.Windows.Thickness;
 using UIElement = System.Windows.UIElement;
 
 using Autodesk.Revit.DB;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.ParamPowerSuite;
+namespace OttawaWork.ParamPowerSuite;
 
 public partial class ParamPowerSuiteWindow
 {
-    private readonly ComboBox _frParamBox = BimFlowUi.ComboBox();
-    private readonly TextBox _frFindBox = BimFlowUi.TextBox();
-    private readonly TextBox _frReplaceBox = BimFlowUi.TextBox();
-    private readonly CheckBox _frRegexCheck = BimFlowUi.CheckBoxItem("Regex (.NET)");
-    private readonly CheckBox _frCaseCheck = BimFlowUi.CheckBoxItem("Case-sensitive");
+    private readonly ComboBox _frParamBox = OttawaWorkUi.ComboBox();
+    private readonly TextBox _frFindBox = OttawaWorkUi.TextBox();
+    private readonly TextBox _frReplaceBox = OttawaWorkUi.TextBox();
+    private readonly CheckBox _frRegexCheck = OttawaWorkUi.CheckBoxItem("Regex (.NET)");
+    private readonly CheckBox _frCaseCheck = OttawaWorkUi.CheckBoxItem("Case-sensitive");
     private readonly StackPanel _frPreviewPanel = new();
     private List<ParamChangePreview> _frPendingChanges = new();
 
@@ -27,13 +27,13 @@ public partial class ParamPowerSuiteWindow
         _parameterDependentComboBoxes.Add(_frParamBox);
 
         var stack = new StackPanel();
-        stack.Children.Add(BimFlowUi.SectionHeader("Find / Replace"));
-        stack.Children.Add(BimFlowUi.FieldLabel("Target parameter (text-storage only)"));
+        stack.Children.Add(OttawaWorkUi.SectionHeader("Find / Replace"));
+        stack.Children.Add(OttawaWorkUi.FieldLabel("Target parameter (text-storage only)"));
         stack.Children.Add(_frParamBox);
 
-        stack.Children.Add(BimFlowUi.FieldLabel("Find"));
+        stack.Children.Add(OttawaWorkUi.FieldLabel("Find"));
         stack.Children.Add(_frFindBox);
-        stack.Children.Add(BimFlowUi.FieldLabel("Replace with"));
+        stack.Children.Add(OttawaWorkUi.FieldLabel("Replace with"));
         stack.Children.Add(_frReplaceBox);
 
         var toggleRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 10) };
@@ -43,17 +43,17 @@ public partial class ParamPowerSuiteWindow
         stack.Children.Add(toggleRow);
 
         var buttonRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 12) };
-        var previewButton = BimFlowUi.SecondaryButton("Preview");
+        var previewButton = OttawaWorkUi.SecondaryButton("Preview");
         previewButton.Margin = new Thickness(0, 0, 8, 0);
         previewButton.Click += (_, _) => PreviewFindReplace();
-        var applyButton = BimFlowUi.PrimaryButton("Apply");
+        var applyButton = OttawaWorkUi.PrimaryButton("Apply");
         applyButton.Click += (_, _) => ApplyFindReplace();
         buttonRow.Children.Add(previewButton);
         buttonRow.Children.Add(applyButton);
         stack.Children.Add(buttonRow);
 
         var scroll = new ScrollViewer { MaxHeight = 260, Content = _frPreviewPanel };
-        stack.Children.Add(BimFlowUi.Card(scroll, padding: 10));
+        stack.Children.Add(OttawaWorkUi.Card(scroll, padding: 10));
 
         return stack;
     }

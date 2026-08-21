@@ -1,8 +1,8 @@
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.SelectCeilings;
+namespace OttawaWork.SelectCeilings;
 
-public class Application : BimFlowApplication
+public class Application : OttawaWorkApplication
 {
     protected override string PanelName => "Select";
     protected override string ButtonInternalName => "SelectCeilingsButton";

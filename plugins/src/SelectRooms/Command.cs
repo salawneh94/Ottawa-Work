@@ -1,13 +1,13 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.SelectRooms;
+namespace OttawaWork.SelectRooms;
 
 /// <summary>One click sets the active selection to every room visible in the active view — see QuickSelectEngine.</summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "selectrooms";
 
@@ -16,7 +16,7 @@ public class Command : BimFlowCommand
         var uiDoc = commandData.Application.ActiveUIDocument;
         var count = QuickSelectEngine.SelectCategory(uiDoc, BuiltInCategory.OST_Rooms);
         if (count == 0)
-            TaskDialog.Show("BIMFlow — Rooms", "No rooms are visible in the active view.");
+            TaskDialog.Show("Ottawa Tools — Rooms", "No rooms are visible in the active view.");
         return Result.Succeeded;
     }
 }

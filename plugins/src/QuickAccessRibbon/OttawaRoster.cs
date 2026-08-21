@@ -1,7 +1,7 @@
-namespace BIMFlow.QuickAccessRibbon;
+namespace OttawaWork.QuickAccessRibbon;
 
-/// <summary>One row per ribbon entry — folder doubles as DLL name (BIMFlow.<Folder>.dll),
-/// command class (BIMFlow.<Folder>.Command) and icon key (Icons/3d/<Folder>_16.png), the same
+/// <summary>One row per ribbon entry — folder doubles as DLL name (OttawaWork.<Folder>.dll),
+/// command class (OttawaWork.<Folder>.Command) and icon key (Icons/3d/<Folder>_16.png), the same
 /// convention every plugin's own .csproj/Application.cs already follows. Moved here from the
 /// BIMFlow-catalog's PluginRoster.cs, which this build doesn't have — see OttawaRoster below.
 /// PulldownGroup is optional: entries sharing the same group name are nested as sub-buttons
@@ -17,7 +17,7 @@ public record RosterEntry(string Folder, string Panel, string Text, string Toolt
 /// firm's own 8 named panels rather than the catalog's marketing panel
 /// names (Select and Highlight split apart from the original combined
 /// "Highlight & View" panel, matching the reference tool's own Select/
-/// Highlight layout). This is what BIMFlow.QuickAccessRibbon's Application.cs
+/// Highlight layout). This is what OttawaWork.QuickAccessRibbon's Application.cs
 /// builds the "Ottawa Tools" ribbon tab from in this build. Within Select and
 /// Highlight specifically, entry order is load-bearing — see the comment
 /// above each panel's entries below.

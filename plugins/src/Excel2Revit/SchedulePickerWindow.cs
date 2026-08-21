@@ -6,35 +6,35 @@ using Thickness = System.Windows.Thickness;
 using RoutedEventArgs = System.Windows.RoutedEventArgs;
 
 using Autodesk.Revit.DB;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.Excel2Revit;
+namespace OttawaWork.Excel2Revit;
 
 /// <summary>Pick a schedule to export — dark themed, replacing the old WinForms ListBox dialog.</summary>
-public class SchedulePickerWindow : BimFlowWindow
+public class SchedulePickerWindow : OttawaWorkWindow
 {
     private readonly ListBox _list = new() { MaxHeight = 320 };
     private readonly List<ViewSchedule> _schedules;
 
     public ViewSchedule? SelectedSchedule { get; private set; }
 
-    public SchedulePickerWindow(List<ViewSchedule> schedules) : base("BIMFlow — Excel2Revit", minWidth: 340)
+    public SchedulePickerWindow(List<ViewSchedule> schedules) : base("Ottawa Tools — Excel2Revit", minWidth: 340)
     {
         _schedules = schedules;
 
         var root = new StackPanel();
-        root.Children.Add(BimFlowUi.FieldLabel("Schedule to export"));
+        root.Children.Add(OttawaWorkUi.FieldLabel("Schedule to export"));
 
         foreach (var schedule in schedules) _list.Items.Add(schedule.Name);
         if (_list.Items.Count > 0) _list.SelectedIndex = 0;
-        _list.Background = BimFlowUi.BrushOf(BimFlowUi.CardBackgroundAlt);
-        _list.Foreground = BimFlowUi.BrushOf(BimFlowUi.TextPrimary);
-        _list.BorderBrush = BimFlowUi.BrushOf(BimFlowUi.BorderColor);
-        root.Children.Add(BimFlowUi.Card(_list, padding: 4));
+        _list.Background = OttawaWorkUi.BrushOf(OttawaWorkUi.CardBackgroundAlt);
+        _list.Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextPrimary);
+        _list.BorderBrush = OttawaWorkUi.BrushOf(OttawaWorkUi.BorderColor);
+        root.Children.Add(OttawaWorkUi.Card(_list, padding: 4));
 
         var buttonRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 16, 0, 0) };
-        var cancelButton = BimFlowUi.SecondaryButton("Cancel");
-        var nextButton = BimFlowUi.PrimaryButton("Next");
+        var cancelButton = OttawaWorkUi.SecondaryButton("Cancel");
+        var nextButton = OttawaWorkUi.PrimaryButton("Next");
         cancelButton.Margin = new Thickness(0, 0, 10, 0);
         cancelButton.Click += (_, _) => { DialogResult = false; Close(); };
         nextButton.Click += NextButton_Click;

@@ -2,10 +2,10 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.PointClouds;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 using System.Windows.Forms;
 
-namespace BIMFlow.PointCloudHeatmap;
+namespace OttawaWork.PointCloudHeatmap;
 
 /// <summary>
 /// Compares every wall visible in the active view against nearby point
@@ -17,7 +17,7 @@ namespace BIMFlow.PointCloudHeatmap;
 /// excluded from the sample).
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "pointcloudheatmap";
 
@@ -34,26 +34,26 @@ public class Command : BimFlowCommand
 
         if (walls.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — Point Cloud Heatmap", "No walls are visible in the active view.");
+            TaskDialog.Show("Ottawa Tools — Point Cloud Heatmap", "No walls are visible in the active view.");
             return Result.Succeeded;
         }
 
         var choice = MessageBox.Show(
             $"Run heatmap analysis on {walls.Count} wall(s) in the active view against point cloud scan data?\n\nChoose \"No\" to reset previously-applied heatmap colors instead.",
-            "BIMFlow — Point Cloud Heatmap",
+            "Ottawa Tools — Point Cloud Heatmap",
             MessageBoxButtons.YesNoCancel);
 
         if (choice == DialogResult.Cancel) return Result.Cancelled;
 
         if (choice == DialogResult.No)
         {
-            using var resetTransaction = new Transaction(doc, "BIMFlow: Reset Point Cloud Heatmap");
+            using var resetTransaction = new Transaction(doc, "Ottawa Tools: Reset Point Cloud Heatmap");
             resetTransaction.Start();
             foreach (var wall in walls)
                 view.SetElementOverrides(wall.Id, new OverrideGraphicSettings());
             resetTransaction.Commit();
 
-            TaskDialog.Show("BIMFlow — Point Cloud Heatmap", $"Reset heatmap colors on {walls.Count} wall(s).");
+            TaskDialog.Show("Ottawa Tools — Point Cloud Heatmap", $"Reset heatmap colors on {walls.Count} wall(s).");
             return Result.Succeeded;
         }
 
@@ -64,7 +64,7 @@ public class Command : BimFlowCommand
 
         if (pointClouds.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — Point Cloud Heatmap", "No point cloud links are visible in the active view.");
+            TaskDialog.Show("Ottawa Tools — Point Cloud Heatmap", "No point cloud links are visible in the active view.");
             return Result.Succeeded;
         }
 
@@ -74,7 +74,7 @@ public class Command : BimFlowCommand
             results = PointCloudHeatmapAnalyzer.Analyze(walls, pointClouds);
         }
 
-        using var transaction = new Transaction(doc, "BIMFlow: Apply Point Cloud Heatmap");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Apply Point Cloud Heatmap");
         transaction.Start();
         try
         {

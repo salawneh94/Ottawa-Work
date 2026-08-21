@@ -1,12 +1,12 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.ParamPowerSuite;
+namespace OttawaWork.ParamPowerSuite;
 
 /// <summary>
-/// Opens the Param Power Suite. Unlike every other BIMFlow command, this
+/// Opens the Param Power Suite. Unlike every other Ottawa Tools command, this
 /// one doesn't open a transaction itself — ParamPowerSuiteWindow does that
 /// per Apply click, once for each of its 7 tabs, since the whole point of
 /// this tool is running several independent actions in one open session
@@ -14,7 +14,7 @@ namespace BIMFlow.ParamPowerSuite;
 /// doc comment for why.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "parampowersuite";
 

@@ -1,22 +1,23 @@
-# BIMFlow Revit Plugins
+# Ottawa Tools Revit Plugins
 
-Revit add-ins sold on [BIMFlow](https://bimflow.app). One shared "BIMFlow" ribbon
-tab, one add-in per plugin, all built on a common licensing/SDK layer.
+Internal Revit add-ins for the firm's own use — a pruned fork of the BIMFlow
+catalog (see Status below) with no license gate and no website integration.
+One shared "Ottawa Tools" ribbon tab, one add-in per plugin.
 
 ## Structure
 
 ```
 plugins/
-  BIMFlow.sln              Solution referencing every project below
+  OttawaWork.sln           Solution referencing every project below
   Directory.Build.props    Shared build settings + Revit API references
   src/
-    Shared/                Common SDK: licensing, ribbon registration, shared dialogs
-    <PluginName>/           One folder per catalog plugin (see /data/plugins.json)
-      BIMFlow.<PluginName>.csproj
+    Shared/                Common SDK: ribbon registration, shared dialogs
+    <PluginName>/           One folder per wired plugin (see OttawaRoster.cs)
+      OttawaWork.<PluginName>.csproj
       <PluginName>.addin    Revit add-in manifest
       Application.cs        Ribbon registration (IExternalApplication)
       Command.cs             The actual tool logic (IExternalCommand)
-  scripts/                  One-off generators used to scaffold the above
+  scripts/                  One-off generators from the pre-fork catalog era (unused now)
 ```
 
 Every plugin folder name is derived from the catalog's `name` field with
@@ -26,7 +27,7 @@ folder, so the two stay in sync automatically.
 
 Each plugin's own `Application.cs` still declares its panel/text/tooltip/
 command as a record of what it is, but doesn't register a ribbon button
-itself (`BimFlowApplication.OnStartup` is a no-op) — the whole ribbon is
+itself (`OttawaWorkApplication.OnStartup` is a no-op) — the whole ribbon is
 built in one centralized pass instead, by `src/QuickAccessRibbon/`. That
 folder isn't a catalog plugin (not in `data/plugins.json`, not sold
 separately, `RequiresLicense` hardcoded `false`); it reads
@@ -54,7 +55,7 @@ firm's own ribbon actually shows.
 
 An earlier version of this repo carried the sibling catalog's full plugin
 source wholesale, with only the ribbon wiring curated down to 37 — the
-other ~58 never appeared anywhere in the UI (`BimFlowApplication.OnStartup`
+other ~58 never appeared anywhere in the UI (`OttawaWorkApplication.OnStartup`
 is a no-op for every plugin; only `OttawaRoster.Entries` puts a button on
 the ribbon) but still compiled on every CI run and still shipped their
 `.dll`/`.addin` into the installer, loading into Revit at startup for no
@@ -63,9 +64,9 @@ future pass wants any of them back) rather than left as dead weight.
 
 ## Building
 
-`.github/workflows/build-plugins.yml` builds `BIMFlow.sln` on a
+`.github/workflows/build-plugins.yml` builds `OttawaWork.sln` on a
 windows-latest GitHub Actions runner on every push/PR touching `plugins/` —
-so unlike most of this project's history, this isn't unverified: all 74
+so unlike most of this project's history, this isn't unverified: all 37
 plugins actually compile against the real Revit API. That became possible
 because the Revit API references come from the community-maintained
 [Nice3point.Revit.Api](https://github.com/Nice3point/RevitTemplates) NuGet
@@ -83,11 +84,11 @@ repo hasn't had. Budget time for a first functional QA pass before shipping.
 artifacts (Actions tab → the latest `Build Revit Plugins` run →
 Artifacts):
 
-- `bimflow-installer-2025` — `BIMFlow-Setup-2025.exe`
+- `ottawatools-installer-2025` — `OttawaTools-Setup-2025.exe`
   ([Inno Setup](https://jrsoftware.org/isinfo.php) script at
-  `plugins/installer/BIMFlow.iss`). Run it, restart Revit, done — installs
+  `plugins/installer/OttawaTools.iss`). Run it, restart Revit, done — installs
   per-user, no admin rights needed.
-- `bimflow-addins-2025` — the same files unpacked into a folder (every
+- `ottawatools-addins-2025` — the same files unpacked into a folder (every
   plugin's DLL and `.addin` manifest already flattened together), for
   dropping straight into Revit's Addins folder by hand if you'd rather not
   run an installer.
@@ -99,16 +100,16 @@ To build it yourself instead:
 
 1. Install Revit (2025 by default; see below for older versions) if you want
    to actually run the add-ins — it's not required just to build.
-2. Open `BIMFlow.sln`.
+2. Open `OttawaWork.sln`.
 3. Build. Each project's `.addin` manifest is copied next to its output DLL.
 4. Each `.addin` manifest references its own DLL by bare filename (resolved
    relative to the manifest's own folder), so copy every plugin's output
    DLL and `.addin` file — flattened into one folder, not kept in separate
    per-plugin subfolders — into `%AppData%\Autodesk\Revit\Addins\<version>\`.
 5. Ribbon icons need no separate copy step — they're embedded resources
-   inside `BIMFlow.QuickAccessRibbon.dll` itself
+   inside `OttawaWork.QuickAccessRibbon.dll` itself
    (`plugins/src/QuickAccessRibbon/Resources/Icons/3d`), loaded via a
-   `pack://application:,,,/BIMFlow.QuickAccessRibbon;component/...` URI by
+   `pack://application:,,,/OttawaWork.QuickAccessRibbon;component/...` URI by
    `RibbonBuilder.ApplyIcon`. Building and copying that one DLL (step 4) is
    enough; see the file for why.
 
@@ -126,9 +127,7 @@ matching `Nice3point.Revit.Api.RevitAPI`/`RevitAPIUI` package version.
 
 ## Licensing
 
-`Shared/LicenseClient.cs` calls the website's `/api/license/validate`
-endpoint on first use per plugin, caches the result locally
-(`%AppData%\BIMFlow\license-cache.json`) for a 7-day offline grace period,
-and prompts once for a license key (`Shared/LicenseActivationDialog.cs`),
-storing it in `%AppData%\BIMFlow\license.key`. Point a dev build at a local
-website instance with the `BIMFLOW_API_URL` environment variable.
+None — the licensing/website-integration layer (`LicenseClient.cs`,
+`LicenseActivationDialog.cs`) that the sibling BIMFlow catalog uses was
+stripped from this fork entirely. Every tool here runs unconditionally,
+with no license check and no network call.

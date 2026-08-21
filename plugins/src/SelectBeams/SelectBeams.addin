@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RevitAddIns>
   <AddIn Type="Application">
-    <Name>BIMFlow — Beams</Name>
-    <Assembly>BIMFlow.SelectBeams.dll</Assembly>
+    <Name>Ottawa Tools — Beams</Name>
+    <Assembly>OttawaWork.SelectBeams.dll</Assembly>
     <AddInId>{83a0f218-5d6a-44df-adf2-e4b8e46081de}</AddInId>
-    <FullClassName>BIMFlow.SelectBeams.Application</FullClassName>
-    <VendorId>BIMFlow</VendorId>
-    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+    <FullClassName>OttawaWork.SelectBeams.Application</FullClassName>
+    <VendorId>Ottawa Ingenieure</VendorId>
+    <VendorDescription>Ottawa Ingenieure (internal tool)</VendorDescription>
   </AddIn>
 </RevitAddIns>

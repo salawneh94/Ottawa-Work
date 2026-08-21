@@ -1,8 +1,8 @@
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.RevisionTrack;
+namespace OttawaWork.RevisionTrack;
 
-public class Application : BimFlowApplication
+public class Application : OttawaWorkApplication
 {
     protected override string PanelName => "Sheets & Views";
     protected override string ButtonInternalName => "RevisionTrackButton";

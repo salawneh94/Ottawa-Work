@@ -1,12 +1,12 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BIMFlow.Shared;
+using OttawaWork.Shared;
 
-namespace BIMFlow.ScopeBoxSync;
+namespace OttawaWork.ScopeBoxSync;
 
 [Transaction(TransactionMode.Manual)]
-public class Command : BimFlowCommand
+public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "scopeboxsync";
 
@@ -22,7 +22,7 @@ public class Command : BimFlowCommand
 
         if (scopeBoxes.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — Scope Box Sync", "No scope boxes were found in this project.");
+            TaskDialog.Show("Ottawa Tools — Scope Box Sync", "No scope boxes were found in this project.");
             return Result.Succeeded;
         }
 
@@ -35,7 +35,7 @@ public class Command : BimFlowCommand
 
         if (candidateViews.Count == 0)
         {
-            TaskDialog.Show("BIMFlow — Scope Box Sync", "No views in this project accept a scope box.");
+            TaskDialog.Show("Ottawa Tools — Scope Box Sync", "No views in this project accept a scope box.");
             return Result.Succeeded;
         }
 
@@ -48,7 +48,7 @@ public class Command : BimFlowCommand
 
         var applied = 0;
 
-        using var transaction = new Transaction(doc, "BIMFlow: Apply Scope Box");
+        using var transaction = new Transaction(doc, "Ottawa Tools: Apply Scope Box");
         transaction.Start();
         try
         {
@@ -68,7 +68,7 @@ public class Command : BimFlowCommand
             throw;
         }
 
-        TaskDialog.Show("BIMFlow — Scope Box Sync", $"Applied \"{window.SelectedScopeBox.Name}\" to {applied} view(s).");
+        TaskDialog.Show("Ottawa Tools — Scope Box Sync", $"Applied \"{window.SelectedScopeBox.Name}\" to {applied} view(s).");
         return Result.Succeeded;
     }
 }

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RevitAddIns>
   <AddIn Type="Application">
-    <Name>BIMFlow — Floors</Name>
-    <Assembly>BIMFlow.SelectFloors.dll</Assembly>
+    <Name>Ottawa Tools — Floors</Name>
+    <Assembly>OttawaWork.SelectFloors.dll</Assembly>
     <AddInId>{1700998b-a98c-4083-8138-29451127a5e8}</AddInId>
-    <FullClassName>BIMFlow.SelectFloors.Application</FullClassName>
-    <VendorId>BIMFlow</VendorId>
-    <VendorDescription>BIMFlow, https://bimflow.app</VendorDescription>
+    <FullClassName>OttawaWork.SelectFloors.Application</FullClassName>
+    <VendorId>Ottawa Ingenieure</VendorId>
+    <VendorDescription>Ottawa Ingenieure (internal tool)</VendorDescription>
   </AddIn>
 </RevitAddIns>
