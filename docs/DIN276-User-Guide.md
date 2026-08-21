@@ -57,24 +57,43 @@ report are always genuinely metric.
 
 ## Which parameter it targets
 
-The tool reads and writes a single parameter, by name: **`Kostengruppe`**.
+The tool primarily reads and writes a single parameter, by name:
+**`Kostengruppe`** (Text).
 
-This must be a project parameter (or shared parameter bound into the
-project) that your firm adds — Manage → Project Parameters — as either
-**Text** or **Number**; both storage types are read and written correctly.
-It is *not* created automatically by the tool.
+Unlike an ordinary project parameter, you don't have to add this one
+yourself. The first time you click **Assign to elements**, if the project
+doesn't already have a `Kostengruppe` parameter, the tool creates one and
+binds it to every relevant model category (Walls, Floors, Ceilings, Roofs,
+Doors, Windows, Structural Columns, Structural Framing, and the MEP
+categories the built-in rule table covers) — so no element gets skipped
+just because nobody set the parameter up in Manage → Project Parameters
+first. It's created through a small BIMFlow-owned shared parameter file
+kept at a fixed location (`%AppData%\BIMFlow\Din276SharedParameters.txt`),
+so re-running this on the same project, or on a different one, reuses the
+exact same parameter definition rather than creating a lookalike duplicate
+each time — the parameter still appears as a normal project parameter under
+Manage → Project Parameters, indistinguishable from one your firm added by
+hand. If the project already has a `Kostengruppe` parameter (Text or
+Number, either storage type), the tool uses that one as-is and doesn't
+touch its binding.
 
-It deliberately does **not** read or write the built-in Assembly Code field
-(`Baugruppenkennzeichen` in German Revit, `UNIFORMAT_CODE` internally).
-That field is commonly already in use for UniFormat/OmniClass
-classification on a project, and silently repurposing it for DIN 276 codes
-risks clobbering data the firm relies on for something else. Keeping DIN
-276 codes on their own dedicated parameter avoids that entirely.
+**Fallback, only if that still isn't possible for a given element:** if
+`Kostengruppe` genuinely can't be written to a specific element (its
+category wasn't included in the bind, for instance), the assignment falls
+back to the built-in **Assembly Code** field (`Baugruppenkennzeichen` in
+German Revit) and, failing that, **Type Comments** — whichever is writable
+first. Both of those fields are commonly already used on a project for
+UniFormat/OmniClass classification or other notes, so this fallback can
+overwrite existing data on that specific element; it's a deliberate
+last-resort tradeoff so "Assign to elements" doesn't silently skip
+elements, not the normal path. In the ordinary case — parameter bound
+successfully — every classified element writes to its own dedicated
+`Kostengruppe` parameter and nothing else is touched.
 
-If a project has no `Kostengruppe` parameter yet, elements are still
-classified and priced in the on-screen report (using the built-in rule
-table) — only the override-read and the "Assign to elements" write-back are
-unavailable until the parameter exists.
+Before you ever click **Assign to elements**, the on-screen report
+(classification, quantities, pricing) works exactly the same whether or not
+`Kostengruppe` exists yet — only the write-back needs it, and it creates
+it automatically at that point.
 
 ## Step-by-step usage
 
@@ -92,13 +111,15 @@ unavailable until the parameter exists.
    rates and the grand total) as an `.xlsx` file.
 6. **Assign to elements**, optionally: writes each currently-classified
    element's resolved Kostengruppe code onto its own `Kostengruppe`
-   parameter. You'll be asked to confirm first. Elements without that
-   parameter, or where it's read-only, are skipped (not created or
-   forced) — the summary dialog afterward reports how many were assigned
-   versus skipped. This is the one step that changes the model, and it
-   runs inside a single transaction: if anything goes wrong partway
-   through, the whole assignment is rolled back rather than left
-   half-applied.
+   parameter, creating and binding that parameter first if the project
+   doesn't already have it (see **Which parameter it targets**, above). You'll
+   be asked to confirm first. The summary dialog afterward reports how many
+   elements were assigned versus skipped (skips are rare — the fallback
+   chain described above covers most cases where the primary parameter
+   isn't writable for some element). This is the one step that changes the
+   model, and it runs inside a single transaction: if anything goes wrong
+   partway through, the whole assignment — including the parameter
+   creation — is rolled back rather than left half-applied.
 7. **Close** when you're done — Import/Export/rate entry never require
    closing the dialog to take effect.
 

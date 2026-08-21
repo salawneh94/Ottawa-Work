@@ -32,10 +32,12 @@ public class Command : BimFlowCommand
         var assigned = 0;
         var skipped = 0;
 
-        using var transaction = new Transaction(doc, "BIMFlow: Assign DIN 276 Kostengruppen");
+        using var transaction = new Transaction(doc, "Assign DIN 276 Kostengruppen");
         transaction.Start();
         try
         {
+            Din276Engine.EnsureKostengruppeParameter(doc);
+
             foreach (var quantity in window.PendingAssignments)
             {
                 var element = doc.GetElement(quantity.ElementId);
@@ -49,13 +51,13 @@ public class Command : BimFlowCommand
         catch (Exception ex)
         {
             transaction.RollBack();
-            TaskDialog.Show("BIMFlow — DIN 276 Cost Estimator", $"Couldn't assign Kostengruppen: {ex.Message}");
+            TaskDialog.Show("Ottawa Tools — DIN 276 Cost Estimator", $"Couldn't assign Kostengruppen: {ex.Message}");
             return Result.Failed;
         }
 
         TaskDialog.Show(
-            "BIMFlow — DIN 276 Cost Estimator",
-            $"Assigned {assigned} element(s).\nSkipped {skipped} element(s) with no writable 'Kostengruppe' parameter.");
+            "Ottawa Tools — DIN 276 Cost Estimator",
+            $"Assigned {assigned} element(s).\nSkipped {skipped} element(s) with no writable parameter available.");
 
         return Result.Succeeded;
     }

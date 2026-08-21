@@ -49,7 +49,7 @@ public class Din276Window : BimFlowWindow
     public List<ElementQuantity> PendingAssignments { get; private set; } = new();
     public bool AssignRequested { get; private set; }
 
-    public Din276Window(Document doc, View activeView) : base("BIMFlow — DIN 276 Cost Estimator", minWidth: 640)
+    public Din276Window(Document doc, View activeView) : base("Ottawa Tools — DIN 276 Cost Estimator", minWidth: 640)
     {
         _doc = doc;
         _activeView = activeView;
@@ -197,7 +197,7 @@ public class Din276Window : BimFlowWindow
         var table = BrandedXlsx.ReadTable(dialog.FileName);
         if (table is null)
         {
-            System.Windows.MessageBox.Show("This file doesn't look like a rate sheet — no header row was found.", "BIMFlow — DIN 276 Cost Estimator");
+            System.Windows.MessageBox.Show("This file doesn't look like a rate sheet — no header row was found.", "Ottawa Tools — DIN 276 Cost Estimator");
             return;
         }
 
@@ -206,7 +206,7 @@ public class Din276Window : BimFlowWindow
         var rateIndex = headers.IndexOf("€/Einheit");
         if (codeIndex < 0 || rateIndex < 0)
         {
-            System.Windows.MessageBox.Show("Expected columns 'KG' and '€/Einheit' — export a rate sheet from this tool first to see the expected format.", "BIMFlow — DIN 276 Cost Estimator");
+            System.Windows.MessageBox.Show("Expected columns 'KG' and '€/Einheit' — export a rate sheet from this tool first to see the expected format.", "Ottawa Tools — DIN 276 Cost Estimator");
             return;
         }
 
@@ -221,14 +221,14 @@ public class Din276Window : BimFlowWindow
         }
 
         Recalculate();
-        System.Windows.MessageBox.Show($"Imported {imported} rate(s).", "BIMFlow — DIN 276 Cost Estimator");
+        System.Windows.MessageBox.Show($"Imported {imported} rate(s).", "Ottawa Tools — DIN 276 Cost Estimator");
     }
 
     private void ExportReport()
     {
         if (_totals.Count == 0)
         {
-            System.Windows.MessageBox.Show("Nothing to export — no Kostengruppen matched in this scope.", "BIMFlow — DIN 276 Cost Estimator");
+            System.Windows.MessageBox.Show("Nothing to export — no Kostengruppen matched in this scope.", "Ottawa Tools — DIN 276 Cost Estimator");
             return;
         }
 
@@ -253,7 +253,7 @@ public class Din276Window : BimFlowWindow
             rows);
 
         if (savedPath is not null)
-            System.Windows.MessageBox.Show($"Exported to:\n{savedPath}", "BIMFlow — DIN 276 Cost Estimator");
+            System.Windows.MessageBox.Show($"Exported to:\n{savedPath}", "Ottawa Tools — DIN 276 Cost Estimator");
     }
 
     /// <summary>Confirms, then hands the currently-classified elements off to Command.cs to actually write —
@@ -262,13 +262,13 @@ public class Din276Window : BimFlowWindow
     {
         if (_quantities.Count == 0)
         {
-            System.Windows.MessageBox.Show("Nothing to assign — no Kostengruppen matched in this scope.", "BIMFlow — DIN 276 Cost Estimator");
+            System.Windows.MessageBox.Show("Nothing to assign — no Kostengruppen matched in this scope.", "Ottawa Tools — DIN 276 Cost Estimator");
             return;
         }
 
         var confirm = System.Windows.MessageBox.Show(
             $"Write the resolved Kostengruppe code onto {_quantities.Count} element(s)' own 'Kostengruppe' parameter?\n\nElements without that parameter (or where it's read-only) are skipped, not created.",
-            "BIMFlow — DIN 276 Cost Estimator",
+            "Ottawa Tools — DIN 276 Cost Estimator",
             System.Windows.MessageBoxButton.YesNo);
         if (confirm != System.Windows.MessageBoxResult.Yes) return;
 
