@@ -101,7 +101,26 @@ public class Command : BimFlowCommand
         };
         if (saveDialog.ShowDialog() != DialogResult.OK) return Result.Cancelled;
 
-        var options = new IFCExportOptions { FileVersion = window.SelectedVersion };
+        // ExportBaseQuantities, WallAndColumnSplitting and FilterViewId are
+        // strong-typed properties on IFCExportOptions; CoordinateBase (the
+        // "SitePlacement" key), the two Pset toggles and StoreIFCGUID have no
+        // strong-typed equivalent — they're only reachable through Revit's
+        // own IFC exporter (Autodesk/revit-ifc) via its generic AddOption
+        // string bag, so those go through AddOption below using the exact
+        // key/value names traced from that exporter's source
+        // (IFCExportConfiguration.cs / CommonEnum.cs's SiteTransformBasis).
+        var options = new IFCExportOptions
+        {
+            FileVersion = window.SelectedVersion,
+            ExportBaseQuantities = window.ExportBaseQuantities,
+            WallAndColumnSplitting = window.SplitWallsAndColumns,
+            FilterViewId = window.ExportVisibleElementsOnly ? doc.ActiveView.Id : ElementId.InvalidElementId,
+        };
+        options.AddOption("SitePlacement", window.CoordinateBase);
+        options.AddOption("ExportIFCCommonPropertySets", window.ExportIFCCommonPropertySets.ToString());
+        options.AddOption("ExportInternalRevitPropertySets", window.ExportRevitPropertySets.ToString());
+        options.AddOption("StoreIFCGUID", window.StoreIFCGUID.ToString());
+
         var folder = Path.GetDirectoryName(saveDialog.FileName)!;
         var fileNameOnly = Path.GetFileNameWithoutExtension(saveDialog.FileName);
 
