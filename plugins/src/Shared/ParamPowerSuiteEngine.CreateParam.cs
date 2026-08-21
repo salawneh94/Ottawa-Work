@@ -1,3 +1,11 @@
+// Shared.csproj has both UseWPF and UseWindowsForms, so the bare name
+// "Binding" is ambiguous between Autodesk.Revit.DB.Binding and
+// System.Windows.Forms.Binding (same category of collision as the
+// ComboBox/Brushes ambiguity fixed elsewhere in Shared) — this alias is
+// only needed because InstanceBinding/TypeBinding need a common declared
+// type for the ternary below; everywhere else the concrete subtype
+// (InstanceBinding, TypeBinding) is unambiguous on its own.
+using RevitBinding = Autodesk.Revit.DB.Binding;
 using System.IO;
 using Autodesk.Revit.DB;
 
@@ -92,7 +100,7 @@ public static partial class ParamPowerSuiteEngine
         var definition = OpenOrCreateDefinition(doc, sharedParameterFilePath, groupName, parameterName, dataType);
         if (definition is null) return false;
 
-        Binding binding = isInstance ? doc.Application.Create.NewInstanceBinding(categorySet) : doc.Application.Create.NewTypeBinding(categorySet);
+        RevitBinding binding = isInstance ? doc.Application.Create.NewInstanceBinding(categorySet) : doc.Application.Create.NewTypeBinding(categorySet);
         return doc.ParameterBindings.Insert(definition, binding, parameterGroup);
     }
 
