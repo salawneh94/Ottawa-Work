@@ -43,6 +43,19 @@
     <RevitApiPackageVersion Condition="'$(RevitVersion)' == '2026'">2026.4.0</RevitApiPackageVersion>
     <RevitApiPackageVersion Condition="'$(RevitVersion)' != '2025' And '$(RevitVersion)' != '2026'">$(RevitVersion).*</RevitApiPackageVersion>
 
+    <!--
+      A REVIT<year> compile symbol for the rare spot that needs to branch on
+      the target API surface directly — e.g. Din276Engine.cs, where Revit
+      2026 renamed BuiltInParameter.UNIFORMAT_CODE to ASSEMBLY_CODE (same
+      parameter, same underlying id -1002500, confirmed via reflection
+      against both years' Nice3point.Revit.Api reference assemblies — a pure
+      rename, not a behavior change) with no old-name alias kept, so that one
+      call site can't compile unconditionally against both 2025 and 2026 at
+      once. Both years otherwise share the same TargetFramework
+      (net8.0-windows), so there's no TFM-based #if to piggyback on instead.
+    -->
+    <DefineConstants>$(DefineConstants);REVIT$(RevitVersion)</DefineConstants>
+
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
     <ImplicitUsings>enable</ImplicitUsings>

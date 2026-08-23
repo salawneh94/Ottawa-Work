@@ -199,18 +199,24 @@ public static class Din276Engine
     /// category outside BindableCategories slipped in via a manual
     /// "Kostengruppe" value on some other element type): Assembly Code
     /// (BuiltInParameter.UNIFORMAT_CODE / "Baugruppenkennzeichen" in German
-    /// Revit) first, then Type Comments. Both are genuinely already in use
-    /// on many projects for UniFormat/OmniClass or other classification, so
-    /// this can overwrite existing data on that specific element — accepted
-    /// as the tradeoff for "don't skip elements", per how this fallback was
-    /// requested; the dedicated "Kostengruppe" parameter remains the
-    /// preferred target precisely so this fallback stays a rare exception,
-    /// not the common case.
+    /// Revit — renamed to ASSEMBLY_CODE in the Revit 2026 API, same
+    /// parameter, same underlying id, see the REVIT&lt;year&gt; symbol in
+    /// Directory.Build.props) first, then Type Comments. Both are genuinely
+    /// already in use on many projects for UniFormat/OmniClass or other
+    /// classification, so this can overwrite existing data on that specific
+    /// element — accepted as the tradeoff for "don't skip elements", per how
+    /// this fallback was requested; the dedicated "Kostengruppe" parameter
+    /// remains the preferred target precisely so this fallback stays a rare
+    /// exception, not the common case.
     /// </summary>
     public static bool TryAssignKostengruppe(Element element, string code)
     {
         if (TrySetParameter(element.LookupParameter(ParameterOverrideName), code, allowInteger: true)) return true;
+#if REVIT2026
+        if (TrySetParameter(element.get_Parameter(BuiltInParameter.ASSEMBLY_CODE), code, allowInteger: false)) return true;
+#else
         if (TrySetParameter(element.get_Parameter(BuiltInParameter.UNIFORMAT_CODE), code, allowInteger: false)) return true;
+#endif
         return TrySetParameter(element.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_COMMENTS), code, allowInteger: false);
     }
 
