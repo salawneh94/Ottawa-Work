@@ -1,10 +1,13 @@
 <Project>
   <!--
     Shared build settings for every project under /plugins/src.
-    Default target is Revit 2025 (.NET 8). To build against an older
-    Revit (2022-2024, which run on .NET Framework 4.8), pass
-    -p:RevitVersion=2024 (etc.) on the dotnet build command line,
-    or override RevitVersion/TargetFramework in a specific project.
+    Default target is Revit 2025 (.NET 8). Revit 2026 is also built (same
+    .NET 8 runtime generation as 2025) — pass -p:RevitVersion=2026 on the
+    dotnet build/restore command line to target it (see the CI matrix in
+    .github/workflows/build-plugins.yml, which builds both). To build
+    against an older Revit (2022-2024, which run on .NET Framework 4.8),
+    pass -p:RevitVersion=2024 (etc.) instead, or override
+    RevitVersion/TargetFramework in a specific project.
 
     Revit API references come from the community-maintained Nice3point.Revit.Api
     NuGet packages (https://github.com/Nice3point/RevitTemplates), not a local
@@ -13,29 +16,32 @@
     RevitAPI.dll/RevitAPIUI.dll Autodesk ships, just redistributed as
     reference-only NuGet packages versioned to match each Revit release year.
 
-    RevitApiPackageVersion is pinned exactly for 2025, not "2025.*" — Nice3point
-    publishes a new package patch for every Autodesk-issued Revit 2025 Update 4
-    hotfix build (2025.4.0, .20, .41, .50, .60 all exist), and each one bakes a
-    different RevitAPI/RevitAPIUI assembly version into every Ottawa Tools DLL's own
+    RevitApiPackageVersion is pinned exactly for 2025 and 2026, not a
+    "2025.*"/"2026.*" wildcard — Nice3point publishes a new package patch for
+    every Autodesk-issued Revit Update hotfix build (2025.4.0, .20, .41, .50,
+    .60 all exist; 2026.4.0, .10 likewise), and each one bakes a different
+    RevitAPI/RevitAPIUI assembly version into every Ottawa Tools DLL's own
     reference metadata. Revit's add-in loader does a hard version-equality check
     between that and whatever build is actually installed, logs "Assembly
     version conflict" in the journal on any mismatch, and — confirmed from a
     real customer's journal + crash dump — that mismatch destabilizes the
     session and leads to an unrecoverable crash shortly after, not just a
     benign warning. A floating wildcard silently drifts to whatever hotfix
-    Nice3point most recently published (2025.4.60 as of writing), which won't
-    match most customers' actually-installed Revit build. 2025.4.0 is the base
-    Revit 2025 Update 4 GA build (assembly version 25.4.0.0) — if a future
-    customer's journal shows "preloaded module of version 25.4.X.0" for some
-    other X, that's the value to change this to.
+    Nice3point most recently published, which won't match most customers'
+    actually-installed Revit build. 2025.4.0/2026.4.0 are each the base
+    Update 4 GA build for their year (assembly version 25.4.0.0 / 26.4.0.0)
+    — if a future customer's journal shows "preloaded module of version
+    2X.4.Y.0" for some other Y, that's the value to change the matching one
+    to.
   -->
   <PropertyGroup>
     <RevitVersion Condition="'$(RevitVersion)' == ''">2025</RevitVersion>
-    <TargetFramework Condition="'$(RevitVersion)' == '2025'">net8.0-windows</TargetFramework>
-    <TargetFramework Condition="'$(RevitVersion)' != '2025'">net48</TargetFramework>
+    <TargetFramework Condition="'$(RevitVersion)' == '2025' Or '$(RevitVersion)' == '2026'">net8.0-windows</TargetFramework>
+    <TargetFramework Condition="'$(RevitVersion)' != '2025' And '$(RevitVersion)' != '2026'">net48</TargetFramework>
 
     <RevitApiPackageVersion Condition="'$(RevitVersion)' == '2025'">2025.4.0</RevitApiPackageVersion>
-    <RevitApiPackageVersion Condition="'$(RevitVersion)' != '2025'">$(RevitVersion).*</RevitApiPackageVersion>
+    <RevitApiPackageVersion Condition="'$(RevitVersion)' == '2026'">2026.4.0</RevitApiPackageVersion>
+    <RevitApiPackageVersion Condition="'$(RevitVersion)' != '2025' And '$(RevitVersion)' != '2026'">$(RevitVersion).*</RevitApiPackageVersion>
 
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>

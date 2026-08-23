@@ -17,6 +17,18 @@ jobs:
     # ships on Windows-hosted runners — this can't build on Linux/macOS.
     runs-on: windows-latest
 
+    # One matrix leg per supported Revit year, each on its own fresh
+    # runner/checkout — both years currently target the same TargetFramework
+    # (net8.0-windows, see Directory.Build.props) with
+    # AppendTargetFrameworkToOutputPath=false, so building both in the same
+    # checkout back-to-back would silently overwrite one year's output with
+    # the other's instead of erroring. Separate matrix legs sidestep that
+    # entirely rather than requiring a clean between builds.
+    strategy:
+      fail-fast: false
+      matrix:
+        revit: ["2025", "2026"]
+
     steps:
       - uses: actions/checkout@v4
 
@@ -28,11 +40,13 @@ jobs:
       # Revit API assemblies come from the community-maintained
       # Nice3point.Revit.Api NuGet packages (see plugins/Directory.Build.props)
       # instead of a local Revit install, so this needs no Revit license.
+      # RevitVersion has to be passed at restore time too, not just build —
+      # it selects which Nice3point.Revit.Api package version gets restored.
       - name: Restore
-        run: dotnet restore plugins/OttawaWork.sln
+        run: dotnet restore plugins/OttawaWork.sln -p:RevitVersion=${{ matrix.revit }}
 
       - name: Build
-        run: dotnet build plugins/OttawaWork.sln --no-restore --configuration Debug
+        run: dotnet build plugins/OttawaWork.sln --no-restore --configuration Debug -p:RevitVersion=${{ matrix.revit }}
 
       # Flat-folder layout: every plugin's .addin manifest references its
       # own DLL by bare filename, resolved relative to the manifest's own
@@ -44,7 +58,7 @@ jobs:
         if: success()
         shell: pwsh
         run: |
-          $dist = "dist/OttawaTools-Addins-2025"
+          $dist = "dist/OttawaTools-Addins-${{ matrix.revit }}"
           New-Item -ItemType Directory -Path $dist -Force | Out-Null
 
           # Search recursively rather than assuming bin/Debug directly —
@@ -97,15 +111,15 @@ jobs:
           }
 
           Set-Content -Path "$dist/README.txt" -Value @"
-          Ottawa Tools Revit add-ins — Revit 2025 build (commit $env:GITHUB_SHA)
+          Ottawa Tools Revit add-ins — Revit ${{ matrix.revit }} build (commit $env:GITHUB_SHA)
 
-          Easiest install: run OttawaTools-Setup-2025.exe (next to this folder
-          in the same CI artifact set, or the ottawatools-installer-2025
+          Easiest install: run OttawaTools-Setup-${{ matrix.revit }}.exe (next to this folder
+          in the same CI artifact set, or the ottawatools-installer-${{ matrix.revit }}
           artifact) and restart Revit.
 
           Manual install, if you'd rather not run the installer:
           1. Copy every file in this folder into:
-             %AppData%\Autodesk\Revit\Addins\2025\
+             %AppData%\Autodesk\Revit\Addins\${{ matrix.revit }}\
           2. Restart Revit. All plugins appear under one Ottawa Tools ribbon tab.
 
           This is a compile-verified build only (CI is green) — none of
@@ -117,8 +131,8 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: ottawatools-addins-2025
-          path: dist/OttawaTools-Addins-2025
+          name: ottawatools-addins-${{ matrix.revit }}
+          path: dist/OttawaTools-Addins-${{ matrix.revit }}
           retention-days: 30
 
       # windows-latest normally ships Inno Setup already, but installing it
@@ -129,21 +143,22 @@ jobs:
         shell: pwsh
         run: choco install --no-progress -y innosetup
 
-      # Packages dist/OttawaTools-Addins-2025 into a single one-click installer
-      # (see plugins/installer/OttawaTools.iss) — the "one-installer, many-tools"
-      # model the top-level README describes, instead of the manual
-      # copy-into-AddIns-folder step README.txt above still documents as a
-      # fallback.
+      # Packages dist/OttawaTools-Addins-<year> into a single one-click
+      # installer (see plugins/installer/OttawaTools.iss) — the
+      # "one-installer, many-tools" model the top-level README describes,
+      # instead of the manual copy-into-AddIns-folder step README.txt above
+      # still documents as a fallback. /DRevitYear selects which year's
+      # dist folder, AddIns subfolder, and installer AppId the .iss uses.
       - name: Build installer
         if: success()
         shell: pwsh
         run: |
-          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" plugins\installer\OttawaTools.iss
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" plugins\installer\OttawaTools.iss "/DRevitYear=${{ matrix.revit }}"
 
       - name: Upload installer artifact
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: ottawatools-installer-2025
-          path: dist/OttawaTools-Setup-2025.exe
+          name: ottawatools-installer-${{ matrix.revit }}
+          path: dist/OttawaTools-Setup-${{ matrix.revit }}.exe
           retention-days: 30

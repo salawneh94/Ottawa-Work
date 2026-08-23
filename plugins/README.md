@@ -61,11 +61,13 @@ future pass wants any of them back) rather than left as dead weight.
 
 ## Building
 
-`.github/workflows/build-plugins.yml` builds `OttawaWork.sln` on a
+`.github/workflows/build-plugins.yml` builds `OttawaWork.sln` twice on a
 windows-latest GitHub Actions runner on every push/PR touching `plugins/` —
-so unlike most of this project's history, this isn't unverified: all 37
-plugins actually compile against the real Revit API. That became possible
-because the Revit API references come from the community-maintained
+once for Revit 2025 and once for Revit 2026, as separate matrix legs — so
+unlike most of this project's history, this isn't unverified: all 37
+plugins actually compile against the real Revit API, for both supported
+years. That became possible because the Revit API references come from the
+community-maintained
 [Nice3point.Revit.Api](https://github.com/Nice3point/RevitTemplates) NuGet
 packages (see `Directory.Build.props`) instead of a local Revit install —
 the same `RevitAPI.dll`/`RevitAPIUI.dll` Autodesk ships, redistributed as
@@ -77,27 +79,31 @@ command behaves correctly when actually run inside Revit against a real
 model — that needs an actual Revit install and manual testing, which this
 repo hasn't had. Budget time for a first functional QA pass before shipping.
 
-**Shortcut — skip Visual Studio entirely:** every CI run uploads two
-artifacts (Actions tab → the latest `Build Revit Plugins` run →
-Artifacts):
+**Shortcut — skip Visual Studio entirely:** every CI run uploads four
+artifacts, two per supported Revit year (Actions tab → the latest
+`Build Revit Plugins` run → Artifacts):
 
-- `ottawatools-installer-2025` — `OttawaTools-Setup-2025.exe`
+- `ottawatools-installer-2025` / `ottawatools-installer-2026` —
+  `OttawaTools-Setup-2025.exe` / `OttawaTools-Setup-2026.exe`
   ([Inno Setup](https://jrsoftware.org/isinfo.php) script at
-  `plugins/installer/OttawaTools.iss`). Run it, restart Revit, done — installs
-  per-user, no admin rights needed.
-- `ottawatools-addins-2025` — the same files unpacked into a folder (every
-  plugin's DLL and `.addin` manifest already flattened together), for
-  dropping straight into Revit's Addins folder by hand if you'd rather not
-  run an installer.
+  `plugins/installer/OttawaTools.iss`, built once per year with
+  `/DRevitYear`). Run the one matching your Revit version, restart Revit,
+  done — installs per-user, no admin rights needed. The two editions
+  install to separate per-year AddIns folders and can coexist side by side.
+- `ottawatools-addins-2025` / `ottawatools-addins-2026` — the same files
+  unpacked into a folder (every plugin's DLL and `.addin` manifest already
+  flattened together), for dropping straight into Revit's Addins folder by
+  hand if you'd rather not run an installer.
 
 Either way, useful for functional-testing the add-ins without installing
 the .NET SDK or Visual Studio at all.
 
 To build it yourself instead:
 
-1. Install Revit (2025 by default; see below for older versions) if you want
+1. Install Revit (2025 or 2026 — see below for older versions) if you want
    to actually run the add-ins — it's not required just to build.
-2. Open `OttawaWork.sln`.
+2. Open `OttawaWork.sln`. It builds for Revit 2025 by default; pass
+   `-p:RevitVersion=2026` (see below) to target 2026 instead.
 3. Build. `QuickAccessRibbon.addin` (the only `.addin` manifest in the whole
    suite) is copied next to its output DLL.
 4. `QuickAccessRibbon.addin` references its own DLL by bare filename
@@ -114,10 +120,16 @@ To build it yourself instead:
    `RibbonBuilder.ApplyIcon`. Building and copying that one DLL (step 4) is
    enough; see the file for why.
 
-### Targeting an older Revit version
+### Targeting a different Revit version
 
-`Directory.Build.props` defaults to Revit 2025 (.NET 8). For Revit 2022–2024
-(.NET Framework 4.8), build with:
+`Directory.Build.props` defaults to Revit 2025 (.NET 8). For Revit 2026
+(also .NET 8), build with:
+
+```
+dotnet build -p:RevitVersion=2026
+```
+
+For Revit 2022–2024 (.NET Framework 4.8), build with:
 
 ```
 dotnet build -p:RevitVersion=2024
