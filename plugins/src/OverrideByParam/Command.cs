@@ -113,7 +113,7 @@ public class Command : OttawaWorkCommand
     /// overload only if no typed raw value was captured (shouldn't normally
     /// happen for a value that reached this point at all).
     /// </summary>
-    private static FilterRule CreateEqualsRule(ElementId parameterId, object? rawValue, string displayValue) => rawValue switch
+    private static Autodesk.Revit.DB.FilterRule CreateEqualsRule(ElementId parameterId, object? rawValue, string displayValue) => rawValue switch
     {
         ElementId eid => ParameterFilterRuleFactory.CreateEqualsRule(parameterId, eid),
         int i => ParameterFilterRuleFactory.CreateEqualsRule(parameterId, i),
