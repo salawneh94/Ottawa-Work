@@ -323,10 +323,16 @@ public class OverrideByParamWindow : OttawaWorkWindow
     /// underlying RAW value Command.cs's ApplyFilters needs to build a correctly-typed filter rule —
     /// a formatted display string like "3000 mm" can't be reliably re-parsed back into the exact
     /// internal-units double Revit stored, and an ElementId reference has no string form to parse
-    /// at all, so the raw value has to be captured here, at the source, not reconstructed later.</summary>
+    /// at all, so the raw value has to be captured here, at the source, not reconstructed later.
+    /// Deliberately does NOT gate on Parameter.HasValue: confirmed live (user-reported) that
+    /// read-only/computed built-ins like "Type Name" report HasValue == false for every single
+    /// element even though they always have a real value that AsValueString() returns correctly —
+    /// gating on HasValue there marked 97 of 97 doors as "(No Value)". AsValueString() being
+    /// non-blank is the reliable signal (this is what the pre-ElementId-support version of this
+    /// method already relied on), not the HasValue flag.</summary>
     private static (string DisplayKey, object? RawValue) ResolveGroupKey(Parameter? param)
     {
-        if (param is not { HasValue: true }) return (NoValueKey, null);
+        if (param is null) return (NoValueKey, null);
 
         var display = param.AsValueString();
         if (string.IsNullOrWhiteSpace(display)) return (NoValueKey, null);
