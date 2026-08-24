@@ -47,25 +47,33 @@ public class Command : OttawaWorkCommand
 
     /// <summary>
     /// Revit rejects a ParameterFilterElement name containing characters
-    /// like {}[]|;&lt;&gt;?`~ — confirmed live (user-reported), twice: the
-    /// first fix only stripped that exact list Revit's own error message
-    /// happened to spell out, but the message says "such as", i.e. a
-    /// non-exhaustive example list, and it crashed again on a value with no
-    /// visibly bad character in it (a German DIN-276-style parameter
-    /// value). Rather than keep guessing at Revit's exact banned set,
-    /// allowlist instead: keep only characters known to be safe in a Revit
-    /// element name (letters — any script, not just ASCII, since German
-    /// umlauts etc. must stay legible — digits, spaces, and a handful of
-    /// common punctuation), replace everything else with '_'. See also
-    /// ApplyFilters below, which no longer trusts sanitization alone to
-    /// prevent every possible failure — each value's filter creation now
-    /// has its own try/catch too.
+    /// like {}[]|;&lt;&gt;?`~ — confirmed live (user-reported), three times
+    /// now. Round 1 only stripped that exact list Revit's own error message
+    /// happened to spell out (non-exhaustive — the message says "such as").
+    /// Round 2 switched to allowlisting letters/digits/whitespace/common
+    /// punctuation instead, which should have covered anything printable —
+    /// but it still crashed, on "1.1 ROHBAU", which is visibly nothing but
+    /// ASCII letters, digits, a period, and spaces. The remaining suspect:
+    /// char.IsWhiteSpace(c) is true for far more than the plain space bar —
+    /// U+00A0 (non-breaking space) included — and a DIN-276-style cost code
+    /// copy-pasted out of an official PDF table commonly carries exactly
+    /// that, indistinguishable from a normal space to the eye. Only the
+    /// literal ASCII space (U+0020) is allowed through now; every other
+    /// Unicode whitespace variant gets replaced like any other unlisted
+    /// character. Letters keep the broad char.IsLetterOrDigit allowance
+    /// (any script, not just ASCII, since German umlauts etc. must stay
+    /// legible) — this is specifically about whitespace look-alikes, not
+    /// about narrowing the letter/digit allowance. See also ApplyFilters
+    /// below, which no longer trusts sanitization alone to prevent every
+    /// possible failure — each value's filter creation has its own
+    /// try/catch too, so a still-unknown edge case reports which value and
+    /// why instead of silently crashing the whole batch again.
     /// </summary>
     private static string SanitizeFilterNameSegment(string text)
     {
         const string allowedPunctuation = "-_.,()&+/";
         var sanitized = new string(text.Select(c =>
-            char.IsLetterOrDigit(c) || char.IsWhiteSpace(c) || allowedPunctuation.Contains(c) ? c : '_').ToArray());
+            char.IsLetterOrDigit(c) || c == ' ' || allowedPunctuation.Contains(c) ? c : '_').ToArray());
         return sanitized.Length > 200 ? sanitized[..200] : sanitized;
     }
 
