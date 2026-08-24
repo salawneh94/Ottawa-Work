@@ -93,9 +93,54 @@ public class Command : OttawaWorkCommand
         return sanitized.Length > 200 ? sanitized[..200] : sanitized;
     }
 
-    private static OverrideGraphicSettings BuildOverrides(Autodesk.Revit.DB.Color color, int transparency, ColorCodeMode mode)
+    /// <summary>
+    /// The built-in "Solid fill" drafting pattern, found structurally
+    /// (FillPattern.IsSolidFill, on the Drafting target Revit's own view-
+    /// graphic overrides use) rather than by name — a name-based lookup
+    /// (GetFillPatternElementByName(doc, target, "Solid fill")) would hit
+    /// the exact same locale bug already found and fixed once this session
+    /// for Bulk Set's hardcoded English field names: on a non-English
+    /// Revit install, "Solid fill" isn't the pattern's real display name.
+    /// Null only if a project's Drafting patterns were somehow deleted
+    /// entirely, which BuildOverrides treats as "line color only" rather
+    /// than throwing.
+    /// </summary>
+    private static ElementId? FindSolidFillPatternId(Document doc)
+    {
+        return new FilteredElementCollector(doc)
+            .OfClass(typeof(FillPatternElement))
+            .Cast<FillPatternElement>()
+            .FirstOrDefault(f => f.GetFillPattern() is { IsSolidFill: true, Target: FillPatternTarget.Drafting })
+            ?.Id;
+    }
+
+    /// <summary>
+    /// Confirmed live (user-reported): filters were created and enabled
+    /// correctly (visible with the right line-color swatches in Visibility/
+    /// Graphics → Filters) but "no door got the color changed" — because
+    /// this only ever set the PROJECTION/CUT LINE color, never the surface
+    /// fill. A door in plan view is mostly thin lines with no fill pattern
+    /// by default, so a line-only color change is easy to miss entirely —
+    /// this now also sets a solid surface/cut fill in the same color
+    /// (skipped gracefully if no Drafting solid-fill pattern is found, see
+    /// FindSolidFillPatternId), which is what actually reads as "this
+    /// element is colored" the way the reference tool's own screenshots do.
+    /// </summary>
+    private static OverrideGraphicSettings BuildOverrides(Autodesk.Revit.DB.Color color, int transparency, ColorCodeMode mode, ElementId? solidFillPatternId)
     {
         var overrides = new OverrideGraphicSettings().SetProjectionLineColor(color).SetCutLineColor(color);
+
+        if (solidFillPatternId is not null)
+        {
+            overrides = overrides
+                .SetSurfaceForegroundPatternId(solidFillPatternId)
+                .SetSurfaceForegroundPatternColor(color)
+                .SetSurfaceForegroundPatternVisible(true)
+                .SetCutForegroundPatternId(solidFillPatternId)
+                .SetCutForegroundPatternColor(color)
+                .SetCutForegroundPatternVisible(true);
+        }
+
         if (mode == ColorCodeMode.ColorAndTransparency) overrides = overrides.SetSurfaceTransparency(transparency);
         return overrides;
     }
@@ -113,6 +158,8 @@ public class Command : OttawaWorkCommand
             .OfCategoryId(category.Id)
             .ToList();
 
+        var solidFillPatternId = FindSolidFillPatternId(doc);
+
         using var transaction = new Transaction(doc, "Ottawa Tools: Preview Color Code");
         transaction.Start();
         try
@@ -129,7 +176,7 @@ public class Command : OttawaWorkCommand
                 if (key == OverrideByParamWindow.NoValueKey) continue;
                 if (!window.SelectedValues.Contains(key)) continue;
 
-                var overrides = BuildOverrides(window.ColorByValue[key], window.Transparency, window.Mode);
+                var overrides = BuildOverrides(window.ColorByValue[key], window.Transparency, window.Mode, solidFillPatternId);
                 view.SetElementOverrides(element.Id, overrides);
                 applied++;
             }
@@ -168,6 +215,7 @@ public class Command : OttawaWorkCommand
         }
 
         var namePrefix = $"{FilterPrefix}{SanitizeFilterNameSegment(category.Name)} - {SanitizeFilterNameSegment(paramName)} - ";
+        var solidFillPatternId = FindSolidFillPatternId(doc);
 
         using var transaction = new Transaction(doc, "Ottawa Tools: Apply Color Code Filters");
         transaction.Start();
@@ -215,7 +263,7 @@ public class Command : OttawaWorkCommand
                     if (!view.GetFilters().Contains(pfe.Id))
                         view.AddFilter(pfe.Id);
 
-                    var overrides = BuildOverrides(window.ColorByValue[value], window.Transparency, window.Mode);
+                    var overrides = BuildOverrides(window.ColorByValue[value], window.Transparency, window.Mode, solidFillPatternId);
                     view.SetFilterOverrides(pfe.Id, overrides);
                     applied++;
                 }
