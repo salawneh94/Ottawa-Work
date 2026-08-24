@@ -21,7 +21,23 @@ namespace OttawaWork.OverrideByParam;
 [Transaction(TransactionMode.Manual)]
 public class Command : OttawaWorkCommand
 {
-    private const string FilterPrefix = "Ottawa Tools: ";
+    // No colon, no equals sign — every prior fix sanitized only the DYNAMIC
+    // pieces of the filter name (category, parameter, value) and left this
+    // static template's own ": "/" = " glue untouched, on the assumption
+    // colon was obviously safe since it's not in Revit's own (non-exhaustive
+    // — the message says "such as") example list. It wasn't a safe
+    // assumption: confirmed live across three separate reports, EVERY
+    // single "Apply as filters" attempt failed 100% of the time regardless
+    // of how different the actual category/parameter/value content was
+    // each time (English, German, umlauts, plain numbers, family names with
+    // hyphens/underscores already in them) — the one thing that never
+    // changed across every failure was this template's own colons and
+    // equals sign. Colon is part of Revit's well-documented official
+    // name-restriction set even though the runtime message doesn't spell
+    // it out. Hyphen and space are unambiguously safe (ordinary Revit view/
+    // filter names use them constantly), so those are the only glue
+    // characters left.
+    private const string FilterPrefix = "Ottawa Tools - ";
 
     protected override string PluginSlug => "overridebyparam";
 
@@ -151,7 +167,7 @@ public class Command : OttawaWorkCommand
             return Result.Cancelled;
         }
 
-        var namePrefix = $"{FilterPrefix}{SanitizeFilterNameSegment(category.Name)}: {SanitizeFilterNameSegment(paramName)} = ";
+        var namePrefix = $"{FilterPrefix}{SanitizeFilterNameSegment(category.Name)} - {SanitizeFilterNameSegment(paramName)} - ";
 
         using var transaction = new Transaction(doc, "Ottawa Tools: Apply Color Code Filters");
         transaction.Start();
