@@ -251,6 +251,31 @@ public class Command : OttawaWorkCommand
             return Result.Cancelled;
         }
 
+        // Confirmed live (user-reported): applying on a highly granular
+        // parameter (Type Name gave 30+ distinct door types on a real
+        // project) creates one ParameterFilterElement per value — Revit's
+        // own Visibility/Graphics Overrides "Filters" list, not anything
+        // this tool renders, becomes unresponsive to clicks/scroll at that
+        // count (confirmed: still stuck after waiting and reopening the
+        // dialog). The filters themselves are created and colored
+        // correctly regardless — this is purely native Revit UI struggling
+        // with a long filter list — so warn before creating that many
+        // rather than let the user discover it after the fact.
+        const int manyFiltersThreshold = 20;
+        var valueCount = window.SelectedValues.Count(v => v != OverrideByParamWindow.NoValueKey);
+        if (valueCount > manyFiltersThreshold)
+        {
+            var confirm = new TaskDialog("Ottawa Tools — Color Code")
+            {
+                MainInstruction = $"This will create {valueCount} separate filters.",
+                MainContent = "Revit's own Visibility/Graphics \"Filters\" list can become slow or unresponsive to clicks/scrolling once a view has this many filters on it. Consider narrowing your selection (fewer checked values) or picking a less granular parameter — continue anyway?",
+                CommonButtons = TaskDialogCommonButtons.Yes | TaskDialogCommonButtons.No,
+                DefaultButton = TaskDialogResult.No,
+            };
+            if (confirm.Show() != TaskDialogResult.Yes)
+                return Result.Cancelled;
+        }
+
         var namePrefix = $"{FilterPrefix}{SanitizeFilterNameSegment(category.Name)} - {SanitizeFilterNameSegment(paramName)} - ";
         var solidFillPatternId = FindSolidFillPatternId(doc);
 
