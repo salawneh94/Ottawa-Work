@@ -106,10 +106,16 @@ public static class BatchExcelSyncEngine
         var rows = new List<List<string>>();
         foreach (var element in elements)
         {
+            // Resolved once per element, not once per (element, column) pair below —
+            // every type-owned column an element has shares the exact same type, so
+            // re-fetching it per column was doc.GetElement()-ing the same element
+            // repeatedly for nothing. See ResolveParameter's doc comment.
+            var type = ResolveElementType(doc, element, scope);
+
             var row = new List<string> { element.Id.Value.ToString(), ElementLabel(element) };
             foreach (var col in selectedColumns)
             {
-                var param = ResolveParameter(doc, element, col, scope);
+                var param = ResolveParameter(element, type, col, scope);
                 row.Add(ReadValue(param));
             }
             rows.Add(row);
@@ -135,6 +141,8 @@ public static class BatchExcelSyncEngine
             var element = doc.GetElement(new ElementId(idValue));
             if (element is null) continue;
 
+            var type = ResolveElementType(doc, element, scope);
+
             var label = labelIndex >= 0 ? row.ElementAtOrDefault(labelIndex) : null;
             if (string.IsNullOrWhiteSpace(label)) label = ElementLabel(element);
 
@@ -144,7 +152,7 @@ public static class BatchExcelSyncEngine
                 var paramName = headers[i];
                 if (!columnsByName.TryGetValue(paramName, out var col)) continue;
 
-                var param = ResolveParameter(doc, element, col, scope);
+                var param = ResolveParameter(element, type, col, scope);
                 if (param is null) continue;
 
                 var currentValue = ReadValue(param);
@@ -187,6 +195,13 @@ public static class BatchExcelSyncEngine
         var updated = 0;
         var failures = new List<CommitFailure>();
 
+        // Unlike BuildExportTable/ComputeDiff, approvedRows is a flat list already
+        // expanded to one entry per (element, parameter) pair — the same element
+        // commonly appears in several rows (e.g. both Mark and Fire Rating changed
+        // on one wall), scattered rather than grouped, so a per-call cache is what
+        // actually avoids re-resolving that element's type over and over here.
+        var typeCache = new Dictionary<ElementId, Element?>();
+
         foreach (var row in approvedRows)
         {
             if (row.Status == DiffStatus.Conflict) continue;
@@ -204,7 +219,13 @@ public static class BatchExcelSyncEngine
                 continue;
             }
 
-            var param = ResolveParameter(doc, element, col, scope);
+            if (!typeCache.TryGetValue(element.Id, out var type))
+            {
+                type = ResolveElementType(doc, element, scope);
+                typeCache[element.Id] = type;
+            }
+
+            var param = ResolveParameter(element, type, col, scope);
             if (param is null)
             {
                 failures.Add(new CommitFailure(row.ElementLabel, row.ParamName, row.NewValue, "Parameter not found on this element"));
@@ -251,13 +272,17 @@ public static class BatchExcelSyncEngine
         return new CommitResult(updated, failures);
     }
 
-    private static Parameter? ResolveParameter(Document doc, Element element, ParamColumn col, SyncScope scope)
+    /// <summary>The type-lookup Instances-scope type-columns need — every column shares
+    /// the same answer for a given element, so callers resolve this once per element
+    /// (or once per element ever seen, for Commit's scattered rows) rather than once
+    /// per (element, column) pair, and pass the result in below.</summary>
+    private static Element? ResolveElementType(Document doc, Element element, SyncScope scope) =>
+        scope == SyncScope.Instances ? doc.GetElement(element.GetTypeId()) : null;
+
+    private static Parameter? ResolveParameter(Element element, Element? type, ParamColumn col, SyncScope scope)
     {
         if (scope == SyncScope.Instances && col.IsTypeParam)
-        {
-            var type = doc.GetElement(element.GetTypeId());
             return type?.LookupParameter(col.Name);
-        }
         return element.LookupParameter(col.Name);
     }
 
