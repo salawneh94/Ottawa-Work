@@ -282,9 +282,24 @@ public class OverrideByParamWindow : OttawaWorkWindow
             .OfCategoryId(category.Id)
             .FirstOrDefault();
 
+        // Confirmed live (user-reported): a parameter this element genuinely
+        // has and can read (e.g. "Familie"/Family) can still be structurally
+        // unusable in a ParameterFilterElement rule — Revit rejected it with
+        // "One of the given rules refers to a parameter that does not apply
+        // to this filter's categories." at Apply time, on every single value,
+        // for exactly that reason. GetFilterableParametersInCommon is Revit's
+        // own authoritative answer for which parameter ids actually work in a
+        // filter rule for this category — cross-referencing against it here
+        // keeps an unusable parameter out of the dropdown in the first place,
+        // instead of letting the user pick it and finding out only after
+        // Preview/Apply.
+        var filterableIds = sample is null
+            ? new HashSet<ElementId>()
+            : ParameterFilterUtilities.GetFilterableParametersInCommon(_doc, new List<ElementId> { category.Id }).ToHashSet();
+
         var names = sample is null
             ? new List<string>()
-            : sample.Parameters.Cast<Parameter>().Select(p => p.Definition.Name).Distinct().OrderBy(n => n).ToList();
+            : sample.Parameters.Cast<Parameter>().Where(p => filterableIds.Contains(p.Id)).Select(p => p.Definition.Name).Distinct().OrderBy(n => n).ToList();
 
         _paramBox.Items.Clear();
         _paramBox.Items.AddRange(names.Cast<object>().ToArray());
