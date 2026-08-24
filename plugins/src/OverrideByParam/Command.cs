@@ -199,7 +199,16 @@ public class Command : OttawaWorkCommand
             var applied = 0;
             foreach (var element in elements)
             {
+                // Falls back to the element's own TYPE the same way the legend does (see
+                // OverrideByParamWindow.ResolveGroupKey) — some built-ins (Type Name chief
+                // among them) enumerate on the instance's own Parameters collection but the
+                // instance-level Parameter object is a hollow placeholder with no value; the
+                // real value lives on the type element's same-named parameter. Without this,
+                // Preview would color zero elements for exactly the fields the legend now
+                // correctly groups.
                 var value = element.LookupParameter(paramName)?.AsValueString();
+                if (string.IsNullOrWhiteSpace(value) && doc.GetElement(element.GetTypeId()) is { } typeElement)
+                    value = typeElement.LookupParameter(paramName)?.AsValueString();
                 var key = string.IsNullOrWhiteSpace(value) ? OverrideByParamWindow.NoValueKey : value!;
                 if (key == OverrideByParamWindow.NoValueKey) continue;
                 if (!window.SelectedValues.Contains(key)) continue;

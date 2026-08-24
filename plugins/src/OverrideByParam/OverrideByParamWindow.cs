@@ -348,6 +348,25 @@ public class OverrideByParamWindow : OttawaWorkWindow
         return raw is null ? (NoValueKey, null) : (display, raw);
     }
 
+    /// <summary>Resolves an element's group key for a parameter, falling back to the element's own
+    /// TYPE if the instance-level Parameter comes back with no value. Confirmed live (user-reported):
+    /// "Typname"/Type Name showed 97 of 97 doors as "(No Value)" even once ResolveGroupKey stopped
+    /// gating on HasValue — some built-ins (Type Name chief among them) DO enumerate in an instance's
+    /// own Parameters collection, and GetFilterableParametersInCommon does list them as usable in a
+    /// filter rule (Revit's own filter engine resolves them against the type internally, which is
+    /// exactly why real V/G filters on "Type Name" work), but the instance-level Parameter OBJECT
+    /// itself is a hollow placeholder — AsValueString() on it is blank. The type element's own
+    /// same-named parameter has the real value, so that's the fallback source of truth here.</summary>
+    private static (string DisplayKey, object? RawValue) ResolveGroupKey(Element element, string paramName)
+    {
+        var key = ResolveGroupKey(element.LookupParameter(paramName));
+        if (key.DisplayKey != NoValueKey) return key;
+
+        return element.Document.GetElement(element.GetTypeId()) is { } typeElement
+            ? ResolveGroupKey(typeElement.LookupParameter(paramName))
+            : key;
+    }
+
     private void RefreshLegend()
     {
         _legendPanel.Children.Clear();
@@ -366,7 +385,7 @@ public class OverrideByParamWindow : OttawaWorkWindow
             .ToList();
 
         var byValue = elements
-            .Select(e => ResolveGroupKey(e.LookupParameter(paramName)))
+            .Select(e => ResolveGroupKey(e, paramName))
             .GroupBy(kv => kv.DisplayKey)
             .OrderBy(g => g.Key == NoValueKey ? 1 : 0)
             .ThenBy(g => g.Key)
