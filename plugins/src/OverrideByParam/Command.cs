@@ -23,6 +23,19 @@ public class Command : OttawaWorkCommand
 {
     private const string FilterPrefix = "Ottawa Tools: ";
 
+    // Revit rejects a ParameterFilterElement name containing any of these
+    // (confirmed live: "name cannot include prohibited characters, such as
+    // '{, }, [, ], |, ;, <, >, ?, `, ~'") — category names and parameter
+    // names are usually clean, but a parameter's actual VALUE is arbitrary
+    // user/import data (e.g. a Type Name like "Wand [Beton] <300mm>" isn't
+    // unusual in an imported/German project), and building the filter name
+    // straight from that crashed the whole batch on whichever value hit
+    // this first, since every value shared one transaction and one
+    // try/catch. Stripping the same characters everywhere a piece of that
+    // name comes from user/model data avoids the crash outright instead of
+    // trying to catch and skip per-value.
+    private static readonly char[] ProhibitedFilterNameChars = "{}[]|;<>?`~".ToCharArray();
+
     protected override string PluginSlug => "overridebyparam";
 
     protected override Result Run(ExternalCommandData commandData, ref string message)
@@ -44,6 +57,9 @@ public class Command : OttawaWorkCommand
             _ => Result.Succeeded,
         };
     }
+
+    private static string SanitizeFilterNameSegment(string text) =>
+        new(text.Select(c => ProhibitedFilterNameChars.Contains(c) ? '_' : c).ToArray());
 
     private static OverrideGraphicSettings BuildOverrides(Autodesk.Revit.DB.Color color, int transparency, ColorCodeMode mode)
     {
@@ -119,7 +135,7 @@ public class Command : OttawaWorkCommand
             return Result.Cancelled;
         }
 
-        var namePrefix = $"{FilterPrefix}{category.Name}: {paramName} = ";
+        var namePrefix = $"{FilterPrefix}{SanitizeFilterNameSegment(category.Name)}: {SanitizeFilterNameSegment(paramName)} = ";
 
         using var transaction = new Transaction(doc, "Ottawa Tools: Apply Color Code Filters");
         transaction.Start();
@@ -137,7 +153,7 @@ public class Command : OttawaWorkCommand
             var applied = 0;
             foreach (var value in window.SelectedValues.Where(v => v != OverrideByParamWindow.NoValueKey))
             {
-                var filterName = namePrefix + value;
+                var filterName = namePrefix + SanitizeFilterNameSegment(value);
                 var rule = ParameterFilterRuleFactory.CreateEqualsRule(sample.Id, value);
                 var elementFilter = new ElementParameterFilter(rule);
 
