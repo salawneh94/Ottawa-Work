@@ -79,9 +79,29 @@ public static partial class ParamPowerSuiteEngine
 
     // ---------- Tab 1: Bulk Set ----------
 
-    /// <summary>Writes every non-empty (parameter name, value) pair onto every element that has a
-    /// writable parameter by that name. Counts at the (element × parameter) level, not per element,
-    /// so the status bar reflects how much work actually happened across a multi-parameter bulk set.</summary>
+    /// <summary>
+    /// The 5 fixed Identity Data fields Bulk Set's UI offers, mapped to their real
+    /// BuiltInParameter — confirmed live (user-reported): element.LookupParameter("Comments")
+    /// matches by the parameter's CURRENT DISPLAY name, which is locale-dependent (on a
+    /// German-language Revit install "Comments" displays as "Kommentare"), so the literal
+    /// English string this dictionary used to pass straight into LookupParameter matched
+    /// nothing at all on that install — every element came back Skipped, 0 Applied, every
+    /// single time, regardless of what was typed into the field. BuiltInParameter is a stable
+    /// enum id, not a display string, so it works the same on every language Revit runs in.
+    /// </summary>
+    private static readonly Dictionary<string, BuiltInParameter> BulkSetFields = new()
+    {
+        ["Comments"] = BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS,
+        ["Mark"] = BuiltInParameter.ALL_MODEL_MARK,
+        ["Type Comments"] = BuiltInParameter.ALL_MODEL_TYPE_COMMENTS,
+        ["Keynote"] = BuiltInParameter.KEYNOTE_PARAM,
+        ["Description"] = BuiltInParameter.ALL_MODEL_DESCRIPTION,
+    };
+
+    /// <summary>Writes every non-empty (field, value) pair onto every element that has a
+    /// writable parameter for that field. Counts at the (element × field) level, not per
+    /// element, so the status bar reflects how much work actually happened across a
+    /// multi-field bulk set.</summary>
     public static ParamOpResult ApplyBulkSet(List<Element> elements, IReadOnlyDictionary<string, string> values)
     {
         var filled = values.Where(kv => !string.IsNullOrEmpty(kv.Value)).ToList();
@@ -91,7 +111,13 @@ public static partial class ParamPowerSuiteEngine
         foreach (var element in elements)
         foreach (var (name, value) in filled)
         {
-            var param = element.LookupParameter(name);
+            if (!BulkSetFields.TryGetValue(name, out var bip))
+            {
+                skipped++;
+                continue;
+            }
+
+            var param = ResolveIdentityParameter(element, bip);
             if (param is not { IsReadOnly: false })
             {
                 skipped++;
@@ -103,6 +129,19 @@ public static partial class ParamPowerSuiteEngine
         }
 
         return new ParamOpResult(applied, skipped, failed);
+    }
+
+    /// <summary>These Identity Data fields aren't consistently instance- or type-level across
+    /// every category — Comments/Mark are instance-owned, Type Comments is type-owned, and
+    /// Description varies by category — so this checks the instance first and only falls back
+    /// to the element's own type if the built-in parameter isn't present there.</summary>
+    private static Parameter? ResolveIdentityParameter(Element element, BuiltInParameter bip)
+    {
+        var instanceParam = element.get_Parameter(bip);
+        if (instanceParam is not null) return instanceParam;
+
+        var type = element.Document.GetElement(element.GetTypeId());
+        return type?.get_Parameter(bip);
     }
 
     private static bool SetParameterValue(Parameter param, string value) => param.StorageType switch
