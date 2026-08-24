@@ -286,20 +286,35 @@ public class OverrideByParamWindow : OttawaWorkWindow
         // has and can read (e.g. "Familie"/Family) can still be structurally
         // unusable in a ParameterFilterElement rule — Revit rejected it with
         // "One of the given rules refers to a parameter that does not apply
-        // to this filter's categories." at Apply time, on every single value,
-        // for exactly that reason. GetFilterableParametersInCommon is Revit's
-        // own authoritative answer for which parameter ids actually work in a
-        // filter rule for this category — cross-referencing against it here
-        // keeps an unusable parameter out of the dropdown in the first place,
-        // instead of letting the user pick it and finding out only after
-        // Preview/Apply.
+        // to this filter's categories." at Apply time, on every single value.
+        // GetFilterableParametersInCommon is Revit's own authoritative answer
+        // for which parameter ids work in a filter rule for this category —
+        // but "Familie" stayed on that list (it genuinely can be filtered on,
+        // just not this way) and the error persisted after gating on it
+        // alone, which is what exposed the real second half of this: this
+        // tool always builds a STRING equals-rule from AsValueString() text
+        // (Command.cs ApplyFilters — ParameterFilterRuleFactory.CreateEqualsRule
+        // (ElementId, string)), but Family/Type/Level/Workset/Material-style
+        // identity parameters are StorageType.ElementId under the hood — they
+        // only DISPLAY as text; the rule Revit needs for them takes an actual
+        // target ElementId, not a string, so a string-typed rule against one
+        // is rejected regardless of category. Rather than half-build ElementId
+        // rule support (resolving each legend value's string back to its real
+        // target element correctly for every possible referenced type is a
+        // meaningfully bigger feature, not a bug fix), StorageType.ElementId
+        // parameters are excluded here the same way GetFilterableParametersInCommon
+        // already excludes structurally-unusable ones — String/Integer/Double
+        // parameters, which this tool's rule-building already handles
+        // correctly, aren't affected.
         var filterableIds = sample is null
             ? new HashSet<ElementId>()
             : ParameterFilterUtilities.GetFilterableParametersInCommon(_doc, new List<ElementId> { category.Id }).ToHashSet();
 
         var names = sample is null
             ? new List<string>()
-            : sample.Parameters.Cast<Parameter>().Where(p => filterableIds.Contains(p.Id)).Select(p => p.Definition.Name).Distinct().OrderBy(n => n).ToList();
+            : sample.Parameters.Cast<Parameter>()
+                .Where(p => filterableIds.Contains(p.Id) && p.StorageType != StorageType.ElementId)
+                .Select(p => p.Definition.Name).Distinct().OrderBy(n => n).ToList();
 
         _paramBox.Items.Clear();
         _paramBox.Items.AddRange(names.Cast<object>().ToArray());
