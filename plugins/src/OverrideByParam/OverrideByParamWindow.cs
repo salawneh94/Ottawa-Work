@@ -63,7 +63,15 @@ public class OverrideByParamWindow : OttawaWorkWindow
     private readonly StackPanel _legendPanel = new();
     private readonly TextBlock _legendSummaryBadgeText = new() { FontSize = 10, FontWeight = System.Windows.FontWeights.Medium, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.Accent) };
     private readonly TextBlock _legendCaption = new() { FontSize = 10, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), Margin = new Thickness(0, 8, 0, 0), TextWrapping = TextWrapping.Wrap };
-    private readonly Dictionary<string, (Autodesk.Revit.DB.Color Color, int Count, CheckBox Box)> _legendRows = new();
+    // RawValue is what Command.cs's ApplyFilters actually builds a filter
+    // rule from — the display key alone (AsValueString() text) isn't enough
+    // once ElementId/Integer/Double-storage parameters are in play, since
+    // Revit's rule for those needs the real typed value, not its formatted
+    // text (a "3000 mm" display string can't just be re-parsed back into a
+    // raw internal-units double reliably, and an ElementId reference has no
+    // string form to parse at all). ElementId for ElementId-storage,
+    // int for Integer, double for Double, string (same as the key) otherwise.
+    private readonly Dictionary<string, (Autodesk.Revit.DB.Color Color, int Count, CheckBox Box, object? RawValue)> _legendRows = new();
 
     private bool _wipeFirst = true;
 
@@ -71,6 +79,7 @@ public class OverrideByParamWindow : OttawaWorkWindow
     public string? SelectedParameterName { get; private set; }
     public List<string> SelectedValues { get; private set; } = new();
     public Dictionary<string, Autodesk.Revit.DB.Color> ColorByValue { get; private set; } = new();
+    public Dictionary<string, object?> RawValueByKey { get; private set; } = new();
     public int Transparency { get; private set; }
     public ColorCodeMode Mode { get; private set; }
     public bool WipeFirst { get; private set; }
@@ -282,30 +291,18 @@ public class OverrideByParamWindow : OttawaWorkWindow
             .OfCategoryId(category.Id)
             .FirstOrDefault();
 
-        // Confirmed live (user-reported): a parameter this element genuinely
-        // has and can read (e.g. "Familie"/Family) can still be structurally
-        // unusable in a ParameterFilterElement rule — Revit rejected it with
-        // "One of the given rules refers to a parameter that does not apply
-        // to this filter's categories." at Apply time, on every single value.
         // GetFilterableParametersInCommon is Revit's own authoritative answer
-        // for which parameter ids work in a filter rule for this category —
-        // but "Familie" stayed on that list (it genuinely can be filtered on,
-        // just not this way) and the error persisted after gating on it
-        // alone, which is what exposed the real second half of this: this
-        // tool always builds a STRING equals-rule from AsValueString() text
-        // (Command.cs ApplyFilters — ParameterFilterRuleFactory.CreateEqualsRule
-        // (ElementId, string)), but Family/Type/Level/Workset/Material-style
-        // identity parameters are StorageType.ElementId under the hood — they
-        // only DISPLAY as text; the rule Revit needs for them takes an actual
-        // target ElementId, not a string, so a string-typed rule against one
-        // is rejected regardless of category. Rather than half-build ElementId
-        // rule support (resolving each legend value's string back to its real
-        // target element correctly for every possible referenced type is a
-        // meaningfully bigger feature, not a bug fix), StorageType.ElementId
-        // parameters are excluded here the same way GetFilterableParametersInCommon
-        // already excludes structurally-unusable ones — String/Integer/Double
-        // parameters, which this tool's rule-building already handles
-        // correctly, aren't affected.
+        // for which parameter ids can be used in a filter rule for this
+        // category at all — confirmed live (user-reported) that this alone
+        // isn't sufficient: "Familie"/Family stayed on this list (it
+        // genuinely can be filtered on) but every value still failed with
+        // "does not apply to this filter's categories", because that
+        // message isn't really about the category — the real problem was a
+        // type mismatch (see ResolveGroupKey/CreateEqualsRule below: Family/
+        // Type/Level/Material/Workset-style identity parameters are
+        // StorageType.ElementId under the hood, they only DISPLAY as text,
+        // and Command.cs's ApplyFilters now builds the correctly-typed rule
+        // per StorageType instead of always building a string rule).
         var filterableIds = sample is null
             ? new HashSet<ElementId>()
             : ParameterFilterUtilities.GetFilterableParametersInCommon(_doc, new List<ElementId> { category.Id }).ToHashSet();
@@ -313,13 +310,36 @@ public class OverrideByParamWindow : OttawaWorkWindow
         var names = sample is null
             ? new List<string>()
             : sample.Parameters.Cast<Parameter>()
-                .Where(p => filterableIds.Contains(p.Id) && p.StorageType != StorageType.ElementId)
+                .Where(p => filterableIds.Contains(p.Id))
                 .Select(p => p.Definition.Name).Distinct().OrderBy(n => n).ToList();
 
         _paramBox.Items.Clear();
         _paramBox.Items.AddRange(names.Cast<object>().ToArray());
         if (_paramBox.Items.Count > 0) _paramBox.SelectedIndex = 0;
         else RefreshLegend();
+    }
+
+    /// <summary>Groups by the parameter's display text (what the legend shows) but also resolves the
+    /// underlying RAW value Command.cs's ApplyFilters needs to build a correctly-typed filter rule —
+    /// a formatted display string like "3000 mm" can't be reliably re-parsed back into the exact
+    /// internal-units double Revit stored, and an ElementId reference has no string form to parse
+    /// at all, so the raw value has to be captured here, at the source, not reconstructed later.</summary>
+    private static (string DisplayKey, object? RawValue) ResolveGroupKey(Parameter? param)
+    {
+        if (param is not { HasValue: true }) return (NoValueKey, null);
+
+        var display = param.AsValueString();
+        if (string.IsNullOrWhiteSpace(display)) return (NoValueKey, null);
+
+        object? raw = param.StorageType switch
+        {
+            StorageType.ElementId => param.AsElementId() != ElementId.InvalidElementId ? param.AsElementId() : null,
+            StorageType.Integer => param.AsInteger(),
+            StorageType.Double => param.AsDouble(),
+            _ => display,
+        };
+
+        return raw is null ? (NoValueKey, null) : (display, raw);
     }
 
     private void RefreshLegend()
@@ -340,9 +360,8 @@ public class OverrideByParamWindow : OttawaWorkWindow
             .ToList();
 
         var byValue = elements
-            .Select(e => e.LookupParameter(paramName)?.AsValueString())
-            .Select(v => string.IsNullOrWhiteSpace(v) ? NoValueKey : v!)
-            .GroupBy(v => v)
+            .Select(e => ResolveGroupKey(e.LookupParameter(paramName)))
+            .GroupBy(kv => kv.DisplayKey)
             .OrderBy(g => g.Key == NoValueKey ? 1 : 0)
             .ThenBy(g => g.Key)
             .ToList();
@@ -352,6 +371,13 @@ public class OverrideByParamWindow : OttawaWorkWindow
             var value = byValue[i].Key;
             var count = byValue[i].Count();
             var isNoValue = value == NoValueKey;
+            // Every element in one display-key group shares the same raw
+            // value in the overwhelming common case (same Type, same Level,
+            // same number, ...) — the rare theoretical case of two distinct
+            // raw values formatting to identical display text isn't handled
+            // specially; the first one found wins, same tolerance this
+            // codebase already accepts elsewhere for that kind of edge case.
+            var rawValue = byValue[i].First().RawValue;
             var color = isNoValue ? new Autodesk.Revit.DB.Color(150, 150, 150) : ColorPalette.ForIndex(i, paletteName);
 
             var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 3, 0, 3) };
@@ -371,7 +397,7 @@ public class OverrideByParamWindow : OttawaWorkWindow
             row.Children.Add(box);
             row.Children.Add(countText);
             _legendPanel.Children.Add(row);
-            _legendRows[value] = (color, count, box);
+            _legendRows[value] = (color, count, box, rawValue);
         }
 
         if (byValue.Count == 0)
@@ -402,6 +428,7 @@ public class OverrideByParamWindow : OttawaWorkWindow
         ChosenAction = action;
         SelectedValues = _legendRows.Where(r => r.Value.Box.IsChecked == true).Select(r => r.Key).ToList();
         ColorByValue = _legendRows.ToDictionary(r => r.Key, r => r.Value.Color);
+        RawValueByKey = _legendRows.ToDictionary(r => r.Key, r => r.Value.RawValue);
         DialogResult = true;
         Close();
     }

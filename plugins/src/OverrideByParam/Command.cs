@@ -93,6 +93,34 @@ public class Command : OttawaWorkCommand
         return sanitized.Length > 200 ? sanitized[..200] : sanitized;
     }
 
+    // Internal-units tolerance for Double equality — Revit's own values are
+    // never exactly round after unit conversion, so an exact == comparison
+    // would silently match nothing; this is the same order-of-magnitude
+    // tolerance Autodesk's own SDK samples use for CreateEqualsRule.
+    private const double DoubleEpsilon = 1e-6;
+
+    /// <summary>
+    /// Dispatches to the correctly-typed ParameterFilterRuleFactory overload
+    /// for the target parameter's real StorageType, using the raw value
+    /// OverrideByParamWindow captured when building the legend (see
+    /// ResolveGroupKey there) rather than re-deriving it from display text.
+    /// Building every rule as the String overload — what this used to do
+    /// unconditionally — is exactly what made Family/Type/Level-style
+    /// ElementId-storage parameters fail with "does not apply to this
+    /// filter's categories": that message isn't really about the category
+    /// at all when the real problem is a type mismatch between the rule and
+    /// the parameter it's being evaluated against. Falls back to the string
+    /// overload only if no typed raw value was captured (shouldn't normally
+    /// happen for a value that reached this point at all).
+    /// </summary>
+    private static FilterRule CreateEqualsRule(ElementId parameterId, object? rawValue, string displayValue) => rawValue switch
+    {
+        ElementId eid => ParameterFilterRuleFactory.CreateEqualsRule(parameterId, eid),
+        int i => ParameterFilterRuleFactory.CreateEqualsRule(parameterId, i),
+        double d => ParameterFilterRuleFactory.CreateEqualsRule(parameterId, d, DoubleEpsilon),
+        _ => ParameterFilterRuleFactory.CreateEqualsRule(parameterId, displayValue),
+    };
+
     /// <summary>
     /// The built-in "Solid fill" drafting pattern, found structurally
     /// (FillPattern.IsSolidFill, on the Drafting target Revit's own view-
@@ -246,7 +274,7 @@ public class Command : OttawaWorkCommand
                 try
                 {
                     var filterName = namePrefix + SanitizeFilterNameSegment(value);
-                    var rule = ParameterFilterRuleFactory.CreateEqualsRule(sample.Id, value);
+                    var rule = CreateEqualsRule(sample.Id, window.RawValueByKey.GetValueOrDefault(value), value);
                     var elementFilter = new ElementParameterFilter(rule);
 
                     var existing = new FilteredElementCollector(doc)
