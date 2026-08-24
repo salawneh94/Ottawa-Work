@@ -23,19 +23,6 @@ public class Command : OttawaWorkCommand
 {
     private const string FilterPrefix = "Ottawa Tools: ";
 
-    // Revit rejects a ParameterFilterElement name containing any of these
-    // (confirmed live: "name cannot include prohibited characters, such as
-    // '{, }, [, ], |, ;, <, >, ?, `, ~'") — category names and parameter
-    // names are usually clean, but a parameter's actual VALUE is arbitrary
-    // user/import data (e.g. a Type Name like "Wand [Beton] <300mm>" isn't
-    // unusual in an imported/German project), and building the filter name
-    // straight from that crashed the whole batch on whichever value hit
-    // this first, since every value shared one transaction and one
-    // try/catch. Stripping the same characters everywhere a piece of that
-    // name comes from user/model data avoids the crash outright instead of
-    // trying to catch and skip per-value.
-    private static readonly char[] ProhibitedFilterNameChars = "{}[]|;<>?`~".ToCharArray();
-
     protected override string PluginSlug => "overridebyparam";
 
     protected override Result Run(ExternalCommandData commandData, ref string message)
@@ -58,8 +45,29 @@ public class Command : OttawaWorkCommand
         };
     }
 
-    private static string SanitizeFilterNameSegment(string text) =>
-        new(text.Select(c => ProhibitedFilterNameChars.Contains(c) ? '_' : c).ToArray());
+    /// <summary>
+    /// Revit rejects a ParameterFilterElement name containing characters
+    /// like {}[]|;&lt;&gt;?`~ — confirmed live (user-reported), twice: the
+    /// first fix only stripped that exact list Revit's own error message
+    /// happened to spell out, but the message says "such as", i.e. a
+    /// non-exhaustive example list, and it crashed again on a value with no
+    /// visibly bad character in it (a German DIN-276-style parameter
+    /// value). Rather than keep guessing at Revit's exact banned set,
+    /// allowlist instead: keep only characters known to be safe in a Revit
+    /// element name (letters — any script, not just ASCII, since German
+    /// umlauts etc. must stay legible — digits, spaces, and a handful of
+    /// common punctuation), replace everything else with '_'. See also
+    /// ApplyFilters below, which no longer trusts sanitization alone to
+    /// prevent every possible failure — each value's filter creation now
+    /// has its own try/catch too.
+    /// </summary>
+    private static string SanitizeFilterNameSegment(string text)
+    {
+        const string allowedPunctuation = "-_.,()&+/";
+        var sanitized = new string(text.Select(c =>
+            char.IsLetterOrDigit(c) || char.IsWhiteSpace(c) || allowedPunctuation.Contains(c) ? c : '_').ToArray());
+        return sanitized.Length > 200 ? sanitized[..200] : sanitized;
+    }
 
     private static OverrideGraphicSettings BuildOverrides(Autodesk.Revit.DB.Color color, int transparency, ColorCodeMode mode)
     {
@@ -151,33 +159,54 @@ public class Command : OttawaWorkCommand
             }
 
             var applied = 0;
+            var failures = new List<string>();
             foreach (var value in window.SelectedValues.Where(v => v != OverrideByParamWindow.NoValueKey))
             {
-                var filterName = namePrefix + SanitizeFilterNameSegment(value);
-                var rule = ParameterFilterRuleFactory.CreateEqualsRule(sample.Id, value);
-                var elementFilter = new ElementParameterFilter(rule);
+                // Sanitizing the name is a best-effort guard, not a
+                // guarantee — Revit's own "prohibited characters" error
+                // message says "such as", i.e. its example list isn't
+                // exhaustive, so a value can still get rejected for a
+                // reason SanitizeFilterNameSegment didn't anticipate. Each
+                // value gets its own try/catch so one such failure doesn't
+                // take every other (perfectly fine) value down with it —
+                // the old all-in-one-try version is exactly what turned a
+                // single bad value into a total crash, confirmed live twice.
+                try
+                {
+                    var filterName = namePrefix + SanitizeFilterNameSegment(value);
+                    var rule = ParameterFilterRuleFactory.CreateEqualsRule(sample.Id, value);
+                    var elementFilter = new ElementParameterFilter(rule);
 
-                var existing = new FilteredElementCollector(doc)
-                    .OfClass(typeof(ParameterFilterElement))
-                    .Cast<ParameterFilterElement>()
-                    .FirstOrDefault(f => f.Name == filterName);
+                    var existing = new FilteredElementCollector(doc)
+                        .OfClass(typeof(ParameterFilterElement))
+                        .Cast<ParameterFilterElement>()
+                        .FirstOrDefault(f => f.Name == filterName);
 
-                var pfe = existing;
-                if (pfe is null)
-                    pfe = ParameterFilterElement.Create(doc, filterName, new List<ElementId> { category.Id }, elementFilter);
-                else
-                    pfe.SetElementFilter(elementFilter);
+                    var pfe = existing;
+                    if (pfe is null)
+                        pfe = ParameterFilterElement.Create(doc, filterName, new List<ElementId> { category.Id }, elementFilter);
+                    else
+                        pfe.SetElementFilter(elementFilter);
 
-                if (!view.GetFilters().Contains(pfe.Id))
-                    view.AddFilter(pfe.Id);
+                    if (!view.GetFilters().Contains(pfe.Id))
+                        view.AddFilter(pfe.Id);
 
-                var overrides = BuildOverrides(window.ColorByValue[value], window.Transparency, window.Mode);
-                view.SetFilterOverrides(pfe.Id, overrides);
-                applied++;
+                    var overrides = BuildOverrides(window.ColorByValue[value], window.Transparency, window.Mode);
+                    view.SetFilterOverrides(pfe.Id, overrides);
+                    applied++;
+                }
+                catch (Exception ex)
+                {
+                    failures.Add($"\"{value}\": {ex.Message}");
+                }
             }
 
             transaction.Commit();
-            TaskDialog.Show("Ottawa Tools — Color Code", $"Applied {applied} filter(s) for \"{paramName}\" on {category.Name} to the active view.");
+
+            var summary = $"Applied {applied} of {applied + failures.Count} filter(s) for \"{paramName}\" on {category.Name} to the active view.";
+            if (failures.Count > 0)
+                summary += $"\n\n{failures.Count} value(s) couldn't be applied:\n{string.Join("\n", failures)}";
+            TaskDialog.Show("Ottawa Tools — Color Code", summary);
         }
         catch (Exception ex)
         {
