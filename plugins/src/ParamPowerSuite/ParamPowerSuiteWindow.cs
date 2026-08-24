@@ -318,6 +318,23 @@ public partial class ParamPowerSuiteWindow : OttawaWorkWindow
 
     private void SetStatus(string prefix, ParamOpResult result) => SetStatus(prefix, result.Applied, result.Skipped, result.Failed);
 
+    /// <summary>Shared by Find/Replace, Case Transform, Copy A→B, and Combine — the status bar's
+    /// numeric "Failed: N" alone gives no way to tell a real bug from N values that just don't fit
+    /// their target parameter, so this surfaces Revit's own reason (or the exception message) per
+    /// failed element instead of leaving it a silent count, same as Color Code and Batch Excel Sync
+    /// already do for their own failure paths.</summary>
+    private static void ShowApplyFailures(string tabLabel, List<ParamPowerSuiteEngine.ApplyFailure> failures)
+    {
+        if (failures.Count == 0) return;
+
+        const int maxShown = 15;
+        var lines = failures.Take(maxShown).Select(f => $"{f.ElementLabel}: {f.Reason}");
+        var text = string.Join("\n", lines);
+        if (failures.Count > maxShown) text += $"\n…and {failures.Count - maxShown} more not shown.";
+
+        System.Windows.MessageBox.Show(text, $"Ottawa Tools — Param Power Suite — {tabLabel}: {failures.Count} failure(s)");
+    }
+
     /// <summary>Renders a preview list of pending old→new changes — shared by Find/Replace, Case
     /// Transform, Copy A→B, and Combine, since all four resolve to the same "old value → new value
     /// per element" shape before Apply writes them. Capped so a huge scope doesn't render thousands

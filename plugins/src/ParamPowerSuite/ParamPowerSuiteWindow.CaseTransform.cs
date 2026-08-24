@@ -76,12 +76,13 @@ public partial class ParamPowerSuiteWindow
         if (_ctPendingChanges.Count == 0) { SetStatus("Case Transform: nothing to change", 0, 0, 0); return; }
 
         var result = new ParamOpResult();
+        var failures = new List<ParamPowerSuiteEngine.ApplyFailure>();
         using (var transaction = new Transaction(_doc, "Param Power Suite: Case Transform"))
         {
             transaction.Start();
             try
             {
-                result = ParamPowerSuiteEngine.ApplyChanges(_doc, _ctPendingChanges, paramName);
+                (result, failures) = ParamPowerSuiteEngine.ApplyChanges(_doc, _ctPendingChanges, paramName);
                 transaction.Commit();
             }
             catch (Exception)
@@ -93,5 +94,6 @@ public partial class ParamPowerSuiteWindow
         }
 
         SetStatus("Case Transform", result);
+        ShowApplyFailures("Case Transform", failures);
     }
 }

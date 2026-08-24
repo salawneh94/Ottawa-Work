@@ -272,23 +272,59 @@ public static partial class ParamPowerSuiteEngine
 
     private static string ReadValue(Parameter param) => param.AsValueString() ?? param.AsString() ?? "";
 
+    public record ApplyFailure(string ElementLabel, string Reason);
+
     /// <summary>Writes a previously computed preview back onto its target parameter — shared by
     /// Find/Replace, Case Transform, Copy A→B, and Combine. Re-reads each element by Id rather than
     /// trusting the Element references captured during Preview, since Preview and Apply always run
     /// moments apart in the same session here, but keeping them decoupled costs nothing and avoids
     /// ever writing through a stale reference.</summary>
-    public static ParamOpResult ApplyChanges(Document doc, List<ParamChangePreview> changes, string targetParamName)
+    public static (ParamOpResult Result, List<ApplyFailure> Failures) ApplyChanges(Document doc, List<ParamChangePreview> changes, string targetParamName)
     {
         int applied = 0, skipped = 0, failed = 0;
+        var failures = new List<ApplyFailure>();
+
         foreach (var change in changes)
         {
             var element = doc.GetElement(change.ElementId);
             var param = element?.LookupParameter(targetParamName);
             if (param is not { IsReadOnly: false }) { skipped++; continue; }
 
-            try { if (param.SetValueString(change.NewValue)) applied++; else failed++; }
-            catch (Exception) { failed++; }
+            try
+            {
+                // SetValueString parses a UI-formatted string into whatever the
+                // parameter's real storage type is (units for Double, an element
+                // lookup by name for ElementId, etc.) — exactly what a
+                // Double/Integer/ElementId target needs (Copy A→B and Combine
+                // can target either). A String parameter has no such formatting
+                // step, and confirmed live (user-reported): running free text
+                // through that parsing path rejected every single row on a
+                // String-storage target (Find/Replace and Case Transform are
+                // always String — see Preview's own StorageType.String guard —
+                // so this was breaking both of them outright). Parameter.Set
+                // writes a String value directly, no formatting/parsing
+                // involved — same fix already proven in BatchExcelSyncEngine.Commit.
+                var success = param.StorageType == StorageType.String
+                    ? param.Set(change.NewValue)
+                    : param.SetValueString(change.NewValue);
+
+                if (success)
+                {
+                    applied++;
+                }
+                else
+                {
+                    failed++;
+                    failures.Add(new ApplyFailure(change.ElementLabel, "Revit rejected the value — it doesn't match this parameter's expected format"));
+                }
+            }
+            catch (Exception ex)
+            {
+                failed++;
+                failures.Add(new ApplyFailure(change.ElementLabel, ex.Message));
+            }
         }
-        return new ParamOpResult(applied, skipped, failed);
+
+        return (new ParamOpResult(applied, skipped, failed), failures);
     }
 }

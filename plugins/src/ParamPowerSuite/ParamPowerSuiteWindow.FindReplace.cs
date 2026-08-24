@@ -80,12 +80,13 @@ public partial class ParamPowerSuiteWindow
         if (_frPendingChanges.Count == 0) { SetStatus("Find/Replace: nothing to change", 0, 0, 0); return; }
 
         var result = new ParamOpResult();
+        var failures = new List<ParamPowerSuiteEngine.ApplyFailure>();
         using (var transaction = new Transaction(_doc, "Param Power Suite: Find/Replace"))
         {
             transaction.Start();
             try
             {
-                result = ParamPowerSuiteEngine.ApplyChanges(_doc, _frPendingChanges, paramName);
+                (result, failures) = ParamPowerSuiteEngine.ApplyChanges(_doc, _frPendingChanges, paramName);
                 transaction.Commit();
             }
             catch (Exception)
@@ -97,5 +98,6 @@ public partial class ParamPowerSuiteWindow
         }
 
         SetStatus("Find/Replace", result);
+        ShowApplyFailures("Find/Replace", failures);
     }
 }

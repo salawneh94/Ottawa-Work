@@ -85,12 +85,13 @@ public partial class ParamPowerSuiteWindow
         if (_copyPendingChanges.Count == 0) { SetStatus("Copy A → B: nothing to change", 0, 0, 0); return; }
 
         var result = new ParamOpResult();
+        var failures = new List<ParamPowerSuiteEngine.ApplyFailure>();
         using (var transaction = new Transaction(_doc, "Param Power Suite: Copy A to B"))
         {
             transaction.Start();
             try
             {
-                result = ParamPowerSuiteEngine.ApplyChanges(_doc, _copyPendingChanges, target);
+                (result, failures) = ParamPowerSuiteEngine.ApplyChanges(_doc, _copyPendingChanges, target);
                 transaction.Commit();
             }
             catch (Exception)
@@ -102,5 +103,6 @@ public partial class ParamPowerSuiteWindow
         }
 
         SetStatus("Copy A → B", result);
+        ShowApplyFailures("Copy A → B", failures);
     }
 }

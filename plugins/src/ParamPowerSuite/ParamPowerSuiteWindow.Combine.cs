@@ -84,12 +84,13 @@ public partial class ParamPowerSuiteWindow
         if (_combinePendingChanges.Count == 0) { SetStatus("Combine: nothing to change", 0, 0, 0); return; }
 
         var result = new ParamOpResult();
+        var failures = new List<ParamPowerSuiteEngine.ApplyFailure>();
         using (var transaction = new Transaction(_doc, "Param Power Suite: Combine"))
         {
             transaction.Start();
             try
             {
-                result = ParamPowerSuiteEngine.ApplyChanges(_doc, _combinePendingChanges, targetParam);
+                (result, failures) = ParamPowerSuiteEngine.ApplyChanges(_doc, _combinePendingChanges, targetParam);
                 transaction.Commit();
             }
             catch (Exception)
@@ -101,5 +102,6 @@ public partial class ParamPowerSuiteWindow
         }
 
         SetStatus("Combine", result);
+        ShowApplyFailures("Combine", failures);
     }
 }
