@@ -1,9 +1,11 @@
 # DIN 276 Cost Estimator — User Guide
 
 The DIN 276 Cost Estimator classifies model elements into DIN 276
-Kostengruppen (2nd-level, 3-digit groups), computes their real quantities,
-and multiplies by unit rates you enter to produce a live cost estimate. It
-ships in Ottawa Tools → the panel containing "DIN 276 Cost Estimator".
+Kostengruppen — 2nd-level (3-digit) groups, and for walls/floors/roofs a
+real 3rd-level breakdown (e.g. 331 Tragende Außenwände vs. 332 Nichttragende
+Außenwände) — computes their real quantities, and multiplies by unit rates
+you enter to produce a live cost estimate. It ships in Ottawa Tools → the
+panel containing "DIN 276 Cost Estimator".
 
 ## What it does — and does not — do
 
@@ -11,10 +13,14 @@ ships in Ottawa Tools → the panel containing "DIN 276 Cost Estimator".
   vary too much by region and year to hardcode responsibly, so every rate
   table starts at zero. Type rates in directly, or import a rate sheet
   you've exported before (see **Import / export**, below).
-- It only classifies elements into the 2nd-level Kostengruppen that have an
+- It only auto-classifies elements into Kostengruppen that have an
   unambiguous default mapping (see **How classification works**). Elements
   with no mapping — and no explicit override — simply don't appear in the
-  table; they are not guessed at.
+  table; they are not guessed at. An explicit `Kostengruppe` override is
+  never restricted to the codes this tool ships a name for — any code you
+  type in (a 3rd-level MEP sub-code, or a firm-specific one) is still
+  classified, priced, and reported, just under a generic "Kostengruppe
+  &lt;code&gt;" label instead of an official DIN 276 name.
 - "Assign to elements" (see below) is the only action that writes anything
   to the model. Everything else — scope selection, quantity takeoff, rate
   entry, import, export — only reads the model or a file on disk.
@@ -34,9 +40,12 @@ Each element is matched to a Kostengruppe by a two-tier lookup:
 
    | Category | Kostengruppe |
    |---|---|
-   | Walls (exterior function) | 330 Außenwände |
-   | Walls (interior function) | 340 Innenwände |
-   | Doors / Windows | inherits their host wall's 330/340 split |
+   | Walls, load-bearing (Revit's own Structural Usage = Bearing/Shear/Combined), exterior | 331 Tragende Außenwände |
+   | Walls, non-load-bearing (Structural Usage = Non-bearing, or not marked Structural at all), exterior | 332 Nichttragende Außenwände |
+   | Walls, load-bearing, interior | 341 Tragende Innenwände |
+   | Walls, non-load-bearing, interior | 342 Nichttragende Innenwände |
+   | Doors / Windows, hosted in an exterior wall | 334 Außentüren und -fenster |
+   | Doors / Windows, hosted in an interior wall | 344 Innentüren und -fenster |
    | Floors | 350 Decken |
    | Roofs | 360 Dächer |
    | Plumbing fixtures, pipes | 410 Abwasser-, Wasser-, Gasanlagen |
@@ -45,10 +54,26 @@ Each element is matched to a Kostengruppe by a two-tier lookup:
    | Electrical equipment, electrical fixtures, lighting fixtures | 440 Elektrische Anlagen |
    | Communication devices, fire alarm devices, security devices | 450 Kommunikations- und Sicherheitstechnik |
 
+   The wall tragend/nichttragend split reads Revit's real **Structural
+   Usage** setting (Properties palette, when a wall's own **Structural**
+   checkbox is on) rather than guessing — a wall nobody marked Structural in
+   Revit is treated as nichttragend, which is the correct DIN 276 answer
+   either way. Doors and windows get their own 334/344 code directly
+   (a door is never itself "tragend"), following whichever exterior/interior
+   split their host wall resolved to.
+
    Categories not listed here (structural columns/framing, and most
-   nutzungsspezifische equipment) have no unambiguous DIN 276 home at the
-   2nd level and are deliberately left unmapped — give those elements an
-   explicit `Kostengruppe` value if you want them included.
+   nutzungsspezifische equipment) have no unambiguous DIN 276 home and are
+   deliberately left unmapped — give those elements an explicit
+   `Kostengruppe` value if you want them included.
+
+   The full built-in code table also includes the rest of the well-known
+   3rd-level breakdown under 330/340/350/360 (333 Außenstützen, 335–339
+   Außenwandbekleidungen/Sonnenschutz/sonstiges, 343/345/346/349 for
+   interior walls, 351–359 for Decken, 361–369 for Dächer) plus the
+   remaining 2nd-level groups (370, 390, 470, 480, 490) — none of these have
+   an automatic category rule yet, but every one of them is a valid explicit
+   `Kostengruppe` override value with its correct official name and unit.
 
 Quantities are read from Revit's own area/volume/length parameters and
 converted out of Revit's internal feet-based units into real m²/m³/m

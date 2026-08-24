@@ -1,5 +1,6 @@
 using System.IO;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Structure;
 
 namespace OttawaWork.Shared;
 
@@ -22,15 +23,19 @@ public record KostengruppeTotal(string Code, string Name, QuantityUnit Unit, dou
 /// Classification is a two-tier lookup: an explicit "Kostengruppe" project/
 /// shared parameter on the element wins if present (e.g. "331", as text or
 /// as a number — both storage types are read), letting a firm override or
-/// extend the defaults per-project without touching this code; otherwise a
-/// small built-in rule table maps common categories to their DIN 276 group
-/// (Walls split into 330 Außenwände/340 Innenwände by WallFunction,
-/// matching HighlightExterior/HighlightInterior's existing exterior/
-/// interior split; doors/windows inherit their host wall's split). This
-/// only covers the categories with an unambiguous DIN 276 home at the
-/// 2nd-level — Columns/Framing and most nutzungsspezifische equipment are
-/// deliberately left unmapped rather than guessed, and simply won't appear
-/// in the report unless given an explicit Kostengruppe parameter value.
+/// extend the defaults per-project without touching this code, to ANY code
+/// (see GetOrSynthesizeDef — an override code doesn't have to be one this
+/// tool ships a definition for); otherwise a small built-in rule table maps
+/// common categories to their DIN 276 group. Walls resolve to a real
+/// 3rd-level code (331/341 tragend, 332/342 nichttragend, exterior/interior
+/// respectively) off Revit's own Wall.StructuralUsage, not a guess — see
+/// WallCode. Doors/windows get their own 334/344 (a door is never itself
+/// "tragend", independent of its host wall's structural role), following
+/// whichever host wall's exterior/interior split they're hosted in. This
+/// only covers the categories with an unambiguous DIN 276 home — Columns/
+/// Framing and most nutzungsspezifische equipment are deliberately left
+/// unmapped rather than guessed, and simply won't appear in the report
+/// unless given an explicit Kostengruppe parameter value.
 ///
 /// EnsureKostengruppeParameter creates and binds that "Kostengruppe"
 /// parameter itself if the project doesn't already have one, so "Assign to
@@ -52,20 +57,69 @@ public static class Din276Engine
     public const string ParameterOverrideName = "Kostengruppe";
     private const string SharedParameterGroupName = "Ottawa Tools";
 
+    /// <summary>
+    /// 2nd-level groups plus the well-established 3rd-level (Kostenuntergruppen)
+    /// breakdown under 330/340/350/360 — the categories this tool already
+    /// classifies elements into, so a real breakdown was worth the extra
+    /// table rows. 400-series 3rd-level codes aren't listed here (the exact
+    /// official subdivision text is less certain from memory than the
+    /// widely-published 330/340/350/360 breakdown, and getting a cost-code
+    /// NAME wrong in an actual accounting tool is worse than not offering
+    /// one) — but see GetOrSynthesizeDef below: an unlisted code a firm
+    /// types into the "Kostengruppe" override parameter (a 400-series
+    /// sub-code, or anything else) is never silently dropped just because
+    /// it isn't a row here.
+    /// </summary>
     public static readonly KostengruppeDef[] Kostengruppen =
     {
         new("310", "Baugrube", QuantityUnit.SquareMeters),
         new("320", "Gründung", QuantityUnit.SquareMeters),
+
         new("330", "Außenwände", QuantityUnit.SquareMeters),
+        new("331", "Tragende Außenwände", QuantityUnit.SquareMeters),
+        new("332", "Nichttragende Außenwände", QuantityUnit.SquareMeters),
+        new("333", "Außenstützen", QuantityUnit.SquareMeters),
+        new("334", "Außentüren und -fenster", QuantityUnit.SquareMeters),
+        new("335", "Außenwandbekleidungen, außen", QuantityUnit.SquareMeters),
+        new("336", "Außenwandbekleidungen, innen", QuantityUnit.SquareMeters),
+        new("337", "Elementierte Außenwände", QuantityUnit.SquareMeters),
+        new("338", "Sonnenschutz", QuantityUnit.SquareMeters),
+        new("339", "Außenwände, sonstiges", QuantityUnit.SquareMeters),
+
         new("340", "Innenwände", QuantityUnit.SquareMeters),
+        new("341", "Tragende Innenwände", QuantityUnit.SquareMeters),
+        new("342", "Nichttragende Innenwände", QuantityUnit.SquareMeters),
+        new("343", "Innenstützen", QuantityUnit.SquareMeters),
+        new("344", "Innentüren und -fenster", QuantityUnit.SquareMeters),
+        new("345", "Innenwandbekleidungen", QuantityUnit.SquareMeters),
+        new("346", "Elementierte Innenwände", QuantityUnit.SquareMeters),
+        new("349", "Innenwände, sonstiges", QuantityUnit.SquareMeters),
+
         new("350", "Decken", QuantityUnit.SquareMeters),
+        new("351", "Deckenkonstruktionen", QuantityUnit.SquareMeters),
+        new("352", "Deckenbeläge", QuantityUnit.SquareMeters),
+        new("353", "Deckenbekleidungen", QuantityUnit.SquareMeters),
+        new("359", "Decken, sonstiges", QuantityUnit.SquareMeters),
+
         new("360", "Dächer", QuantityUnit.SquareMeters),
+        new("361", "Dachkonstruktionen", QuantityUnit.SquareMeters),
+        new("362", "Dachfenster, Dachöffnungen", QuantityUnit.SquareMeters),
+        new("363", "Dachbeläge", QuantityUnit.SquareMeters),
+        new("364", "Dachbekleidungen", QuantityUnit.SquareMeters),
+        new("369", "Dächer, sonstiges", QuantityUnit.SquareMeters),
+
+        new("370", "Baukonstruktive Einbauten", QuantityUnit.Count),
+        new("390", "Sonstige Maßnahmen für Baukonstruktionen", QuantityUnit.Count),
+
         new("410", "Abwasser-, Wasser-, Gasanlagen", QuantityUnit.Meters),
         new("420", "Wärmeversorgungsanlagen", QuantityUnit.Count),
         new("430", "Raumlufttechnische Anlagen", QuantityUnit.Meters),
         new("440", "Elektrische Anlagen", QuantityUnit.Count),
         new("450", "Kommunikations- und Sicherheitstechnik", QuantityUnit.Count),
         new("460", "Förderanlagen", QuantityUnit.Count),
+        new("470", "Nutzungsspezifische Anlagen und Ausstattung", QuantityUnit.Count),
+        new("480", "Gebäude- und Anlagenautomation", QuantityUnit.Count),
+        new("490", "Sonstige Maßnahmen für technische Anlagen", QuantityUnit.Count),
     };
 
     private static readonly (BuiltInCategory Category, string Code)[] DefaultCategoryRules =
@@ -120,9 +174,7 @@ public static class Din276Engine
             var code = ResolveCode(element, categoryCodes);
             if (code is null) continue;
 
-            var def = Kostengruppen.FirstOrDefault(k => k.Code == code);
-            if (def is null) continue;
-
+            var def = GetOrSynthesizeDef(code);
             results.Add(new ElementQuantity(element.Id, code, GetQuantity(element, def.Unit)));
         }
 
@@ -132,16 +184,38 @@ public static class Din276Engine
     public static List<KostengruppeTotal> Aggregate(List<ElementQuantity> quantities, IReadOnlyDictionary<string, double> rates)
     {
         var totals = new List<KostengruppeTotal>();
-        foreach (var def in Kostengruppen)
+        // Every code actually seen, not just the ones this table happens to
+        // list — a firm's own "Kostengruppe" override value always wins in
+        // ResolveCode regardless of whether it's one of ours, so a code we
+        // don't recognize (a 400-series sub-code, or a firm-specific one)
+        // still needs a report line instead of silently vanishing.
+        foreach (var code in quantities.Select(q => q.Code).Distinct().OrderBy(c => c, StringComparer.Ordinal))
         {
-            var matched = quantities.Where(q => q.Code == def.Code).ToList();
-            if (matched.Count == 0) continue;
-
-            var quantity = matched.Sum(q => q.Quantity);
-            var rate = rates.TryGetValue(def.Code, out var r) ? r : 0;
-            totals.Add(new KostengruppeTotal(def.Code, def.Name, def.Unit, quantity, rate, quantity * rate));
+            var def = GetOrSynthesizeDef(code);
+            var quantity = quantities.Where(q => q.Code == code).Sum(q => q.Quantity);
+            var rate = rates.TryGetValue(code, out var r) ? r : 0;
+            totals.Add(new KostengruppeTotal(code, def.Name, def.Unit, quantity, rate, quantity * rate));
         }
         return totals;
+    }
+
+    /// <summary>Looks up a code in the built-in table; if it's not there (a firm-specific or
+    /// otherwise unlisted code typed into the override parameter), falls back to its 2nd-level
+    /// parent's unit (e.g. "371" inherits "370"'s unit) so quantities are still measured
+    /// sensibly, defaulting to Count only if even that parent is unknown.</summary>
+    private static KostengruppeDef GetOrSynthesizeDef(string code)
+    {
+        var exact = Kostengruppen.FirstOrDefault(k => k.Code == code);
+        if (exact is not null) return exact;
+
+        if (code.Length == 3 && char.IsDigit(code[0]) && char.IsDigit(code[1]))
+        {
+            var parentCode = $"{code[0]}{code[1]}0";
+            var parent = Kostengruppen.FirstOrDefault(k => k.Code == parentCode);
+            if (parent is not null) return new KostengruppeDef(code, $"Kostengruppe {code}", parent.Unit);
+        }
+
+        return new KostengruppeDef(code, $"Kostengruppe {code}", QuantityUnit.Count);
     }
 
     private static string? ResolveCode(Element element, Dictionary<BuiltInCategory, string> categoryCodes)
@@ -150,13 +224,17 @@ public static class Din276Engine
         if (!string.IsNullOrWhiteSpace(overrideValue)) return overrideValue;
 
         if (element is Wall wall)
-            return wall.WallType?.Function == WallFunction.Interior ? "340" : "330";
+            return WallCode(wall);
 
         var category = element.Category;
         if (category is not null && (category.Id == new ElementId(BuiltInCategory.OST_Doors) || category.Id == new ElementId(BuiltInCategory.OST_Windows)))
         {
+            // Doors/windows get their own 3rd-level code (334/344) directly —
+            // "Außentüren und -fenster" / "Innentüren und -fenster" is what DIN
+            // 276 actually calls this, independent of whether the host wall
+            // happens to be load-bearing (a door is never itself "tragend").
             var hostWall = (element as FamilyInstance)?.Host as Wall;
-            return hostWall?.WallType?.Function == WallFunction.Interior ? "340" : "330";
+            return hostWall?.WallType?.Function == WallFunction.Interior ? "344" : "334";
         }
 
         if (category is null) return null;
@@ -164,6 +242,30 @@ public static class Din276Engine
             if (category.Id == new ElementId(builtIn)) return code;
 
         return null;
+    }
+
+    /// <summary>
+    /// Splits a wall into its real 3rd-level DIN 276 code using Revit's own
+    /// Wall.StructuralUsage — Bearing/Shear/Combined means "tragend" (331
+    /// exterior / 341 interior), NonBearing means "nichttragend" (332 / 342).
+    /// A wall not marked Structural at all in Revit reports NonBearing here
+    /// too, which is the correct DIN 276 answer regardless: a wall nobody
+    /// told Revit carries load isn't "tragend" by definition. This replaces
+    /// guessing — the previous version left every wall at the bare 330/340
+    /// level and made the user manually tag which ones were load-bearing.
+    /// </summary>
+    private static string WallCode(Wall wall)
+    {
+        var isInterior = wall.WallType?.Function == WallFunction.Interior;
+        var isBearing = wall.StructuralUsage is StructuralWallUsage.Bearing or StructuralWallUsage.Shear or StructuralWallUsage.Combined;
+
+        return (isInterior, isBearing) switch
+        {
+            (false, true) => "331",
+            (false, false) => "332",
+            (true, true) => "341",
+            (true, false) => "342",
+        };
     }
 
     /// <summary>
