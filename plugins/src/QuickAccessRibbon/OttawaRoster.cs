@@ -72,7 +72,15 @@ public static class OttawaRoster
         new("IFCExportQA", "Data & Excel", "IFC Mapping & Exporter", "Pre-flight checks, IFC class mapping presets, and clean IFC export.", false),
 
         // Panel 4: Renumbering
-        new("RoomRenumber", "Renumbering", "Room Renumber", "Renumber rooms by direction of travel or zone.", false),
+        // UniqueNumbering supersedes the old Room Renumber (Rooms only, one
+        // hardcoded field, no preview) — any of the ~19 common model
+        // categories, any String-storage parameter, one or more rules at
+        // once, and a preview before anything is written. Grid Renumber is
+        // untouched: renaming grids/levels is a find/replace transform of
+        // existing text, a different operation from sequential numbering by
+        // sort order, so folding it into the same rule engine would force
+        // two different operations into one UI instead of actually helping.
+        new("UniqueNumbering", "Renumbering", "Unique Numbering", "Add numbering rules per parameter for any category, preview every element's existing vs. new value, then assign or clear at once.", false),
         new("GridRenumber", "Renumbering", "Grid Renumber", "Batch rename grids or levels without breaking references.", false),
 
         // Panel 5: Spatial & Rooms

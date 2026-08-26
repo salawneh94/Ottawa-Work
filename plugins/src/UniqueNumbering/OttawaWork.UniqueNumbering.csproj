@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OttawaWork.UniqueNumbering</RootNamespace>
+    <AssemblyName>OttawaWork.UniqueNumbering</AssemblyName>
+    <!-- WPF for the dark-themed dialog (UniqueNumberingWindow); see OttawaWork.Shared's csproj comment. -->
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\OttawaWork.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
