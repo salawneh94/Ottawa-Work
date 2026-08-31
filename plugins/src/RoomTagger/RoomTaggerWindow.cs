@@ -12,12 +12,18 @@ namespace OttawaWork.RoomTagger;
 
 /// <summary>
 /// Category checklist plus the two target parameter names — dark themed,
-/// same shape as RoomInventoryWindow. Categories default to the set most
-/// likely to be missing Revit's automatic Room field (MEP equipment,
-/// fixtures, and the line-based systems — ducts, pipes, cable trays,
-/// conduits — that don't get one at all). Result read from
-/// SelectedCategories, RoomNumberParameter, RoomNameParameter after
-/// ShowDialog() returns true.
+/// same shape as RoomInventoryWindow. The original set was MEP equipment/
+/// fixtures and the line-based systems (ducts, pipes, cable trays, conduits)
+/// that never get Revit's automatic Room field populated at all. Furniture,
+/// Furniture Systems, and Casework were added on top of that (user-reported
+/// gap — "doesn't include the furniture in the room, like chair, table"):
+/// those DO normally get Revit's own auto Room field, but that field is
+/// read-only and can't be written to a real schedulable/exportable
+/// parameter the way this tool's target parameters can, and it goes blank
+/// whenever a piece's room calculation point drifts outside the room's
+/// actual boundary — both good reasons to want them taggable here too.
+/// Result read from SelectedCategories, RoomNumberParameter,
+/// RoomNameParameter after ShowDialog() returns true.
 /// </summary>
 public class RoomTaggerWindow : OttawaWorkWindow
 {
@@ -35,6 +41,9 @@ public class RoomTaggerWindow : OttawaWorkWindow
         ("Air Terminals", Autodesk.Revit.DB.BuiltInCategory.OST_DuctTerminal),
         ("Sprinklers", Autodesk.Revit.DB.BuiltInCategory.OST_Sprinklers),
         ("Specialty Equipment", Autodesk.Revit.DB.BuiltInCategory.OST_SpecialityEquipment),
+        ("Furniture", Autodesk.Revit.DB.BuiltInCategory.OST_Furniture),
+        ("Furniture Systems", Autodesk.Revit.DB.BuiltInCategory.OST_FurnitureSystems),
+        ("Casework", Autodesk.Revit.DB.BuiltInCategory.OST_Casework),
         ("Ducts", Autodesk.Revit.DB.BuiltInCategory.OST_DuctCurves),
         ("Pipes", Autodesk.Revit.DB.BuiltInCategory.OST_PipeCurves),
         ("Cable Trays", Autodesk.Revit.DB.BuiltInCategory.OST_CableTray),
