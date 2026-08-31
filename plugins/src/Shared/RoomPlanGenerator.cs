@@ -27,7 +27,8 @@ public record ViewTypeOptions(
     KeyPlanCorner KeyPlanCorner,
     bool AddElevations,
     bool AddWallSections,
-    bool AddCeilingPlan);
+    bool AddCeilingPlan,
+    ElementId? CeilingPlanViewTemplateId = null);
 
 public record OutputOptions(
     ElementId TitleBlockTypeId,
@@ -207,7 +208,7 @@ public static class RoomPlanGenerator
 
             if (viewTypes.AddCeilingPlan && ceilingPlanVft is not null)
             {
-                var view = CreateCroppedPlan(doc, ceilingPlanVft.Id, entry, bbox, output, ViewFamily.CeilingPlan);
+                var view = CreateCroppedPlan(doc, ceilingPlanVft.Id, entry, bbox, output, ViewFamily.CeilingPlan, viewTypes.CeilingPlanViewTemplateId);
                 view.Name = MakeUnique(existingViewNames, Substitute(output.ViewNameTemplate, entry) + " - RCP");
                 ApplyScale(view, entry, bbox, output);
                 packer.Place(Viewport.Create(doc, sheet.Id, view.Id, content.TopLeft));

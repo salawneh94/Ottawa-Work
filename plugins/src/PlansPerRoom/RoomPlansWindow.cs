@@ -33,6 +33,7 @@ public class RoomPlansWindow : OttawaWorkWindow
     private readonly List<RoomRow> _rows = new();
     private readonly Dictionary<string, ElementId> _titleBlocksByName;
     private readonly Dictionary<string, ElementId> _viewTemplatesByName;
+    private readonly Dictionary<string, ElementId> _ceilingPlanTemplatesByName;
 
     private readonly ComboBox _titleBlockBox = OttawaWorkUi.ComboBox();
     private readonly TextBox _sheetNumberBox = OttawaWorkUi.TextBox();
@@ -56,6 +57,7 @@ public class RoomPlansWindow : OttawaWorkWindow
     private readonly CheckBox _elevationsBox = OttawaWorkUi.CheckBoxItem("Add 4 room elevations");
     private readonly CheckBox _wallSectionsBox = OttawaWorkUi.CheckBoxItem("Wall-aligned sections per room");
     private readonly CheckBox _ceilingPlanBox = OttawaWorkUi.CheckBoxItem("Add reflected ceiling plan");
+    private readonly ComboBox _ceilingPlanTemplateBox = OttawaWorkUi.ComboBox();
 
     private readonly ComboBox _levelFilterBox = OttawaWorkUi.ComboBox();
     private readonly ComboBox _deptFilterBox = OttawaWorkUi.ComboBox();
@@ -97,6 +99,16 @@ public class RoomPlansWindow : OttawaWorkWindow
             .OfClass(typeof(View))
             .Cast<View>()
             .Where(v => v.IsTemplate && v.ViewType == Autodesk.Revit.DB.ViewType.FloorPlan)
+            .GroupBy(v => v.Name)
+            .ToDictionary(g => g.Key, g => g.First().Id);
+
+        // A Floor Plan view template can't be applied to a Ceiling Plan
+        // view (Revit's View.ViewTemplateId requires a matching ViewType),
+        // so this needs its own list filtered to ViewType.CeilingPlan.
+        _ceilingPlanTemplatesByName = new FilteredElementCollector(doc)
+            .OfClass(typeof(View))
+            .Cast<View>()
+            .Where(v => v.IsTemplate && v.ViewType == Autodesk.Revit.DB.ViewType.CeilingPlan)
             .GroupBy(v => v.Name)
             .ToDictionary(g => g.Key, g => g.First().Id);
 
@@ -236,7 +248,17 @@ public class RoomPlansWindow : OttawaWorkWindow
 
         col.Children.Add(ViewTypeCard(OttawaWorkUi.Warning, _elevationsBox, "Interior elevations, cropped to the room's height"));
         col.Children.Add(ViewTypeCard(OttawaWorkUi.Danger, _wallSectionsBox, "One section per boundary wall, longest first"));
-        col.Children.Add(ViewTypeCard(System.Windows.Media.Color.FromRgb(0x8B, 0x5C, 0xF6), _ceilingPlanBox, "RCP cropped to room boundary"));
+        col.Children.Add(ViewTypeCard(System.Windows.Media.Color.FromRgb(0x8B, 0x5C, 0xF6), _ceilingPlanBox, "RCP cropped to room boundary", () =>
+        {
+            var sub = new StackPanel { Margin = new Thickness(0, 4, 0, 0) };
+            sub.Children.Add(OttawaWorkUi.FieldLabel("View template"));
+            _ceilingPlanTemplateBox.Items.Clear();
+            _ceilingPlanTemplateBox.Items.Add("(None)");
+            _ceilingPlanTemplateBox.Items.AddRange(_ceilingPlanTemplatesByName.Keys.Cast<object>());
+            _ceilingPlanTemplateBox.SelectedIndex = 0;
+            sub.Children.Add(_ceilingPlanTemplateBox);
+            return sub;
+        }));
 
         return col;
     }
@@ -454,6 +476,7 @@ public class RoomPlansWindow : OttawaWorkWindow
         SelectedRooms = _rows.Where(r => r.Box.IsChecked == true).Select(r => r.Entry).ToList();
 
         var floorPlanTemplateId = _floorPlanTemplateBox.SelectedItem is string templateName && _viewTemplatesByName.TryGetValue(templateName, out var tId) ? tId : (ElementId?)null;
+        var ceilingPlanTemplateId = _ceilingPlanTemplateBox.SelectedItem is string ceilingTemplateName && _ceilingPlanTemplatesByName.TryGetValue(ceilingTemplateName, out var ctId) ? ctId : (ElementId?)null;
         var corner = (_keyPlanCornerBox.SelectedItem as string) switch
         {
             "Top-Left" => KeyPlanCorner.TopLeft,
@@ -468,7 +491,8 @@ public class RoomPlansWindow : OttawaWorkWindow
             corner,
             _elevationsBox.IsChecked == true,
             _wallSectionsBox.IsChecked == true,
-            _ceilingPlanBox.IsChecked == true);
+            _ceilingPlanBox.IsChecked == true,
+            ceilingPlanTemplateId);
 
         var titleBlockId = _titleBlockBox.SelectedItem is string tbName && _titleBlocksByName.TryGetValue(tbName, out var tbId) ? tbId : ElementId.InvalidElementId;
         var scale = int.Parse((_scaleBox.SelectedItem as string ?? "1:50").Split(':')[1]);
