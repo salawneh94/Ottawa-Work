@@ -147,6 +147,7 @@ public static class RoomPlanGenerator
         var existingSheetNames = ExistingViewOrSheetNames(doc, isSheet: true);
         var existingSheetNumbers = ExistingSheetNumbers(doc);
         var existingViewNames = ExistingViewOrSheetNames(doc, isSheet: false);
+        var levelExtentCache = new Dictionary<ElementId, BoundingBoxXYZ?>();
 
         for (var i = 0; i < rooms.Count; i++)
         {
@@ -175,15 +176,15 @@ public static class RoomPlanGenerator
 
             ApplyBrowserSort(sheet, entry, output);
 
-            var cursor = new XYZ(SheetMarginFeet + 1.0, 2.0, 0);
+            var content = GetSheetContentArea(doc, sheet);
+            var packer = new SheetLayoutPacker(content.MinX, content.MaxX, content.MinY, content.MaxY);
 
             if (viewTypes.CreateFloorPlan && floorPlanVft is not null)
             {
                 var view = CreateCroppedPlan(doc, floorPlanVft.Id, entry, bbox, output, ViewFamily.FloorPlan, viewTypes.FloorPlanViewTemplateId);
                 view.Name = MakeUnique(existingViewNames, Substitute(output.ViewNameTemplate, entry));
                 ApplyScale(view, entry, bbox, output);
-                Viewport.Create(doc, sheet.Id, view.Id, cursor);
-                cursor = new XYZ(cursor.X + 1.6, cursor.Y, 0);
+                packer.Place(Viewport.Create(doc, sheet.Id, view.Id, content.TopLeft));
                 viewsCreated++;
             }
 
@@ -193,7 +194,9 @@ public static class RoomPlanGenerator
                 if (keyView is not null)
                 {
                     keyView.Name = MakeUnique(existingViewNames, Substitute(output.ViewNameTemplate, entry) + " - Key Plan");
-                    Viewport.Create(doc, sheet.Id, keyView.Id, KeyPlanPoint(viewTypes.KeyPlanCorner));
+                    ApplyKeyPlanScale(doc, keyView, entry.LevelId, levelExtentCache);
+                    var keyViewport = Viewport.Create(doc, sheet.Id, keyView.Id, content.TopLeft);
+                    keyViewport.SetBoxCenter(KeyPlanPoint(viewTypes.KeyPlanCorner, keyViewport, content));
                     viewsCreated++;
                 }
                 else
@@ -202,47 +205,110 @@ public static class RoomPlanGenerator
                 }
             }
 
-            var rowY = 0.5;
-
             if (viewTypes.AddCeilingPlan && ceilingPlanVft is not null)
             {
                 var view = CreateCroppedPlan(doc, ceilingPlanVft.Id, entry, bbox, output, ViewFamily.CeilingPlan);
                 view.Name = MakeUnique(existingViewNames, Substitute(output.ViewNameTemplate, entry) + " - RCP");
                 ApplyScale(view, entry, bbox, output);
-                Viewport.Create(doc, sheet.Id, view.Id, new XYZ(SheetMarginFeet + 1.0, rowY, 0));
-                rowY -= 1.4;
+                packer.Place(Viewport.Create(doc, sheet.Id, view.Id, content.TopLeft));
                 viewsCreated++;
             }
 
             if (viewTypes.AddElevations && elevationVft is not null)
             {
                 var elevations = CreateElevations(doc, entry, bbox, elevationVft.Id);
-                var x = SheetMarginFeet + 0.6;
                 foreach (var view in elevations)
                 {
                     view.Name = MakeUnique(existingViewNames, Substitute(output.ViewNameTemplate, entry) + $" - Elev {viewsCreated}");
-                    Viewport.Create(doc, sheet.Id, view.Id, new XYZ(x, rowY, 0));
-                    x += 1.0;
+                    packer.Place(Viewport.Create(doc, sheet.Id, view.Id, content.TopLeft));
                     viewsCreated++;
                 }
-                if (elevations.Count > 0) rowY -= 1.2;
             }
 
             if (viewTypes.AddWallSections && sectionVft is not null)
             {
                 var sections = CreateWallSections(doc, entry, sectionVft.Id);
-                var x = SheetMarginFeet + 0.6;
                 foreach (var view in sections)
                 {
                     view.Name = MakeUnique(existingViewNames, Substitute(output.ViewNameTemplate, entry) + $" - Wall Section {viewsCreated}");
-                    Viewport.Create(doc, sheet.Id, view.Id, new XYZ(x, rowY, 0));
-                    x += 1.0;
+                    packer.Place(Viewport.Create(doc, sheet.Id, view.Id, content.TopLeft));
                     viewsCreated++;
                 }
             }
+
+            if (packer.Overflowed)
+                warnings.Add($"{entry.Number}: views didn't all fit within the sheet's usable area — some may overlap the title block or run past its edge. Try a larger title block, fewer view types, or a tighter crop margin.");
         }
 
         return new RoomPlanResult(sheetsCreated, viewsCreated, skipped, warnings);
+    }
+
+    private readonly record struct SheetContentArea(double MinX, double MaxX, double MinY, double MaxY)
+    {
+        public XYZ TopLeft => new(MinX, MaxY, 0);
+    }
+
+    /// <summary>Reads the sheet's real usable area from the title block instance Revit placed when the
+    /// sheet was created — confirmed live (user-reported): the old fixed sheet-space offsets took no
+    /// account of the title block's actual paper size (or the room's actual size), so views routinely
+    /// ran off small sheets and left large sheets mostly empty. Falls back to a generic size only if a
+    /// title block instance somehow couldn't be found, which shouldn't normally happen.</summary>
+    private static SheetContentArea GetSheetContentArea(Document doc, ViewSheet sheet)
+    {
+        var titleBlock = new FilteredElementCollector(doc, sheet.Id)
+            .OfCategory(BuiltInCategory.OST_TitleBlocks)
+            .WhereElementIsNotElementType()
+            .FirstOrDefault();
+        var bbox = titleBlock?.get_BoundingBox(sheet);
+        var min = bbox?.Min ?? new XYZ(0, 0, 0);
+        var max = bbox?.Max ?? new XYZ(3.0, 2.0, 0);
+
+        return new SheetContentArea(min.X + SheetMarginFeet, max.X - SheetMarginFeet, min.Y + SheetMarginFeet, max.Y - SheetMarginFeet);
+    }
+
+    /// <summary>
+    /// Places each viewport by actually measuring its real on-sheet footprint after creation
+    /// (Viewport.GetBoxOutline — the crop plus Revit's own view-title label, exactly as it will print)
+    /// and flowing left-to-right, top-to-bottom within the sheet's real usable area, wrapping to a new
+    /// row whenever the next viewport wouldn't fit on the current one — instead of guessing a size up
+    /// front the way a fixed-offset layout has to.
+    /// </summary>
+    private sealed class SheetLayoutPacker
+    {
+        private const double Gap = 0.15;
+        private readonly double _minX, _maxX, _minY;
+        private double _cursorX, _cursorY, _rowTallest;
+
+        public bool Overflowed { get; private set; }
+
+        public SheetLayoutPacker(double minX, double maxX, double minY, double maxY)
+        {
+            _minX = minX;
+            _maxX = maxX;
+            _minY = minY;
+            _cursorX = minX;
+            _cursorY = maxY;
+        }
+
+        public void Place(Viewport viewport)
+        {
+            var outline = viewport.GetBoxOutline();
+            var width = outline.MaximumPoint.X - outline.MinimumPoint.X;
+            var height = outline.MaximumPoint.Y - outline.MinimumPoint.Y;
+
+            if (_cursorX > _minX && _cursorX + width > _maxX)
+            {
+                _cursorX = _minX;
+                _cursorY -= _rowTallest + Gap;
+                _rowTallest = 0;
+            }
+
+            viewport.SetBoxCenter(new XYZ(_cursorX + width / 2, _cursorY - height / 2, 0));
+            if (_cursorY - height < _minY) Overflowed = true;
+
+            _cursorX += width + Gap;
+            _rowTallest = Math.Max(_rowTallest, height);
+        }
     }
 
     private static ViewFamilyType? FirstViewFamilyType(Document doc, ViewFamily family) =>
@@ -308,15 +374,73 @@ public static class RoomPlanGenerator
         if (View.IsValidViewScale(scale)) view.Scale = scale;
     }
 
-    /// <summary>Fixed sheet-space points for each key-plan corner choice — approximate, not measured against the
-    /// title block's real extents (viewports can be dragged into place afterward like any batch-placed sheet).</summary>
-    private static XYZ KeyPlanPoint(KeyPlanCorner corner) => corner switch
+    /// <summary>Centers the key-plan viewport in whichever corner of the sheet's real usable area was
+    /// chosen, using the viewport's own actually-measured footprint (GetBoxOutline — same technique the
+    /// main layout packer uses) so it sits fully inside that area regardless of the title block's real
+    /// size or the key plan's own scale — replacing fixed sheet-space offsets that took no account of
+    /// either (confirmed live, user-reported, alongside the rest of this batch's "views don't fit").</summary>
+    private static XYZ KeyPlanPoint(KeyPlanCorner corner, Viewport keyViewport, SheetContentArea content)
     {
-        KeyPlanCorner.TopLeft => new XYZ(SheetMarginFeet + 0.6, 2.6, 0),
-        KeyPlanCorner.BottomRight => new XYZ(SheetMarginFeet + 3.2, 0.6, 0),
-        KeyPlanCorner.BottomLeft => new XYZ(SheetMarginFeet + 0.6, 0.6, 0),
-        _ => new XYZ(SheetMarginFeet + 3.2, 2.6, 0),
-    };
+        var outline = keyViewport.GetBoxOutline();
+        var halfWidth = (outline.MaximumPoint.X - outline.MinimumPoint.X) / 2;
+        var halfHeight = (outline.MaximumPoint.Y - outline.MinimumPoint.Y) / 2;
+
+        return corner switch
+        {
+            KeyPlanCorner.TopLeft => new XYZ(content.MinX + halfWidth, content.MaxY - halfHeight, 0),
+            KeyPlanCorner.BottomRight => new XYZ(content.MaxX - halfWidth, content.MinY + halfHeight, 0),
+            KeyPlanCorner.BottomLeft => new XYZ(content.MinX + halfWidth, content.MinY + halfHeight, 0),
+            _ => new XYZ(content.MaxX - halfWidth, content.MaxY - halfHeight, 0), // TopRight
+        };
+    }
+
+    private static void ApplyKeyPlanScale(Document doc, ViewPlan keyView, ElementId levelId, Dictionary<ElementId, BoundingBoxXYZ?> levelExtentCache)
+    {
+        // A key plan is a small locator thumbnail, not a full readable
+        // drawing — confirmed live (user-reported): duplicating the parent
+        // level view left it at whatever scale that level plan already
+        // happened to be set to, which for the WHOLE level crammed into a
+        // sheet corner is usually far too large. Picks whatever standard
+        // scale keeps the level's rough extent to about a foot and a half
+        // on the actual sheet instead. Cached per level (not per room) so a
+        // multi-room batch on the same level doesn't re-collect the whole
+        // level's geometry once per room.
+        if (!levelExtentCache.TryGetValue(levelId, out var extent))
+        {
+            extent = LevelExtent(doc, levelId);
+            levelExtentCache[levelId] = extent;
+        }
+        if (extent is null) return;
+
+        var spanFeet = Math.Max(extent.Max.X - extent.Min.X, extent.Max.Y - extent.Min.Y);
+        const double targetSheetFeet = 1.4;
+        var scale = Math.Max(50, (int)Math.Ceiling(spanFeet / targetSheetFeet / 10.0) * 10);
+        if (View.IsValidViewScale(scale)) keyView.Scale = scale;
+    }
+
+    private static BoundingBoxXYZ? LevelExtent(Document doc, ElementId levelId)
+    {
+        var elements = new FilteredElementCollector(doc)
+            .WhereElementIsNotElementType()
+            .WherePasses(new LogicalOrFilter(new ElementClassFilter(typeof(Wall)), new ElementClassFilter(typeof(Room))))
+            .Where(e => e.LevelId == levelId)
+            .ToList();
+
+        BoundingBoxXYZ? union = null;
+        foreach (var element in elements)
+        {
+            var bb = element.get_BoundingBox(null);
+            if (bb is null) continue;
+            union = union is null
+                ? bb
+                : new BoundingBoxXYZ
+                {
+                    Min = new XYZ(Math.Min(union.Min.X, bb.Min.X), Math.Min(union.Min.Y, bb.Min.Y), Math.Min(union.Min.Z, bb.Min.Z)),
+                    Max = new XYZ(Math.Max(union.Max.X, bb.Max.X), Math.Max(union.Max.Y, bb.Max.Y), Math.Max(union.Max.Z, bb.Max.Z)),
+                };
+        }
+        return union;
+    }
 
     private static ViewPlan? CreateKeyPlan(Document doc, RoomEntry entry)
     {
