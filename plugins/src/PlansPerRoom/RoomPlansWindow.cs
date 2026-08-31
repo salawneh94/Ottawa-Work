@@ -378,7 +378,7 @@ public class RoomPlansWindow : OttawaWorkWindow
             var rowContent = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 3, 0, 3) };
             rowContent.Children.Add(checkbox);
             rowContent.Children.Add(new TextBlock { Text = label, FontSize = 12, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextPrimary), Width = 168, TextTrimming = System.Windows.TextTrimming.CharacterEllipsis });
-            rowContent.Children.Add(new TextBlock { Text = $"{entry.AreaSqFt:0.0} sf", FontSize = 11, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), Width = 56 });
+            rowContent.Children.Add(new TextBlock { Text = FormatArea(entry.AreaSqFt), FontSize = 11, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), Width = 56 });
 
             var (badgeText, badgeColor) = entry.Status switch
             {
@@ -435,12 +435,12 @@ public class RoomPlansWindow : OttawaWorkWindow
 
         _selTitle.Text = entry.Number;
         _selSub.Text = string.IsNullOrWhiteSpace(entry.Name) ? entry.LevelName : $"{entry.Name}\nLevel: {entry.LevelName}";
-        _selArea.Text = $"{entry.AreaSqFt:0.0} sf";
+        _selArea.Text = FormatArea(entry.AreaSqFt);
         _selDetails.Text =
-            $"Perimeter: {entry.PerimeterFeet:0.0} ft\n" +
-            $"Volume: {entry.VolumeCubicFeet:0.0} cf\n" +
+            $"Perimeter: {FormatLength(entry.PerimeterFeet)}\n" +
+            $"Volume: {FormatVolume(entry.VolumeCubicFeet)}\n" +
             $"Upper limit: {(string.IsNullOrWhiteSpace(entry.UpperLimitName) ? "—" : entry.UpperLimitName)}\n" +
-            $"Limit offset: {entry.LimitOffsetFeet:0.0} ft";
+            $"Limit offset: {FormatLength(entry.LimitOffsetFeet)}";
 
         var (statusText, statusColor) = entry.Status switch
         {
@@ -456,6 +456,17 @@ public class RoomPlansWindow : OttawaWorkWindow
         _ceilingFinishBox.Text = entry.Room.get_Parameter(BuiltInParameter.ROOM_FINISH_CEILING)?.AsString() ?? "";
         _baseFinishBox.Text = entry.Room.get_Parameter(BuiltInParameter.ROOM_FINISH_BASE)?.AsString() ?? "";
     }
+
+    /// <summary>RoomEntry's Area/Perimeter/Volume/LimitOffset are Revit's raw INTERNAL values — always
+    /// feet/square-feet/cubic-feet under the hood, regardless of what units the project is actually set
+    /// up to display in (Revit's documented internal unit system, unrelated to the project's own Units
+    /// settings). Confirmed live (user-reported): a metric project showed these labeled "sf"/"ft"/"cf"
+    /// with the raw internal number, meaningless to someone working in m²/m — UnitFormatUtils.Format
+    /// converts to and formats in the project's real configured display units (with the right symbol,
+    /// precision, and decimal separator) instead of assuming the internal unit is what should be shown.</summary>
+    private string FormatArea(double internalValue) => UnitFormatUtils.Format(_doc.GetUnits(), SpecTypeId.Area, internalValue, false);
+    private string FormatLength(double internalValue) => UnitFormatUtils.Format(_doc.GetUnits(), SpecTypeId.Length, internalValue, false);
+    private string FormatVolume(double internalValue) => UnitFormatUtils.Format(_doc.GetUnits(), SpecTypeId.Volume, internalValue, false);
 
     private void ShowDetailPlaceholder()
     {

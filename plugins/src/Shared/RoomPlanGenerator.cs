@@ -421,11 +421,23 @@ public static class RoomPlanGenerator
 
     private static BoundingBoxXYZ? LevelExtent(Document doc, ElementId levelId)
     {
-        var elements = new FilteredElementCollector(doc)
+        // Room can't be passed to ElementClassFilter/OfClass directly —
+        // confirmed live (user-reported): Revit throws "Input type(...
+        // Room) is of an element type that exists in the API, but not in
+        // Revit's native object model" for that, same as CollectRooms above
+        // already has to work around by filtering SpatialElement and then
+        // narrowing to Room in a second pass instead.
+        var walls = new FilteredElementCollector(doc)
+            .OfClass(typeof(Wall))
             .WhereElementIsNotElementType()
-            .WherePasses(new LogicalOrFilter(new ElementClassFilter(typeof(Wall)), new ElementClassFilter(typeof(Room))))
             .Where(e => e.LevelId == levelId)
-            .ToList();
+            .Cast<Element>();
+        var rooms = new FilteredElementCollector(doc)
+            .OfClass(typeof(SpatialElement))
+            .OfType<Room>()
+            .Where(e => e.LevelId == levelId)
+            .Cast<Element>();
+        var elements = walls.Concat(rooms).ToList();
 
         BoundingBoxXYZ? union = null;
         foreach (var element in elements)
