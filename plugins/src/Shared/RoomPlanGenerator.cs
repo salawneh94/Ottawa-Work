@@ -177,6 +177,17 @@ public static class RoomPlanGenerator
 
             ApplyBrowserSort(sheet, entry, output);
 
+            // The title block instance Revit just placed via ViewSheet.Create
+            // needs a regenerate before its geometry (and therefore its
+            // bounding box) is actually computed — confirmed live (user-
+            // reported): without this, GetSheetContentArea below could read
+            // a stale/incomplete bounding box for a just-created title block,
+            // making the packer think it had a much smaller sheet to work
+            // with than the real one, cramming every viewport into one small
+            // corner while the rest of the (actually much bigger) sheet sat
+            // empty.
+            doc.Regenerate();
+
             var content = GetSheetContentArea(doc, sheet);
             var packer = new SheetLayoutPacker(content.MinX, content.MaxX, content.MinY, content.MaxY);
 
@@ -217,20 +228,16 @@ public static class RoomPlanGenerator
 
             if (viewTypes.AddElevations && elevationVft is not null)
             {
-                var elevations = CreateElevations(doc, entry, bbox, elevationVft.Id);
+                // Scale is applied inside CreateElevations itself, from the
+                // elevation's own real crop width/height — not the room's
+                // plan footprint (see ApplySpanScale there): confirmed live
+                // (user-reported) that elevations came out at a visibly
+                // different/wrong scale from the floor plan when this used
+                // to reuse the plan-footprint-based ApplyScale instead.
+                var elevations = CreateElevations(doc, entry, bbox, elevationVft.Id, output);
                 foreach (var view in elevations)
                 {
                     view.Name = MakeUnique(existingViewNames, Substitute(output.ViewNameTemplate, entry) + $" - Elev {viewsCreated}");
-                    // Confirmed live (user-reported): elevations never had a
-                    // scale applied at all, so they inherited whatever the
-                    // office's default elevation view-family-type scale
-                    // happens to be — unrelated to this room's size. Once
-                    // the layout packer (above) started giving each
-                    // viewport however much real sheet space it actually
-                    // measures as needing, a wrongly-scaled elevation
-                    // started visibly dominating the sheet instead of
-                    // silently overlapping like it used to.
-                    ApplyScale(view, entry, bbox, output);
                     packer.Place(Viewport.Create(doc, sheet.Id, view.Id, content.TopLeft));
                     viewsCreated++;
                 }
@@ -371,10 +378,15 @@ public static class RoomPlanGenerator
 
     private static void ApplyScale(View view, RoomEntry entry, BoundingBoxXYZ bbox, OutputOptions output)
     {
+        var spanFeet = Math.Max(bbox.Max.X - bbox.Min.X, bbox.Max.Y - bbox.Min.Y) + output.CropMarginFeet * 2;
+        ApplySpanScale(view, spanFeet, output);
+    }
+
+    private static void ApplySpanScale(View view, double spanFeet, OutputOptions output)
+    {
         var scale = output.ScaleDenominator;
         if (output.AutoFitToSheet)
         {
-            var spanFeet = Math.Max(bbox.Max.X - bbox.Min.X, bbox.Max.Y - bbox.Min.Y) + output.CropMarginFeet * 2;
             scale = spanFeet switch
             {
                 <= 20 => 25,
@@ -530,7 +542,7 @@ public static class RoomPlanGenerator
         }
     }
 
-    private static List<ViewSection> CreateElevations(Document doc, RoomEntry entry, BoundingBoxXYZ bbox, ElementId elevationTypeId)
+    private static List<ViewSection> CreateElevations(Document doc, RoomEntry entry, BoundingBoxXYZ bbox, ElementId elevationTypeId, OutputOptions output)
     {
         var levelPlan = new FilteredElementCollector(doc)
             .OfClass(typeof(ViewPlan))
@@ -569,6 +581,16 @@ public static class RoomPlanGenerator
             crop.Max = new XYZ(centerX + halfWidth, bbox.Max.Z + 0.5, crop.Max.Z);
             view.CropBox = crop;
             view.CropBoxActive = true;
+
+            // Confirmed live (user-reported): reusing floor-plan ApplyScale
+            // here picked a scale from the room's PLAN footprint — wrong
+            // basis for an elevation, whose own content is this crop's real
+            // width x height, not the room's plan dimensions (a small room
+            // with a tall ceiling, for instance, needs a scale that fits the
+            // height too, which the plan footprint alone says nothing about).
+            var heightFeet = bbox.Max.Z - bbox.Min.Z + 1.0;
+            ApplySpanScale(view, Math.Max(halfWidth * 2, heightFeet), output);
+
             views.Add(view);
         }
         return views;
