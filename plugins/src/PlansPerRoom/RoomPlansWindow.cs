@@ -206,8 +206,15 @@ public class RoomPlansWindow : OttawaWorkWindow
         _scaleBox.SelectedIndex = 2;
         col.Children.Add(_scaleBox);
 
-        col.Children.Add(OttawaWorkUi.FieldLabel("Crop margin (ft)"));
-        _cropMarginBox.Text = "3";
+        col.Children.Add(OttawaWorkUi.FieldLabel($"Crop margin ({LengthUnitSymbol()})"));
+        // Default text shows ~3 ft (the old fixed value) converted into
+        // whatever unit the project actually uses — confirmed live (user-
+        // reported), the field stayed labeled "(ft)" and the typed number
+        // was always read as feet, regardless of the project's own unit
+        // settings (e.g. metric); a metric user typing "3" meaning 3 m
+        // would have gotten roughly a third of that. Read back and
+        // converted the same way in Finish() below.
+        _cropMarginBox.Text = Math.Round(UnitUtils.ConvertFromInternalUnits(3.0, LengthUnitTypeId()), 2).ToString(System.Globalization.CultureInfo.CurrentCulture);
         col.Children.Add(_cropMarginBox);
 
         col.Children.Add(_cropAnnotationsBox);
@@ -457,6 +464,19 @@ public class RoomPlansWindow : OttawaWorkWindow
         _baseFinishBox.Text = entry.Room.get_Parameter(BuiltInParameter.ROOM_FINISH_BASE)?.AsString() ?? "";
     }
 
+    /// <summary>The project's real configured length unit (e.g. Meters, not always Feet) — used both to
+    /// label the crop margin field correctly and to convert what's typed there into Revit's internal
+    /// feet, instead of always assuming/treating that field's number as feet regardless of the project's
+    /// own unit settings.</summary>
+    private ForgeTypeId LengthUnitTypeId() => _doc.GetUnits().GetFormatOptions(SpecTypeId.Length).GetUnitTypeId();
+
+    private string LengthUnitSymbol()
+    {
+        var options = _doc.GetUnits().GetFormatOptions(SpecTypeId.Length);
+        var symbolTypeId = options.GetSymbolTypeId();
+        return symbolTypeId.Empty() ? LabelUtils.GetLabelForUnit(options.GetUnitTypeId()) : LabelUtils.GetLabelForSymbol(symbolTypeId);
+    }
+
     /// <summary>RoomEntry's Area/Perimeter/Volume/LimitOffset are Revit's raw INTERNAL values — always
     /// feet/square-feet/cubic-feet under the hood, regardless of what units the project is actually set
     /// up to display in (Revit's documented internal unit system, unrelated to the project's own Units
@@ -507,7 +527,9 @@ public class RoomPlansWindow : OttawaWorkWindow
 
         var titleBlockId = _titleBlockBox.SelectedItem is string tbName && _titleBlocksByName.TryGetValue(tbName, out var tbId) ? tbId : ElementId.InvalidElementId;
         var scale = int.Parse((_scaleBox.SelectedItem as string ?? "1:50").Split(':')[1]);
-        var cropMargin = double.TryParse(_cropMarginBox.Text, out var m) ? m : 3.0;
+        var lengthUnitTypeId = LengthUnitTypeId();
+        var cropMarginDisplay = double.TryParse(_cropMarginBox.Text, out var m) ? m : UnitUtils.ConvertFromInternalUnits(3.0, lengthUnitTypeId);
+        var cropMargin = UnitUtils.ConvertToInternalUnits(cropMarginDisplay, lengthUnitTypeId);
         var sortMode = (_browserSortBox.SelectedItem as string) switch { "Level" => "Level", "Department" => "Department", "Custom" => "Custom", _ => "None" };
 
         Output = new OutputOptions(
