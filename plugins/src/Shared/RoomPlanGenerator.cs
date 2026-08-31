@@ -221,6 +221,16 @@ public static class RoomPlanGenerator
                 foreach (var view in elevations)
                 {
                     view.Name = MakeUnique(existingViewNames, Substitute(output.ViewNameTemplate, entry) + $" - Elev {viewsCreated}");
+                    // Confirmed live (user-reported): elevations never had a
+                    // scale applied at all, so they inherited whatever the
+                    // office's default elevation view-family-type scale
+                    // happens to be — unrelated to this room's size. Once
+                    // the layout packer (above) started giving each
+                    // viewport however much real sheet space it actually
+                    // measures as needing, a wrongly-scaled elevation
+                    // started visibly dominating the sheet instead of
+                    // silently overlapping like it used to.
+                    ApplyScale(view, entry, bbox, output);
                     packer.Place(Viewport.Create(doc, sheet.Id, view.Id, content.TopLeft));
                     viewsCreated++;
                 }
@@ -232,6 +242,7 @@ public static class RoomPlanGenerator
                 foreach (var view in sections)
                 {
                     view.Name = MakeUnique(existingViewNames, Substitute(output.ViewNameTemplate, entry) + $" - Wall Section {viewsCreated}");
+                    ApplyScale(view, entry, bbox, output);
                     packer.Place(Viewport.Create(doc, sheet.Id, view.Id, content.TopLeft));
                     viewsCreated++;
                 }
@@ -467,22 +478,56 @@ public static class RoomPlanGenerator
         var dependentId = levelPlan.Duplicate(ViewDuplicateOption.AsDependent);
         if (doc.GetElement(dependentId) is not ViewPlan keyView) return null;
 
-        var options = new SpatialElementBoundaryOptions();
-        var loops = entry.Room.GetBoundarySegments(options)
-            .Select(loop => CurveLoop.Create(loop.Select(seg => seg.GetCurve()).ToList()))
-            .ToList();
-
-        if (loops.Count > 0)
-        {
-            var filledRegionType = new FilteredElementCollector(doc).OfClass(typeof(FilledRegionType)).Cast<FilledRegionType>().FirstOrDefault();
-            if (filledRegionType is not null)
-            {
-                try { FilledRegion.Create(doc, filledRegionType.Id, keyView.Id, loops); }
-                catch (Exception) { /* boundary geometry not always plane-flat enough for a filled region; key plan still opens without the highlight */ }
-            }
-        }
+        HighlightRoomOnKeyPlan(doc, keyView, entry.Room);
+        HideMarkerClutterOnKeyPlan(keyView);
 
         return keyView;
+    }
+
+    /// <summary>Highlights the room via a view-specific element override (color + partial transparency)
+    /// instead of a FilledRegion — confirmed live (user-reported): the old FilledRegion approach used
+    /// WHATEVER FilledRegionType happened to be first in the project (FirstOrDefault(), no control over
+    /// which one), and on this project that was a fully opaque black fill that hid the room's own
+    /// content underneath entirely, rather than just marking which room is "this one" on the level-wide
+    /// key plan. SetElementOverrides doesn't depend on which fill region types a given project happens
+    /// to have, and 70% transparency keeps whatever's under the highlight still visible.</summary>
+    private static void HighlightRoomOnKeyPlan(Document doc, ViewPlan keyView, Room room)
+    {
+        var color = new Color(255, 105, 0);
+        var overrides = new OverrideGraphicSettings().SetProjectionLineColor(color).SetProjectionLineWeight(6);
+
+        var solidFillPatternId = new FilteredElementCollector(doc)
+            .OfClass(typeof(FillPatternElement))
+            .Cast<FillPatternElement>()
+            .FirstOrDefault(f => f.GetFillPattern() is { IsSolidFill: true, Target: FillPatternTarget.Drafting })
+            ?.Id;
+        if (solidFillPatternId is not null)
+        {
+            overrides = overrides
+                .SetSurfaceForegroundPatternId(solidFillPatternId)
+                .SetSurfaceForegroundPatternColor(color)
+                .SetSurfaceForegroundPatternVisible(true)
+                .SetSurfaceTransparency(70);
+        }
+
+        keyView.SetElementOverrides(room.Id, overrides);
+    }
+
+    /// <summary>Hides elevation-marker and section-head categories on the key plan — confirmed live
+    /// (user-reported): every room's elevation markers/section heads are hosted on the SAME shared level
+    /// plan (CreateElevations/CreateWallSections below both look that view up fresh each call, same
+    /// query as here), and a dependent view shows everything visible on its parent, so a multi-room batch
+    /// left every room's key plan cluttered with every OTHER room's elevation/section markers too, not
+    /// just its own. A key plan's whole job is being a quick, uncluttered "you are here" locator diagram —
+    /// nobody needs to see elevation tags on it at all, this room's own included.</summary>
+    private static void HideMarkerClutterOnKeyPlan(ViewPlan keyView)
+    {
+        foreach (var category in new[] { BuiltInCategory.OST_Elev, BuiltInCategory.OST_Sections })
+        {
+            var categoryId = new ElementId(category);
+            if (keyView.CanCategoryBeHidden(categoryId))
+                keyView.SetCategoryHidden(categoryId, true);
+        }
     }
 
     private static List<ViewSection> CreateElevations(Document doc, RoomEntry entry, BoundingBoxXYZ bbox, ElementId elevationTypeId)
