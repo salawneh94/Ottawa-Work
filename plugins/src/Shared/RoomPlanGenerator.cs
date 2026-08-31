@@ -179,10 +179,8 @@ public static class RoomPlanGenerator
 
             if (viewTypes.CreateFloorPlan && floorPlanVft is not null)
             {
-                var view = CreateCroppedPlan(doc, floorPlanVft.Id, entry, bbox, output, ViewFamily.FloorPlan);
+                var view = CreateCroppedPlan(doc, floorPlanVft.Id, entry, bbox, output, ViewFamily.FloorPlan, viewTypes.FloorPlanViewTemplateId);
                 view.Name = MakeUnique(existingViewNames, Substitute(output.ViewNameTemplate, entry));
-                if (viewTypes.FloorPlanViewTemplateId is { } templateId && templateId != ElementId.InvalidElementId)
-                    view.ViewTemplateId = templateId;
                 ApplyScale(view, entry, bbox, output);
                 Viewport.Create(doc, sheet.Id, view.Id, cursor);
                 cursor = new XYZ(cursor.X + 1.6, cursor.Y, 0);
@@ -253,9 +251,22 @@ public static class RoomPlanGenerator
             .Cast<ViewFamilyType>()
             .FirstOrDefault(t => t.ViewFamily == family);
 
-    private static ViewPlan CreateCroppedPlan(Document doc, ElementId viewFamilyTypeId, RoomEntry entry, BoundingBoxXYZ bbox, OutputOptions output, ViewFamily family)
+    private static ViewPlan CreateCroppedPlan(Document doc, ElementId viewFamilyTypeId, RoomEntry entry, BoundingBoxXYZ bbox, OutputOptions output, ViewFamily family, ElementId? viewTemplateId = null)
     {
         var view = ViewPlan.Create(doc, viewFamilyTypeId, entry.LevelId);
+
+        // The view template has to go on BEFORE the crop is set, not after —
+        // confirmed live (user-reported): a template that controls Crop
+        // View/Crop Region Visible/View Range as one of its own governed
+        // parameters silently overwrote the per-room crop the instant it was
+        // applied, leaving the "cropped" plan showing the whole level. Since
+        // View.ViewTemplateId assignment re-applies every parameter the
+        // template governs right then, whichever of CropBox/ViewTemplateId
+        // is set SECOND is the one that wins — this always sets the template
+        // first so our explicit per-room crop, set below, is what sticks.
+        if (viewTemplateId is { } templateId && templateId != ElementId.InvalidElementId)
+            view.ViewTemplateId = templateId;
+
         var crop = view.CropBox;
         var margin = output.CropMarginFeet;
         view.CropBox = new BoundingBoxXYZ
@@ -348,15 +359,34 @@ public static class RoomPlanGenerator
         var center = new XYZ((bbox.Min.X + bbox.Max.X) / 2, (bbox.Min.Y + bbox.Max.Y) / 2, bbox.Min.Z);
         var marker = ElevationMarker.CreateElevationMarker(doc, elevationTypeId, center, 100);
 
+        // Half-width covering the room from any of the marker's 4 facing
+        // directions — using the larger of the room's two footprint
+        // dimensions is a conservative, safe choice (never clips the room
+        // regardless of which way a given elevation actually faces) rather
+        // than computing an exact per-direction width.
+        var halfWidth = Math.Max(bbox.Max.X - bbox.Min.X, bbox.Max.Y - bbox.Min.Y) / 2 + 1.0;
+
         var views = new List<ViewSection>();
         for (var i = 0; i < 4; i++)
         {
             if (!marker.IsAvailableIndex(i)) continue;
             var view = marker.CreateElevation(doc, levelPlan.Id, i);
             var crop = view.CropBox;
-            crop.Min = new XYZ(crop.Min.X, bbox.Min.Z - 0.5, crop.Min.Z);
-            crop.Max = new XYZ(crop.Max.X, bbox.Max.Z + 0.5, crop.Max.Z);
+
+            // Confirmed live (user-reported): only the vertical (Y, height)
+            // extent was ever narrowed here — the horizontal (X, width)
+            // extent was left at whatever generic default
+            // ElevationMarker.CreateElevation produces, which is far wider
+            // than a typical room, so every elevation came out "big, not
+            // just to this room." Narrowed symmetrically around the
+            // default's own existing center (not assumed to be X=0) so this
+            // doesn't depend on exactly where CreateElevation happens to
+            // center its default crop.
+            var centerX = (crop.Min.X + crop.Max.X) / 2;
+            crop.Min = new XYZ(centerX - halfWidth, bbox.Min.Z - 0.5, crop.Min.Z);
+            crop.Max = new XYZ(centerX + halfWidth, bbox.Max.Z + 0.5, crop.Max.Z);
             view.CropBox = crop;
+            view.CropBoxActive = true;
             views.Add(view);
         }
         return views;
@@ -364,25 +394,35 @@ public static class RoomPlanGenerator
 
     private static List<ViewSection> CreateWallSections(Document doc, RoomEntry entry, ElementId sectionTypeId)
     {
+        // Built from the boundary SEGMENT's own curve, not the whole Wall's
+        // LocationCurve — confirmed live (user-reported): a wall that runs
+        // well beyond the room (e.g. the length of a corridor, only
+        // bordering this one room for a few feet of that) was producing a
+        // section sized — and CENTERED — on the wall's entire modeled
+        // length, not the room, which is exactly "big, not just to this
+        // room" (and could even center the section somewhere else on the
+        // wall entirely, nowhere near this room, for a long wall). A room
+        // boundary can revisit the same wall more than once (an L-shaped
+        // wrap around a corner, for instance), so duplicates against one
+        // wall are resolved by keeping its longest bordering segment.
         var options = new SpatialElementBoundaryOptions();
-        var walls = entry.Room.GetBoundarySegments(options)
+        var segments = entry.Room.GetBoundarySegments(options)
             .SelectMany(loop => loop)
-            .Select(seg => doc.GetElement(seg.ElementId) as Wall)
-            .Where(w => w is not null)
-            .Cast<Wall>()
-            .GroupBy(w => w.Id)
-            .Select(g => g.First())
-            .OrderByDescending(w => (w.Location as LocationCurve)?.Curve.Length ?? 0)
-            .Take(6) // caps section count per room; walls ranked longest-first as a stand-in for "importance"
+            .Select(seg => (Wall: doc.GetElement(seg.ElementId) as Wall, Curve: seg.GetCurve()))
+            .Where(t => t.Wall is not null)
+            .GroupBy(t => t.Wall!.Id)
+            .Select(g => g.OrderByDescending(t => t.Curve.Length).First())
+            .OrderByDescending(t => t.Curve.Length)
+            .Take(6) // caps section count per room; segments ranked longest-first as a stand-in for "importance"
             .ToList();
 
         var views = new List<ViewSection>();
-        foreach (var wall in walls)
+        foreach (var (wall, curve) in segments)
         {
-            if (wall.Location is not LocationCurve locationCurve || locationCurve.Curve is not Line line) continue;
+            if (curve is not Line line) continue;
 
             var direction = line.Direction.Normalize();
-            var normal = wall.Orientation.Normalize();
+            var normal = wall!.Orientation.Normalize();
             var wallBbox = wall.get_BoundingBox(null);
             if (wallBbox is null) continue;
 
