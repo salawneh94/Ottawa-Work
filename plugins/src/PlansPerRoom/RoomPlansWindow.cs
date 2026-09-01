@@ -412,7 +412,17 @@ public class RoomPlansWindow : OttawaWorkWindow
         {
             var checkbox = new CheckBox
             {
-                IsChecked = entry.Status == RoomPlanStatus.Valid,
+                // Starts UNCHECKED for every room, valid or not — confirmed
+                // live (user-reported): defaulting every valid room to
+                // pre-checked meant clicking 1-2 rows to look at them (which
+                // only opens the "Selected room" detail panel, it doesn't
+                // touch the checkbox) generated a sheet for every OTHER
+                // valid room too, since they were still checked from the
+                // default and Generate correctly processes whatever's
+                // checked. Nothing pre-selected forces an explicit choice —
+                // the "All"/"Valid only" quick buttons above still cover
+                // the bulk-select case in one click.
+                IsChecked = false,
                 IsEnabled = entry.Status == RoomPlanStatus.Valid,
                 VerticalAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(0, 0, 8, 0),
