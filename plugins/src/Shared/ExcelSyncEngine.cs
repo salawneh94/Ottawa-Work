@@ -28,13 +28,25 @@ public static class ExcelSyncEngine
 {
     public static List<ScheduleInfo> ListSchedules(Document doc)
     {
+        // Revision schedules (Titleblock Revision Schedule — "Änderungsliste"
+        // in a German project) and Revit's own internal keynote schedule are
+        // system-generated bookkeeping views, not the kind of element/
+        // quantity data this tool exports — confirmed live (user-reported):
+        // they don't have a real element category (Category.GetCategory
+        // returned null for them), which is what filled the category filter
+        // row with unlabeled "—" chips in the first place, and they aren't
+        // schedules a user would ever want to export to Excel anyway.
+        // IsTitleblockRevisionSchedule/IsInternalKeynoteSchedule are Revit's
+        // own flags for exactly this distinction, so excluding them here
+        // both fixes the confusing chip row and stops cluttering the list
+        // with schedules nobody's exporting.
         return new FilteredElementCollector(doc)
             .OfClass(typeof(ViewSchedule))
             .Cast<ViewSchedule>()
-            .Where(s => !s.IsTemplate)
+            .Where(s => !s.IsTemplate && !s.IsTitleblockRevisionSchedule && !s.IsInternalKeynoteSchedule)
             .Select(s =>
             {
-                var category = Category.GetCategory(doc, s.Definition.CategoryId)?.Name ?? "—";
+                var category = Category.GetCategory(doc, s.Definition.CategoryId)?.Name ?? "No Category";
                 var (rows, cols) = ScheduleSize(s);
                 return new ScheduleInfo(s, s.Name, category, rows, cols);
             })
