@@ -152,6 +152,32 @@ public static class RoomPlanGenerator
         var existingViewNames = ExistingViewOrSheetNames(doc, isSheet: false);
         var levelExtentCache = new Dictionary<ElementId, BoundingBoxXYZ?>();
 
+        // If any assigned view template locks Scale, that template's own
+        // scale wins for every view of that type regardless of what this
+        // batch computes — confirmed live (user-reported, still recurring
+        // after the "one scale per room" unification below shipped): the
+        // newer Elevation/Section view template options are exactly the
+        // kind of template that commonly governs Scale as a firm standard,
+        // and SetViewScale can't override that. Rather than fight it,
+        // whichever locked template is found first sets the scale for the
+        // WHOLE batch, so every other (non-locked) view type is matched to
+        // it instead of each room getting its own auto-fit number — keeping
+        // the sheet visually consistent either way. scaleMismatch below
+        // still catches the rarer case of two templates locking to two
+        // different numbers.
+        var scaleLockTemplateId = new[]
+            {
+                viewTypes.FloorPlanViewTemplateId,
+                viewTypes.CeilingPlanViewTemplateId,
+                viewTypes.ElevationViewTemplateId,
+                viewTypes.SectionViewTemplateId,
+            }
+            .FirstOrDefault(id => TemplateLocksScale(doc, id));
+        var lockedScale = scaleLockTemplateId is { } lockId && doc.GetElement(lockId) is View lockView
+            ? lockView.Scale
+            : (int?)null;
+        var scaleMismatch = false;
+
         for (var i = 0; i < rooms.Count; i++)
         {
             var entry = rooms[i];
@@ -203,13 +229,13 @@ public static class RoomPlanGenerator
             // section." A room-data sheet needs one consistent, comparable
             // scale across floor plan/RCP/elevations/sections, not each
             // view individually optimized.
-            var scale = ComputeRoomScale(bbox, output);
+            var scale = lockedScale ?? ComputeRoomScale(bbox, output);
 
             if (viewTypes.CreateFloorPlan && floorPlanVft is not null)
             {
                 var view = CreateCroppedPlan(doc, floorPlanVft.Id, entry, bbox, output, ViewFamily.FloorPlan, viewTypes.FloorPlanViewTemplateId);
                 view.Name = MakeUnique(existingViewNames, Substitute(output.ViewNameTemplate, entry));
-                SetViewScale(view, scale);
+                if (!SetViewScale(view, scale)) scaleMismatch = true;
                 packer.Place(Viewport.Create(doc, sheet.Id, view.Id, content.TopLeft));
                 viewsCreated++;
             }
@@ -235,7 +261,7 @@ public static class RoomPlanGenerator
             {
                 var view = CreateCroppedPlan(doc, ceilingPlanVft.Id, entry, bbox, output, ViewFamily.CeilingPlan, viewTypes.CeilingPlanViewTemplateId);
                 view.Name = MakeUnique(existingViewNames, Substitute(output.ViewNameTemplate, entry) + " - RCP");
-                SetViewScale(view, scale);
+                if (!SetViewScale(view, scale)) scaleMismatch = true;
                 packer.Place(Viewport.Create(doc, sheet.Id, view.Id, content.TopLeft));
                 viewsCreated++;
             }
@@ -246,7 +272,7 @@ public static class RoomPlanGenerator
                 foreach (var view in elevations)
                 {
                     view.Name = MakeUnique(existingViewNames, Substitute(output.ViewNameTemplate, entry) + $" - Elev {viewsCreated}");
-                    SetViewScale(view, scale);
+                    if (!SetViewScale(view, scale)) scaleMismatch = true;
                     packer.Place(Viewport.Create(doc, sheet.Id, view.Id, content.TopLeft));
                     viewsCreated++;
                 }
@@ -258,7 +284,7 @@ public static class RoomPlanGenerator
                 foreach (var view in sections)
                 {
                     view.Name = MakeUnique(existingViewNames, Substitute(output.ViewNameTemplate, entry) + $" - Wall Section {viewsCreated}");
-                    SetViewScale(view, scale);
+                    if (!SetViewScale(view, scale)) scaleMismatch = true;
                     packer.Place(Viewport.Create(doc, sheet.Id, view.Id, content.TopLeft));
                     viewsCreated++;
                 }
@@ -267,6 +293,9 @@ public static class RoomPlanGenerator
             if (packer.Overflowed)
                 warnings.Add($"{entry.Number}: views didn't all fit within the sheet's usable area — some may overlap the title block or run past its edge. Try a larger title block, fewer view types, or a tighter crop margin.");
         }
+
+        if (scaleMismatch)
+            warnings.Add("Some views kept their assigned view template's own Scale instead of matching the rest of the sheet — that template controls Scale as one of its governed parameters. Remove that control on the template (or don't assign it to that view type) if every view type must match exactly.");
 
         return new RoomPlanResult(sheetsCreated, viewsCreated, skipped, warnings);
     }
@@ -405,9 +434,29 @@ public static class RoomPlanGenerator
         };
     }
 
-    private static void SetViewScale(View view, int scale)
+    /// <summary>Returns false if the scale didn't actually stick (read back after setting it) — a view
+    /// template can govern Scale as one of its own controlled parameters, and per RevitAPI's own docs on
+    /// View.ViewTemplateId, "parameters controlled by the template cannot be changed directly in this
+    /// view." Setting View.Scale directly doesn't throw when that's the case, it just silently keeps the
+    /// template's own value, so the only reliable way to notice is reading it back.</summary>
+    private static bool SetViewScale(View view, int scale)
     {
-        if (View.IsValidViewScale(scale)) view.Scale = scale;
+        if (!View.IsValidViewScale(scale)) return false;
+        view.Scale = scale;
+        return view.Scale == scale;
+    }
+
+    /// <summary>True if the given view template has Scale (BuiltInParameter.VIEW_SCALE) as one of its
+    /// currently-controlled parameters — GetTemplateParameterIds lists every parameter the template COULD
+    /// control for its view type, GetNonControlledTemplateParameterIds is the subset explicitly excluded,
+    /// so "controls X" is membership in the first set but not the second.</summary>
+    private static bool TemplateLocksScale(Document doc, ElementId? templateId)
+    {
+        if (templateId is not { } id || id == ElementId.InvalidElementId) return false;
+        if (doc.GetElement(id) is not View template) return false;
+        var scaleParamId = new ElementId(BuiltInParameter.VIEW_SCALE);
+        return template.GetTemplateParameterIds().Contains(scaleParamId)
+            && !template.GetNonControlledTemplateParameterIds().Contains(scaleParamId);
     }
 
     /// <summary>Centers the key-plan viewport in whichever corner of the sheet's real usable area was
@@ -501,6 +550,23 @@ public static class RoomPlanGenerator
 
         var dependentId = levelPlan.Duplicate(ViewDuplicateOption.AsDependent);
         if (doc.GetElement(dependentId) is not ViewPlan keyView) return null;
+
+        // AsDependent duplication carries over the parent level plan's own
+        // ViewTemplateId — confirmed live (user-reported, still recurring
+        // after the marker-hide fix below was shipped): in a template-driven
+        // project that template usually governs Visibility/Graphics category
+        // overrides (sometimes Scale too), which silently blocks
+        // SetCategoryHidden from actually hiding OST_Elev/OST_Sections.
+        // View.SetCategoryHidden's own docs say "other Revit mechanisms...
+        // may also affect the visibility of elements of this category" and
+        // it doesn't throw when blocked, so nothing ever signaled this
+        // failure — the key plan just silently kept showing every other
+        // room's elevation/section markers. A key plan is a small "you are
+        // here" locator thumbnail, not a real drawing, so it doesn't need
+        // the parent level plan's full template anyway: clearing it makes
+        // this view fully independent, so the highlight/marker-hide/scale
+        // overrides applied below and by ApplyKeyPlanScale actually stick.
+        keyView.ViewTemplateId = ElementId.InvalidElementId;
 
         HighlightRoomOnKeyPlan(doc, keyView, entry.Room);
         HideMarkerClutterOnKeyPlan(keyView);
