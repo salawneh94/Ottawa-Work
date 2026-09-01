@@ -28,7 +28,9 @@ public record ViewTypeOptions(
     bool AddElevations,
     bool AddWallSections,
     bool AddCeilingPlan,
-    ElementId? CeilingPlanViewTemplateId = null);
+    ElementId? CeilingPlanViewTemplateId = null,
+    ElementId? ElevationViewTemplateId = null,
+    ElementId? SectionViewTemplateId = null);
 
 public record OutputOptions(
     ElementId TitleBlockTypeId,
@@ -191,11 +193,23 @@ public static class RoomPlanGenerator
             var content = GetSheetContentArea(doc, sheet);
             var packer = new SheetLayoutPacker(content.MinX, content.MaxX, content.MinY, content.MaxY);
 
+            // One scale, computed once, applied to every view type on this
+            // sheet — confirmed live (user-reported, twice): letting each
+            // view type auto-fit independently (the room's plan footprint
+            // for plans, the elevation's own crop width/height for
+            // elevations, etc.) legitimately produces DIFFERENT "best fit"
+            // numbers per view type, which is exactly what was reported as
+            // "scale of elevations are still different than plan and
+            // section." A room-data sheet needs one consistent, comparable
+            // scale across floor plan/RCP/elevations/sections, not each
+            // view individually optimized.
+            var scale = ComputeRoomScale(bbox, output);
+
             if (viewTypes.CreateFloorPlan && floorPlanVft is not null)
             {
                 var view = CreateCroppedPlan(doc, floorPlanVft.Id, entry, bbox, output, ViewFamily.FloorPlan, viewTypes.FloorPlanViewTemplateId);
                 view.Name = MakeUnique(existingViewNames, Substitute(output.ViewNameTemplate, entry));
-                ApplyScale(view, entry, bbox, output);
+                SetViewScale(view, scale);
                 packer.Place(Viewport.Create(doc, sheet.Id, view.Id, content.TopLeft));
                 viewsCreated++;
             }
@@ -221,23 +235,18 @@ public static class RoomPlanGenerator
             {
                 var view = CreateCroppedPlan(doc, ceilingPlanVft.Id, entry, bbox, output, ViewFamily.CeilingPlan, viewTypes.CeilingPlanViewTemplateId);
                 view.Name = MakeUnique(existingViewNames, Substitute(output.ViewNameTemplate, entry) + " - RCP");
-                ApplyScale(view, entry, bbox, output);
+                SetViewScale(view, scale);
                 packer.Place(Viewport.Create(doc, sheet.Id, view.Id, content.TopLeft));
                 viewsCreated++;
             }
 
             if (viewTypes.AddElevations && elevationVft is not null)
             {
-                // Scale is applied inside CreateElevations itself, from the
-                // elevation's own real crop width/height — not the room's
-                // plan footprint (see ApplySpanScale there): confirmed live
-                // (user-reported) that elevations came out at a visibly
-                // different/wrong scale from the floor plan when this used
-                // to reuse the plan-footprint-based ApplyScale instead.
-                var elevations = CreateElevations(doc, entry, bbox, elevationVft.Id, output);
+                var elevations = CreateElevations(doc, entry, bbox, elevationVft.Id, viewTypes.ElevationViewTemplateId);
                 foreach (var view in elevations)
                 {
                     view.Name = MakeUnique(existingViewNames, Substitute(output.ViewNameTemplate, entry) + $" - Elev {viewsCreated}");
+                    SetViewScale(view, scale);
                     packer.Place(Viewport.Create(doc, sheet.Id, view.Id, content.TopLeft));
                     viewsCreated++;
                 }
@@ -245,11 +254,11 @@ public static class RoomPlanGenerator
 
             if (viewTypes.AddWallSections && sectionVft is not null)
             {
-                var sections = CreateWallSections(doc, entry, sectionVft.Id);
+                var sections = CreateWallSections(doc, entry, sectionVft.Id, viewTypes.SectionViewTemplateId);
                 foreach (var view in sections)
                 {
                     view.Name = MakeUnique(existingViewNames, Substitute(output.ViewNameTemplate, entry) + $" - Wall Section {viewsCreated}");
-                    ApplyScale(view, entry, bbox, output);
+                    SetViewScale(view, scale);
                     packer.Place(Viewport.Create(doc, sheet.Id, view.Id, content.TopLeft));
                     viewsCreated++;
                 }
@@ -376,25 +385,28 @@ public static class RoomPlanGenerator
         return view;
     }
 
-    private static void ApplyScale(View view, RoomEntry entry, BoundingBoxXYZ bbox, OutputOptions output)
+    /// <summary>One scale for the whole sheet, computed once from the room's plan footprint and applied
+    /// uniformly to every view type (SetViewScale below) — not each view type auto-fitting itself
+    /// independently. Confirmed live (user-reported, twice): letting elevations pick their own "best
+    /// fit" scale from their own crop dimensions is a perfectly legitimate calculation on its own, but
+    /// it routinely lands on a different scale than the floor plan/sections did from THEIR own
+    /// dimensions — which is exactly what was reported as elevations being at a different scale.</summary>
+    private static int ComputeRoomScale(BoundingBoxXYZ bbox, OutputOptions output)
     {
+        if (!output.AutoFitToSheet) return output.ScaleDenominator;
+
         var spanFeet = Math.Max(bbox.Max.X - bbox.Min.X, bbox.Max.Y - bbox.Min.Y) + output.CropMarginFeet * 2;
-        ApplySpanScale(view, spanFeet, output);
+        return spanFeet switch
+        {
+            <= 20 => 25,
+            <= 40 => 50,
+            <= 80 => 100,
+            _ => 200,
+        };
     }
 
-    private static void ApplySpanScale(View view, double spanFeet, OutputOptions output)
+    private static void SetViewScale(View view, int scale)
     {
-        var scale = output.ScaleDenominator;
-        if (output.AutoFitToSheet)
-        {
-            scale = spanFeet switch
-            {
-                <= 20 => 25,
-                <= 40 => 50,
-                <= 80 => 100,
-                _ => 200,
-            };
-        }
         if (View.IsValidViewScale(scale)) view.Scale = scale;
     }
 
@@ -542,7 +554,7 @@ public static class RoomPlanGenerator
         }
     }
 
-    private static List<ViewSection> CreateElevations(Document doc, RoomEntry entry, BoundingBoxXYZ bbox, ElementId elevationTypeId, OutputOptions output)
+    private static List<ViewSection> CreateElevations(Document doc, RoomEntry entry, BoundingBoxXYZ bbox, ElementId elevationTypeId, ElementId? viewTemplateId)
     {
         var levelPlan = new FilteredElementCollector(doc)
             .OfClass(typeof(ViewPlan))
@@ -553,18 +565,45 @@ public static class RoomPlanGenerator
         var center = new XYZ((bbox.Min.X + bbox.Max.X) / 2, (bbox.Min.Y + bbox.Max.Y) / 2, bbox.Min.Z);
         var marker = ElevationMarker.CreateElevationMarker(doc, elevationTypeId, center, 100);
 
+        // Confirmed live (user-reported): a rotated building's elevations
+        // came out cutting across the room at whatever angle the marker's
+        // 4 default facings happen to be — always aligned to the level
+        // plan's own (project-north) orientation, never to the room's own
+        // walls. Rotating the marker to the room's dominant wall angle
+        // BEFORE creating any of its 4 elevations makes every one of them
+        // look straight at a wall face, parallel to the room, the same way
+        // a hand-placed elevation marker would be rotated by a drafter.
+        var angle = RoomOrientationAngle(entry.Room);
+        if (Math.Abs(angle) > 1e-9)
+        {
+            var axis = Line.CreateBound(center, center + XYZ.BasisZ);
+            ElementTransformUtils.RotateElement(doc, marker.Id, axis, angle);
+        }
+
         // Half-width covering the room from any of the marker's 4 facing
-        // directions — using the larger of the room's two footprint
-        // dimensions is a conservative, safe choice (never clips the room
-        // regardless of which way a given elevation actually faces) rather
-        // than computing an exact per-direction width.
-        var halfWidth = Math.Max(bbox.Max.X - bbox.Min.X, bbox.Max.Y - bbox.Min.Y) / 2 + 1.0;
+        // directions. Uses the room's diagonal (not just the larger of its
+        // two footprint dimensions) as the safe upper bound — with the
+        // marker now rotated to the room's own angle rather than always
+        // being world-axis-aligned, the room's true width as seen from a
+        // given elevation direction can legitimately be anywhere up to its
+        // full diagonal, not just its axis-aligned width or height.
+        var width = bbox.Max.X - bbox.Min.X;
+        var depth = bbox.Max.Y - bbox.Min.Y;
+        var halfWidth = Math.Sqrt(width * width + depth * depth) / 2 + 1.0;
 
         var views = new List<ViewSection>();
         for (var i = 0; i < 4; i++)
         {
             if (!marker.IsAvailableIndex(i)) continue;
             var view = marker.CreateElevation(doc, levelPlan.Id, i);
+
+            // Template goes on before the crop is narrowed, same reasoning
+            // as the floor plan's CreateCroppedPlan: a template governing
+            // Crop View/Crop Region Visible would otherwise silently wipe
+            // out the crop this method is about to set.
+            if (viewTemplateId is { } templateId && templateId != ElementId.InvalidElementId)
+                view.ViewTemplateId = templateId;
+
             var crop = view.CropBox;
 
             // Confirmed live (user-reported): only the vertical (Y, height)
@@ -582,21 +621,29 @@ public static class RoomPlanGenerator
             view.CropBox = crop;
             view.CropBoxActive = true;
 
-            // Confirmed live (user-reported): reusing floor-plan ApplyScale
-            // here picked a scale from the room's PLAN footprint — wrong
-            // basis for an elevation, whose own content is this crop's real
-            // width x height, not the room's plan dimensions (a small room
-            // with a tall ceiling, for instance, needs a scale that fits the
-            // height too, which the plan footprint alone says nothing about).
-            var heightFeet = bbox.Max.Z - bbox.Min.Z + 1.0;
-            ApplySpanScale(view, Math.Max(halfWidth * 2, heightFeet), output);
-
             views.Add(view);
         }
         return views;
     }
 
-    private static List<ViewSection> CreateWallSections(Document doc, RoomEntry entry, ElementId sectionTypeId)
+    /// <summary>The angle (radians, from world X) of the room's longest straight boundary segment —
+    /// used as the room's "dominant" wall direction so a single elevation marker's 4 fixed facings can
+    /// be rotated to align with it, instead of staying at the level plan's own (project-north)
+    /// orientation regardless of how the actual building is rotated.</summary>
+    private static double RoomOrientationAngle(Room room)
+    {
+        var options = new SpatialElementBoundaryOptions();
+        var longest = room.GetBoundarySegments(options)
+            .SelectMany(loop => loop)
+            .Select(seg => seg.GetCurve())
+            .OfType<Line>()
+            .OrderByDescending(line => line.Length)
+            .FirstOrDefault();
+
+        return longest is null ? 0.0 : Math.Atan2(longest.Direction.Y, longest.Direction.X);
+    }
+
+    private static List<ViewSection> CreateWallSections(Document doc, RoomEntry entry, ElementId sectionTypeId, ElementId? viewTemplateId)
     {
         // Built from the boundary SEGMENT's own curve, not the whole Wall's
         // LocationCurve — confirmed live (user-reported): a wall that runs
@@ -647,7 +694,28 @@ public static class RoomPlanGenerator
                 Max = new XYZ(halfLength, halfHeight, wall.Width * 3),
             };
 
-            try { views.Add(ViewSection.CreateSection(doc, sectionTypeId, sectionBox)); }
+            try
+            {
+                var view = ViewSection.CreateSection(doc, sectionTypeId, sectionBox);
+
+                // Unlike the floor plan/elevations, a section's crop is baked
+                // in at CREATION time via sectionBox above — there's no
+                // separate "create, then set crop" step to sequence a
+                // template before. So the template goes on first as usual,
+                // then the crop is explicitly re-asserted afterward: if the
+                // template governs Crop View/Crop Region Visible the same
+                // way one did for floor plans, this guarantees the wall-
+                // aligned box this method just built is what actually wins,
+                // regardless of what the template would otherwise set it to.
+                if (viewTemplateId is { } templateId && templateId != ElementId.InvalidElementId)
+                {
+                    view.ViewTemplateId = templateId;
+                    view.CropBox = sectionBox;
+                    view.CropBoxActive = true;
+                }
+
+                views.Add(view);
+            }
             catch (Exception) { /* a handful of odd wall geometries (curved, sloped) can't host a straight section box; skip those */ }
         }
         return views;

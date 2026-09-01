@@ -34,6 +34,8 @@ public class RoomPlansWindow : OttawaWorkWindow
     private readonly Dictionary<string, ElementId> _titleBlocksByName;
     private readonly Dictionary<string, ElementId> _viewTemplatesByName;
     private readonly Dictionary<string, ElementId> _ceilingPlanTemplatesByName;
+    private readonly Dictionary<string, ElementId> _elevationTemplatesByName;
+    private readonly Dictionary<string, ElementId> _sectionTemplatesByName;
 
     private readonly ComboBox _titleBlockBox = OttawaWorkUi.ComboBox();
     private readonly TextBox _sheetNumberBox = OttawaWorkUi.TextBox();
@@ -55,7 +57,9 @@ public class RoomPlansWindow : OttawaWorkWindow
     private readonly CheckBox _keyPlanBox = OttawaWorkUi.CheckBoxItem("Add key plan", isChecked: true);
     private readonly ComboBox _keyPlanCornerBox = OttawaWorkUi.ComboBox();
     private readonly CheckBox _elevationsBox = OttawaWorkUi.CheckBoxItem("Add 4 room elevations");
+    private readonly ComboBox _elevationTemplateBox = OttawaWorkUi.ComboBox();
     private readonly CheckBox _wallSectionsBox = OttawaWorkUi.CheckBoxItem("Wall-aligned sections per room");
+    private readonly ComboBox _sectionTemplateBox = OttawaWorkUi.ComboBox();
     private readonly CheckBox _ceilingPlanBox = OttawaWorkUi.CheckBoxItem("Add reflected ceiling plan");
     private readonly ComboBox _ceilingPlanTemplateBox = OttawaWorkUi.ComboBox();
 
@@ -109,6 +113,20 @@ public class RoomPlansWindow : OttawaWorkWindow
             .OfClass(typeof(View))
             .Cast<View>()
             .Where(v => v.IsTemplate && v.ViewType == Autodesk.Revit.DB.ViewType.CeilingPlan)
+            .GroupBy(v => v.Name)
+            .ToDictionary(g => g.Key, g => g.First().Id);
+
+        _elevationTemplatesByName = new FilteredElementCollector(doc)
+            .OfClass(typeof(View))
+            .Cast<View>()
+            .Where(v => v.IsTemplate && v.ViewType == Autodesk.Revit.DB.ViewType.Elevation)
+            .GroupBy(v => v.Name)
+            .ToDictionary(g => g.Key, g => g.First().Id);
+
+        _sectionTemplatesByName = new FilteredElementCollector(doc)
+            .OfClass(typeof(View))
+            .Cast<View>()
+            .Where(v => v.IsTemplate && v.ViewType == Autodesk.Revit.DB.ViewType.Section)
             .GroupBy(v => v.Name)
             .ToDictionary(g => g.Key, g => g.First().Id);
 
@@ -253,8 +271,28 @@ public class RoomPlansWindow : OttawaWorkWindow
             return sub;
         }));
 
-        col.Children.Add(ViewTypeCard(OttawaWorkUi.Warning, _elevationsBox, "Interior elevations, cropped to the room's height"));
-        col.Children.Add(ViewTypeCard(OttawaWorkUi.Danger, _wallSectionsBox, "One section per boundary wall, longest first"));
+        col.Children.Add(ViewTypeCard(OttawaWorkUi.Warning, _elevationsBox, "Interior elevations, cropped to the room's height, aligned to the room's own walls", () =>
+        {
+            var sub = new StackPanel { Margin = new Thickness(0, 4, 0, 0) };
+            sub.Children.Add(OttawaWorkUi.FieldLabel("View template"));
+            _elevationTemplateBox.Items.Clear();
+            _elevationTemplateBox.Items.Add("(None)");
+            _elevationTemplateBox.Items.AddRange(_elevationTemplatesByName.Keys.Cast<object>());
+            _elevationTemplateBox.SelectedIndex = 0;
+            sub.Children.Add(_elevationTemplateBox);
+            return sub;
+        }));
+        col.Children.Add(ViewTypeCard(OttawaWorkUi.Danger, _wallSectionsBox, "One section per boundary wall, longest first", () =>
+        {
+            var sub = new StackPanel { Margin = new Thickness(0, 4, 0, 0) };
+            sub.Children.Add(OttawaWorkUi.FieldLabel("View template"));
+            _sectionTemplateBox.Items.Clear();
+            _sectionTemplateBox.Items.Add("(None)");
+            _sectionTemplateBox.Items.AddRange(_sectionTemplatesByName.Keys.Cast<object>());
+            _sectionTemplateBox.SelectedIndex = 0;
+            sub.Children.Add(_sectionTemplateBox);
+            return sub;
+        }));
         col.Children.Add(ViewTypeCard(System.Windows.Media.Color.FromRgb(0x8B, 0x5C, 0xF6), _ceilingPlanBox, "RCP cropped to room boundary", () =>
         {
             var sub = new StackPanel { Margin = new Thickness(0, 4, 0, 0) };
@@ -508,6 +546,8 @@ public class RoomPlansWindow : OttawaWorkWindow
 
         var floorPlanTemplateId = _floorPlanTemplateBox.SelectedItem is string templateName && _viewTemplatesByName.TryGetValue(templateName, out var tId) ? tId : (ElementId?)null;
         var ceilingPlanTemplateId = _ceilingPlanTemplateBox.SelectedItem is string ceilingTemplateName && _ceilingPlanTemplatesByName.TryGetValue(ceilingTemplateName, out var ctId) ? ctId : (ElementId?)null;
+        var elevationTemplateId = _elevationTemplateBox.SelectedItem is string elevTemplateName && _elevationTemplatesByName.TryGetValue(elevTemplateName, out var etId) ? etId : (ElementId?)null;
+        var sectionTemplateId = _sectionTemplateBox.SelectedItem is string sectTemplateName && _sectionTemplatesByName.TryGetValue(sectTemplateName, out var stId) ? stId : (ElementId?)null;
         var corner = (_keyPlanCornerBox.SelectedItem as string) switch
         {
             "Top-Left" => KeyPlanCorner.TopLeft,
@@ -523,7 +563,9 @@ public class RoomPlansWindow : OttawaWorkWindow
             _elevationsBox.IsChecked == true,
             _wallSectionsBox.IsChecked == true,
             _ceilingPlanBox.IsChecked == true,
-            ceilingPlanTemplateId);
+            ceilingPlanTemplateId,
+            elevationTemplateId,
+            sectionTemplateId);
 
         var titleBlockId = _titleBlockBox.SelectedItem is string tbName && _titleBlocksByName.TryGetValue(tbName, out var tbId) ? tbId : ElementId.InvalidElementId;
         var scale = int.Parse((_scaleBox.SelectedItem as string ?? "1:50").Split(':')[1]);
