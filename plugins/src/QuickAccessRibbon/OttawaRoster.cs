@@ -88,6 +88,7 @@ public static class OttawaRoster
         new("RoomTagger", "Spatial & Rooms", "Room Tagger", "Write each room's number/name onto every element found inside it.", false),
 
         // Panel 6: Annotation & Legends
+        new("OverriddenDimensionDetector", "Annotation & Legends", "Overridden Dimension Detector", "Scan every dimension for a manual override or annotation, classify by severity (Falsified/Frozen/Annotated), and fix or select what's flagged.", false),
         new("DimensionEditor", "Annotation & Legends", "Dimension Editor", "Edit a dimension's override value, prefix, and suffix directly.", false),
         new("LegendBuilder", "Annotation & Legends", "Legend Builder", "Auto-build a legend view from every detail component and annotation symbol actually used in the model.", false),
         new("LegendPlacer", "Annotation & Legends", "Legend Placer", "Place a legend on multiple sheets at a consistent position.", false),

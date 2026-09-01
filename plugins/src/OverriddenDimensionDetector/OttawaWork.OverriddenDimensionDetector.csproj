@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OttawaWork.OverriddenDimensionDetector</RootNamespace>
+    <AssemblyName>OttawaWork.OverriddenDimensionDetector</AssemblyName>
+    <!-- WPF for the dark-themed dialog (OverriddenDimensionDetectorWindow) and
+         the shared DimensionEditorWindow it hands off to; see OttawaWork.Shared's csproj comment. -->
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\OttawaWork.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

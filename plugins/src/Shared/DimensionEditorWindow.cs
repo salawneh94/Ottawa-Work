@@ -10,18 +10,18 @@ using CornerRadius = System.Windows.CornerRadius;
 using TextTrimming = System.Windows.TextTrimming;
 
 using Autodesk.Revit.DB;
-using OttawaWork.Shared;
 
-namespace OttawaWork.DimensionEditor;
-
-/// <summary>One editable row per dimension segment (or per dimension, for single-segment ones).</summary>
-public record DimensionEditRow(ElementId DimensionId, int? SegmentIndex, string ViewName, string CurrentValue, string Override, string Prefix, string Suffix);
+namespace OttawaWork.Shared;
 
 /// <summary>
 /// Shows one row per selected dimension segment with its current (model-driven)
 /// value alongside editable Override/Prefix/Suffix fields, seeded from what's
-/// already on the dimension. Mirrors OverriddenDimensions' read side, but lets
-/// you actually change what a dimension shows instead of just flagging it.
+/// already on the dimension. Mirrors OverriddenDimensionDetector's read side,
+/// but lets you actually change what a dimension shows instead of just
+/// flagging it. Used by both DimensionEditor (edits whatever's already
+/// selected) and OverriddenDimensionDetector (edits whatever the scan
+/// flagged) — moved here from DimensionEditor's own plugin folder so both
+/// can reuse it without one plugin referencing another's assembly.
 /// </summary>
 public class DimensionEditorWindow : OttawaWorkWindow
 {

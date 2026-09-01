@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OttawaWork.NamingConvention
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OttawaWork.OverrideByParam", "src\OverrideByParam\OttawaWork.OverrideByParam.csproj", "{C701E250-A81C-443B-8277-2F2306B8ECB2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OttawaWork.OverriddenDimensionDetector", "src\OverriddenDimensionDetector\OttawaWork.OverriddenDimensionDetector.csproj", "{C2512628-DB5D-4311-8257-5712F492B207}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OttawaWork.ParamPowerSuite", "src\ParamPowerSuite\OttawaWork.ParamPowerSuite.csproj", "{897412F9-6834-4375-B56D-F400919069E9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OttawaWork.PurgePro", "src\PurgePro\OttawaWork.PurgePro.csproj", "{E0AED422-2FEE-41BE-97B3-80B9ACC93CFA}"
@@ -128,6 +130,10 @@ Global
 		{C701E250-A81C-443B-8277-2F2306B8ECB2}.Debug|x64.Build.0 = Debug|x64
 		{C701E250-A81C-443B-8277-2F2306B8ECB2}.Release|x64.ActiveCfg = Release|x64
 		{C701E250-A81C-443B-8277-2F2306B8ECB2}.Release|x64.Build.0 = Release|x64
+		{C2512628-DB5D-4311-8257-5712F492B207}.Debug|x64.ActiveCfg = Debug|x64
+		{C2512628-DB5D-4311-8257-5712F492B207}.Debug|x64.Build.0 = Debug|x64
+		{C2512628-DB5D-4311-8257-5712F492B207}.Release|x64.ActiveCfg = Release|x64
+		{C2512628-DB5D-4311-8257-5712F492B207}.Release|x64.Build.0 = Release|x64
 		{897412F9-6834-4375-B56D-F400919069E9}.Debug|x64.ActiveCfg = Debug|x64
 		{897412F9-6834-4375-B56D-F400919069E9}.Debug|x64.Build.0 = Debug|x64
 		{897412F9-6834-4375-B56D-F400919069E9}.Release|x64.ActiveCfg = Release|x64
