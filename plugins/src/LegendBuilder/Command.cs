@@ -6,21 +6,20 @@ using OttawaWork.Shared;
 namespace OttawaWork.LegendBuilder;
 
 /// <summary>
-/// Duplicates a legend view you pick as a starting template, then places
-/// one instance of every detail component and annotation symbol type
-/// actually used in the model into it, in a labeled grid. Revit has no API
-/// to create a legend view from nothing, so this always needs at least one
-/// existing (even blank) legend view to duplicate — the same constraint
-/// the native "New Legend" ribbon command has under the hood.
+/// Scans a category grouped by a chosen parameter's distinct values (with
+/// element counts), lets you assign a color per value (or Auto-assign),
+/// style it (title, size, fine-tune spacing, placement, options), preview it
+/// live, then generates the actual legend content — filled-region swatches
+/// plus text-note labels/counts/title (LegendBuilderEngine). Revit has no
+/// API to create a legend view from nothing, so this always needs at least
+/// one existing (even blank) legend view to duplicate first — the same
+/// constraint the native "New Legend" ribbon command has under the hood,
+/// and the same reason the previous version of this tool needed one too.
 /// </summary>
 [Transaction(TransactionMode.Manual)]
 public class Command : OttawaWorkCommand
 {
     protected override string PluginSlug => "legendbuilder";
-
-    private const double ColumnSpacingFeet = 4.0;
-    private const double RowSpacingFeet = 3.0;
-    private const int Columns = 6;
 
     protected override Result Run(ExternalCommandData commandData, ref string message)
     {
@@ -37,13 +36,13 @@ public class Command : OttawaWorkCommand
         if (legends.Count == 0)
         {
             TaskDialog.Show(
-                "Ottawa Tools — LegendBuilder",
+                "Ottawa Tools — Legend Builder",
                 "No legend views were found to use as a starting point. Create one blank legend view first (View tab → Legends → Legend), then run this again.");
             return Result.Cancelled;
         }
 
         var picker = new SimplePickerDialog(
-            "Ottawa Tools — LegendBuilder",
+            "Ottawa Tools — Legend Builder",
             "Duplicate which legend as the starting point?",
             legends.Select(v => v.Name).ToList());
 
@@ -52,32 +51,9 @@ public class Command : OttawaWorkCommand
 
         var sourceLegend = legends.First(v => v.Name == picker.SelectedText);
 
-        var usedTypeIds = new FilteredElementCollector(doc)
-            .OfClass(typeof(FamilyInstance))
-            .WhereElementIsNotElementType()
-            .Cast<FamilyInstance>()
-            .Where(fi => fi.Category is not null &&
-                         (fi.Category.Id.Value == (long)BuiltInCategory.OST_DetailComponents ||
-                          fi.Category.Id.Value == (long)BuiltInCategory.OST_GenericAnnotation))
-            .Select(fi => fi.GetTypeId())
-            .Distinct()
-            .ToList();
-
-        var symbols = usedTypeIds
-            .Select(id => doc.GetElement(id) as FamilySymbol)
-            .Where(s => s is not null)
-            .Cast<FamilySymbol>()
-            .OrderBy(s => s.Family.Name).ThenBy(s => s.Name)
-            .ToList();
-
-        if (symbols.Count == 0)
-        {
-            TaskDialog.Show("Ottawa Tools — LegendBuilder", "No used detail component or annotation symbol types were found in the model.");
-            return Result.Succeeded;
-        }
-
-        var textNoteTypeId = doc.GetDefaultElementTypeId(ElementTypeGroup.TextNoteType);
-        var placed = 0;
+        var window = new LegendBuilderWindow(doc);
+        if (window.ShowDialog() != true)
+            return Result.Cancelled;
 
         using var transaction = new Transaction(doc, "Ottawa Tools: Build Legend");
         transaction.Start();
@@ -85,37 +61,20 @@ public class Command : OttawaWorkCommand
         {
             var newLegendId = sourceLegend.Duplicate(ViewDuplicateOption.Duplicate);
             var newLegend = (View)doc.GetElement(newLegendId);
-            newLegend.Name = MakeUniqueName(doc, $"{sourceLegend.Name} — Auto-Built");
+            newLegend.Name = MakeUniqueName(doc, $"{sourceLegend.Name} — {window.SelectedParameterName}");
 
-            for (var i = 0; i < symbols.Count; i++)
-            {
-                var symbol = symbols[i];
-                if (!symbol.IsActive) symbol.Activate();
-
-                var col = i % Columns;
-                var row = i / Columns;
-                var origin = new XYZ(col * ColumnSpacingFeet, -row * RowSpacingFeet, 0);
-
-                doc.Create.NewFamilyInstance(origin, symbol, newLegend);
-
-                if (textNoteTypeId != ElementId.InvalidElementId)
-                {
-                    var labelPosition = new XYZ(col * ColumnSpacingFeet, -row * RowSpacingFeet - 1.0, 0);
-                    TextNote.Create(doc, newLegend.Id, labelPosition, symbol.Family.Name + " — " + symbol.Name, textNoteTypeId);
-                }
-
-                placed++;
-            }
+            LegendBuilderEngine.GenerateLegendContent(doc, newLegend, window.Style, window.Rows);
 
             transaction.Commit();
+            TaskDialog.Show("Ottawa Tools — Legend Builder", $"Built a new legend with {window.Rows.Count} value(s) placed.");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             transaction.RollBack();
-            throw;
+            TaskDialog.Show("Ottawa Tools — Legend Builder", $"Couldn't build the legend: {ex.Message}");
+            return Result.Failed;
         }
 
-        TaskDialog.Show("Ottawa Tools — LegendBuilder", $"Built a new legend with {placed} type(s) placed.");
         return Result.Succeeded;
     }
 
