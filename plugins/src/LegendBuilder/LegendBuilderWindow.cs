@@ -75,7 +75,11 @@ public class LegendBuilderWindow : OttawaWorkWindow
     public Category? SelectedCategory { get; private set; }
     public string? SelectedParameterName { get; private set; }
     public List<LegendValueRow> Rows { get; private set; } = new();
-    public LegendStyleOptions Style { get; private set; } = null!;
+    // Named LegendStyle, not Style — a bare "Style" here would hide the
+    // inherited FrameworkElement.Style property (CS0108), confirmed live
+    // (compiler-flagged) once this window's first real WPF compile ran in
+    // CI (this sandbox can't compile WPF locally to catch it earlier).
+    public LegendStyleOptions LegendStyle { get; private set; } = null!;
 
     public LegendBuilderWindow(Document doc) : base("Ottawa Tools — Legend Builder", minWidth: 900)
     {
@@ -419,7 +423,7 @@ public class LegendBuilderWindow : OttawaWorkWindow
         SelectedCategory = _categoryBox.SelectedItem is string name && _categoriesByName.TryGetValue(name, out var cat) ? cat : null;
         SelectedParameterName = _paramBox.SelectedItem as string;
         Rows = _valueRows.Select(r => new LegendValueRow(r.Value, r.Count, _colorByValue.GetValueOrDefault(r.Value, ColorPalette.ForIndex(0)))).ToList();
-        Style = new LegendStyleOptions(
+        LegendStyle = new LegendStyleOptions(
             _titleBox.Text,
             _textSlider.Value,
             _rowSlider.Value,

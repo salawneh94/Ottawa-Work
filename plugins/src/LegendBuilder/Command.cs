@@ -63,7 +63,7 @@ public class Command : OttawaWorkCommand
             var newLegend = (View)doc.GetElement(newLegendId);
             newLegend.Name = MakeUniqueName(doc, $"{sourceLegend.Name} — {window.SelectedParameterName}");
 
-            LegendBuilderEngine.GenerateLegendContent(doc, newLegend, window.Style, window.Rows);
+            LegendBuilderEngine.GenerateLegendContent(doc, newLegend, window.LegendStyle, window.Rows);
 
             transaction.Commit();
             TaskDialog.Show("Ottawa Tools — Legend Builder", $"Built a new legend with {window.Rows.Count} value(s) placed.");
