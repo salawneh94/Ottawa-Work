@@ -6,7 +6,9 @@ using OttawaWork.Shared;
 namespace OttawaWork.LegendPlacer;
 
 /// <summary>
-/// Batch-places one legend view onto many sheets at the same position.
+/// Batch-places one legend view onto many sheets — either by copying the
+/// exact position from a sheet that already has it placed, or by anchoring
+/// to a title block corner with an inset offset (LegendPlacerEngine).
 /// Legend views are the one Revit view type that can be placed on more
 /// than one sheet at a time, which is exactly what makes batch placement
 /// worth automating.
@@ -40,7 +42,7 @@ public class Command : OttawaWorkCommand
             .OrderBy(s => s.SheetNumber)
             .ToList();
 
-        var window = new LegendPlacerWindow(legends, sheets);
+        var window = new LegendPlacerWindow(doc, legends, sheets);
         if (window.ShowDialog() != true)
             return Result.Cancelled;
 
@@ -50,19 +52,36 @@ public class Command : OttawaWorkCommand
         var placed = 0;
         var skipped = 0;
 
+        // Copy-from-reference-sheet resolves to one position shared by every
+        // target sheet (that's the whole point — matching an existing
+        // placement exactly); anchor-to-corner is resolved per sheet inside
+        // the loop instead, since each sheet's title block can sit at a
+        // different spot (or be a different size) even within one project.
+        XYZ? sharedPosition = null;
+        if (window.PositionMethod == LegendPositionMethod.CopyFromReferenceSheet && window.ReferenceSheetId is { } refSheetId)
+        {
+            var placements = LegendPlacerEngine.ExistingPlacements(doc, window.SelectedLegend.Id);
+            if (placements.TryGetValue(refSheetId, out var refViewport))
+                sharedPosition = refViewport.GetBoxCenter();
+        }
+
         using var transaction = new Transaction(doc, "Ottawa Tools: Place Legend on Sheets");
         transaction.Start();
         try
         {
             foreach (var sheet in window.SelectedSheets)
             {
-                if (!Viewport.CanAddViewToSheet(doc, sheet.Id, window.SelectedLegend.Id))
+                var position = window.PositionMethod == LegendPositionMethod.CopyFromReferenceSheet
+                    ? sharedPosition
+                    : LegendPlacerEngine.TitleBlockCornerPosition(doc, sheet.Id, window.Corner, window.OffsetXFeet, window.OffsetYFeet);
+
+                if (position is null || !Viewport.CanAddViewToSheet(doc, sheet.Id, window.SelectedLegend.Id))
                 {
                     skipped++;
                     continue;
                 }
 
-                Viewport.Create(doc, sheet.Id, window.SelectedLegend.Id, window.Position);
+                Viewport.Create(doc, sheet.Id, window.SelectedLegend.Id, position);
                 placed++;
             }
 
@@ -76,7 +95,7 @@ public class Command : OttawaWorkCommand
 
         TaskDialog.Show(
             "Ottawa Tools — LegendPlacer",
-            $"Placed the legend on {placed} sheet(s).{(skipped > 0 ? $" Skipped {skipped} (already placed there)." : "")}");
+            $"Placed the legend on {placed} sheet(s).{(skipped > 0 ? $" Skipped {skipped} (no title block found, or already placed there)." : "")}");
 
         return Result.Succeeded;
     }
