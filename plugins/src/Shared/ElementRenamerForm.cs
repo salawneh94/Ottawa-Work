@@ -19,10 +19,10 @@ public record ElementRenamePlan(Element Element, string NewName);
 
 /// <summary>
 /// Batch rename dialog with a live preview and collision detection, generic
-/// over any named Element (views, grids, levels, ...). Used by ViewRenamer,
-/// GridRenumber, and FamilyTypeManager. Dark themed — replaces the old
-/// WinForms DataGridView dialog with a scrollable list of rows built once
-/// and refreshed in place as the rules change.
+/// over any named Element (views, grids, levels, ...). Currently used by
+/// GridRenumber. Dark themed — replaces the old WinForms DataGridView
+/// dialog with a scrollable list of rows built once and refreshed in place
+/// as the rules change.
 /// </summary>
 public class ElementRenamerForm : OttawaWorkWindow
 {
@@ -68,6 +68,17 @@ public class ElementRenamerForm : OttawaWorkWindow
 
         var listStack = new StackPanel { Margin = new Thickness(0, 12, 0, 0) };
         listStack.Children.Add(OttawaWorkUi.SectionHeader("Preview"));
+
+        var quickRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 8) };
+        var selectAllButton = OttawaWorkUi.SecondaryButton("Select all");
+        var selectNoneButton = OttawaWorkUi.SecondaryButton("Select none");
+        selectAllButton.Margin = new Thickness(0, 0, 6, 0);
+        selectAllButton.Click += (_, _) => { foreach (var (include, _, _) in _rows) include.IsChecked = true; RefreshPreview(); };
+        selectNoneButton.Click += (_, _) => { foreach (var (include, _, _) in _rows) include.IsChecked = false; RefreshPreview(); };
+        quickRow.Children.Add(selectAllButton);
+        quickRow.Children.Add(selectNoneButton);
+        listStack.Children.Add(quickRow);
+
         var rowsStack = new StackPanel();
         foreach (var element in elements)
         {
