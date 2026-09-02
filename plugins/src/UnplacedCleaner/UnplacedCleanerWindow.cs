@@ -22,7 +22,7 @@ public class UnplacedCleanerWindow : OttawaWorkWindow
     public UnplacedCleanerWindow(List<Room> rooms) : base("Ottawa Tools — Unplaced Cleaner", minWidth: 460)
     {
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("🧹", "Unplaced Cleaner", $"{rooms.Count} unplaced room(s) found — never placed on a plan."));
+        root.Children.Add(OttawaWorkUi.TitleBar("🧹", "Unplaced Cleaner", $"{rooms.Count} unplaced room(s) found — never placed on a plan.", Close));
 
         var rowsStack = new StackPanel();
         foreach (var room in rooms)

@@ -80,7 +80,7 @@ public class BatchExcelSyncWindow : OttawaWorkWindow
         }
 
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("📊", "Batch Excel Sync", "Step 1: set scope & category. Step 2: pick parameters to export. Step 3: import Excel back to review & commit changes."));
+        root.Children.Add(OttawaWorkUi.TitleBar("📊", "Batch Excel Sync", "Step 1: set scope & category. Step 2: pick parameters to export. Step 3: import Excel back to review & commit changes.", Close));
 
         var columns = new StackPanel { Orientation = Orientation.Horizontal };
         columns.Children.Add(BuildScopeColumn());

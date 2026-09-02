@@ -31,7 +31,7 @@ public class DimensionEditorWindow : OttawaWorkWindow
     {
         var root = new StackPanel();
         root.Children.Add(OttawaWorkUi.TitleBar("📝", "DimensionEditor",
-            $"{seeds.Count} dimension segment(s) selected — edit the override, prefix, or suffix, then click Apply. Leave Override blank to show the model-driven value again."));
+            $"{seeds.Count} dimension segment(s) selected — edit the override, prefix, or suffix, then click Apply. Leave Override blank to show the model-driven value again.", Close));
 
         var rowsStack = new StackPanel();
         foreach (var seed in seeds)

@@ -73,7 +73,7 @@ public partial class ParamPowerSuiteWindow : OttawaWorkWindow
         root.Children.Add(sidebar);
 
         var mainStack = new StackPanel { Margin = new Thickness(16, 0, 0, 0) };
-        mainStack.Children.Add(OttawaWorkUi.TitleBar("🧰", "Param Power Suite", "Bulk-edit parameters across every loaded element: set, find/replace, transform, copy, combine, jam to shared, or create a new bound parameter."));
+        mainStack.Children.Add(OttawaWorkUi.TitleBar("🧰", "Param Power Suite", "Bulk-edit parameters across every loaded element: set, find/replace, transform, copy, combine, jam to shared, or create a new bound parameter.", Close));
         mainStack.Children.Add(BuildNavBar());
 
         var tabHost = new Grid { Margin = new Thickness(0, 12, 0, 0) };

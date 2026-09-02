@@ -34,7 +34,7 @@ public class IfcClassMappingWindow : OttawaWorkWindow
     {
         var root = new StackPanel();
         root.Children.Add(OttawaWorkUi.TitleBar("🏷️", "IFC Class Mapping",
-            "Family/type names containing the left text get their \"Export Type to IFC As\" parameter set to the class on the right, overriding Revit's default category mapping."));
+            "Family/type names containing the left text get their \"Export Type to IFC As\" parameter set to the class on the right, overriding Revit's default category mapping.", Close));
 
         var headerRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 4) };
         headerRow.Children.Add(new TextBlock { Text = "NAME CONTAINS", FontSize = 10, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), Width = 200 });

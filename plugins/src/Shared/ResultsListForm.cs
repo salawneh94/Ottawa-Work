@@ -39,7 +39,7 @@ public class ResultsListForm : OttawaWorkWindow
         string actionButtonText = "Select in model") : base(title, minWidth: 560)
     {
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("📋", title, summary));
+        root.Children.Add(OttawaWorkUi.TitleBar("📋", title, summary, Close));
 
         var columnWidth = Math.Max(100, 520.0 / Math.Max(columnHeaders.Length, 1));
 

@@ -22,7 +22,7 @@ public class TitleBlockUpdaterWindow : OttawaWorkWindow
     public TitleBlockUpdaterWindow(List<string> parameterNames, int instanceCount) : base("Ottawa Tools — TitleBlockUpdater", minWidth: 380)
     {
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("🖼️", "Title Block Updater", $"{instanceCount} title block instance(s) in this project."));
+        root.Children.Add(OttawaWorkUi.TitleBar("🖼️", "Title Block Updater", $"{instanceCount} title block instance(s) in this project.", Close));
 
         var fieldsStack = new StackPanel();
         fieldsStack.Children.Add(OttawaWorkUi.FieldLabel("Parameter"));

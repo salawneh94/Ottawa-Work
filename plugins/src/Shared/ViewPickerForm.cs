@@ -19,7 +19,7 @@ public class ViewPickerForm : OttawaWorkWindow
     public ViewPickerForm(string title, string instructions, List<View> candidateViews) : base(title, minWidth: 380)
     {
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("👁️", title, instructions));
+        root.Children.Add(OttawaWorkUi.TitleBar("👁️", title, instructions, Close));
 
         var checklistStack = new StackPanel();
         foreach (var view in candidateViews)

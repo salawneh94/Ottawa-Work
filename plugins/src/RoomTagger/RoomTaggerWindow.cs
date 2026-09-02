@@ -60,7 +60,8 @@ public class RoomTaggerWindow : OttawaWorkWindow
         root.Children.Add(OttawaWorkUi.TitleBar(
             "🏷️",
             "Room Tagger",
-            "Write each room's number/name onto every element found inside it — for categories Revit doesn't auto-tag with a Room field."));
+            "Write each room's number/name onto every element found inside it — for categories Revit doesn't auto-tag with a Room field.",
+            Close));
 
         root.Children.Add(OttawaWorkUi.SectionHeader("Categories to tag"));
         var listStack = new StackPanel { Margin = new Thickness(0, 0, 0, 20) };

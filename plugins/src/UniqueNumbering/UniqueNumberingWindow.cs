@@ -79,7 +79,7 @@ public class UniqueNumberingWindow : OttawaWorkWindow
         _scopeToSelectionBox = OttawaWorkUi.CheckBoxItem("Scope to selection only", isChecked: _selectionIds.Count > 0);
 
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("🔢", "Unique Numbering", "Add numbering rules per parameter. Preview, then apply at once."));
+        root.Children.Add(OttawaWorkUi.TitleBar("🔢", "Unique Numbering", "Add numbering rules per parameter. Preview, then apply at once.", Close));
 
         var columns = new StackPanel { Orientation = Orientation.Horizontal };
 

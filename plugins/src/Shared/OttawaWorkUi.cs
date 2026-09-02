@@ -251,8 +251,15 @@ public static class OttawaWorkUi
         return template;
     }
 
-    /// <summary>Standard page title row: icon glyph, name, subtitle — the header every dialog starts with.</summary>
-    public static UIElement TitleBar(string icon, string title, string subtitle)
+    /// <summary>Standard page title row: icon glyph, name, subtitle — the header every dialog starts with.
+    /// <paramref name="onClose"/> is optional so old call sites without it still compile, but every window
+    /// passes its own Close here now — every OttawaWorkWindow is borderless (WindowStyle.None) with no OS
+    /// title-bar X button, and closing was Escape-only until now, confirmed live (user-reported) as not
+    /// discoverable. Laid out in a Grid (star column + auto column), not the plain horizontal StackPanel
+    /// this used before onClose existed, so the close button docks to the row's right edge regardless of
+    /// how wide the icon+title content ends up being — a StackPanel would just push it right up against
+    /// the title text instead.</summary>
+    public static UIElement TitleBar(string icon, string title, string subtitle, Action? onClose = null)
     {
         var iconBorder = new Border
         {
@@ -274,10 +281,40 @@ public static class OttawaWorkUi
         textStack.Children.Add(new TextBlock { Text = title, FontSize = 15, FontWeight = FontWeights.SemiBold, Foreground = BrushOf(TextPrimary) });
         textStack.Children.Add(new TextBlock { Text = subtitle, FontSize = 11, Foreground = BrushOf(TextSecondary), Margin = new Thickness(0, 2, 0, 0), TextWrapping = System.Windows.TextWrapping.Wrap, MaxWidth = 420 });
 
-        var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 16) };
-        row.Children.Add(iconBorder);
-        row.Children.Add(textStack);
-        return row;
+        var contentRow = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+        contentRow.Children.Add(iconBorder);
+        contentRow.Children.Add(textStack);
+
+        if (onClose is null)
+        {
+            contentRow.Margin = new Thickness(0, 0, 0, 16);
+            return contentRow;
+        }
+
+        var grid = new Grid { Margin = new Thickness(0, 0, 0, 16) };
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = System.Windows.GridLength.Auto });
+        Grid.SetColumn(contentRow, 0);
+        grid.Children.Add(contentRow);
+
+        var closeButton = new Button
+        {
+            Content = "✕",
+            Width = 30,
+            Height = 30,
+            FontSize = 13,
+            Background = Brushes.Transparent,
+            BorderThickness = new Thickness(0),
+            Foreground = BrushOf(TextSecondary),
+            Cursor = System.Windows.Input.Cursors.Hand,
+            VerticalAlignment = VerticalAlignment.Top,
+            HorizontalAlignment = HorizontalAlignment.Right,
+        };
+        closeButton.Click += (_, _) => onClose();
+        Grid.SetColumn(closeButton, 1);
+        grid.Children.Add(closeButton);
+
+        return grid;
     }
 
     /// <summary>A dark-styled checkbox row — for category/option pickers.</summary>

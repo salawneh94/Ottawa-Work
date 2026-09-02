@@ -80,12 +80,20 @@ public class ModelCleanerWindow : OttawaWorkWindow
         _doc = doc;
 
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("🧹", "Model Cleaner", "Deep purge — in-place families, unplaced views, duplicate styles, rogue links, orphan materials."));
+        root.Children.Add(OttawaWorkUi.TitleBar("🧹", "Model Cleaner", "Deep purge — in-place families, unplaced views, duplicate styles, rogue links, orphan materials.", Close));
 
         var columns = new StackPanel { Orientation = Orientation.Horizontal };
 
         // ---- Left: summary ----
-        var leftCol = new StackPanel { Width = 260, Margin = new Thickness(0, 0, 16, 0) };
+        // Width 500, not 260 — the Scan Summary's 4 stat tiles (110px + 8px margin each = 472px total)
+        // were overflowing past a 260px column: StackPanel never wraps or shrinks its children, so the
+        // 3rd and 4th tiles ("Unplaced Views", "Duplicates") were rendering past the column's declared
+        // bounds and getting cut off by the window edge (SizeToContent sized the window off the
+        // declared 260px, not the tiles' true width) — confirmed live (user-reported, screenshot showed
+        // only 2 of 4 tiles, with a sliver of a 3rd visible right at the cut edge). Same underlying bug
+        // class as the "Sheets & Schedules" tab clipping fixed earlier in this file, just in the left
+        // column's stat row instead of the right column's tab row.
+        var leftCol = new StackPanel { Width = 500, Margin = new Thickness(0, 0, 16, 0) };
         leftCol.Children.Add(_summaryBanner);
         leftCol.Children.Add(OttawaWorkUi.SectionHeader("Scan Summary"));
         leftCol.Children.Add(_statRow);

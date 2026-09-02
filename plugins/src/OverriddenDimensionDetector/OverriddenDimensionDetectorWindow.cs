@@ -56,7 +56,8 @@ public class OverriddenDimensionDetectorWindow : OttawaWorkWindow
         root.Children.Add(OttawaWorkUi.TitleBar(
             "🔍",
             "Overridden Dimension Detector",
-            "Scans every dimension for a manual override or annotation and flags what it finds — a reference check against DIN/local code isn't performed, this only compares what's shown to what the model actually measures."));
+            "Scans every dimension for a manual override or annotation and flags what it finds — a reference check against DIN/local code isn't performed, this only compares what's shown to what the model actually measures.",
+            Close));
 
         root.Children.Add(_chipRow);
 

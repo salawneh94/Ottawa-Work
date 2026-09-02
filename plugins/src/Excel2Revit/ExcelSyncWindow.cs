@@ -100,7 +100,7 @@ public class ExcelSyncWindow : OttawaWorkWindow
         _importPreviewCard.Margin = new Thickness(0, 12, 0, 12);
 
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("📊", "Excel Sync", "Export any of this project's schedules to Excel/CSV, or import parameter values back from a previously exported file."));
+        root.Children.Add(OttawaWorkUi.TitleBar("📊", "Excel Sync", "Export any of this project's schedules to Excel/CSV, or import parameter values back from a previously exported file.", Close));
 
         var modeRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 16) };
         _exportModeButton.Margin = new Thickness(0, 0, 8, 0);

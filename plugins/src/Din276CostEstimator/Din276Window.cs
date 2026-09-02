@@ -55,7 +55,7 @@ public class Din276Window : OttawaWorkWindow
         _activeView = activeView;
 
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("💶", "DIN 276 Cost Estimator", "Classify elements into Kostengruppen, enter your own unit rates, and get a live estimate."));
+        root.Children.Add(OttawaWorkUi.TitleBar("💶", "DIN 276 Cost Estimator", "Classify elements into Kostengruppen, enter your own unit rates, and get a live estimate.", Close));
 
         root.Children.Add(OttawaWorkUi.SectionHeader("Scope"));
         var scopeRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 16) };

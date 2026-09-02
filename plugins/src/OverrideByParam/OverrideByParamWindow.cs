@@ -98,7 +98,7 @@ public class OverrideByParamWindow : OttawaWorkWindow
         }
 
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("🎨", "Color Code", "Color-code elements by parameter value using persistent view filters."));
+        root.Children.Add(OttawaWorkUi.TitleBar("🎨", "Color Code", "Color-code elements by parameter value using persistent view filters.", Close));
 
         var columns = new StackPanel { Orientation = Orientation.Horizontal };
 

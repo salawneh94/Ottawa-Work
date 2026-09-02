@@ -66,7 +66,7 @@ public class LegendPlacerWindow : OttawaWorkWindow
         _allSheets = sheets;
 
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("🗂️", "Legend Placer", "Batch-place one legend view onto many sheets at a consistent position."));
+        root.Children.Add(OttawaWorkUi.TitleBar("🗂️", "Legend Placer", "Batch-place one legend view onto many sheets at a consistent position.", Close));
 
         var legendStack = new StackPanel();
         legendStack.Children.Add(OttawaWorkUi.FieldLabel("Legend to place"));

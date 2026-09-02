@@ -26,7 +26,7 @@ public class NamingRuleWindow : OttawaWorkWindow
         _patternBox.Text = "^[A-Z0-9_-]+$";
 
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("🔡", "Naming Convention Audit", "Names that DON'T match the pattern will be flagged."));
+        root.Children.Add(OttawaWorkUi.TitleBar("🔡", "Naming Convention Audit", "Names that DON'T match the pattern will be flagged.", Close));
 
         var fieldsStack = new StackPanel();
         fieldsStack.Children.Add(OttawaWorkUi.FieldLabel("Check"));

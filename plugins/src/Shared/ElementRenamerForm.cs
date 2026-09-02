@@ -41,7 +41,7 @@ public class ElementRenamerForm : OttawaWorkWindow
         _elements = elements;
 
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("✏️", title, $"{elements.Count} element(s) — set a rename rule and review the preview below."));
+        root.Children.Add(OttawaWorkUi.TitleBar("✏️", title, $"{elements.Count} element(s) — set a rename rule and review the preview below.", Close));
 
         var rulesStack = new StackPanel();
         var row1 = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 8) };

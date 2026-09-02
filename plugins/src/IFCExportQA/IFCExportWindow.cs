@@ -52,7 +52,7 @@ public class IFCExportWindow : OttawaWorkWindow
     public IFCExportWindow(List<(string Category, int Count)> categorySummary) : base("Ottawa Tools — IFCExportQA", minWidth: 420)
     {
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("🏗️", "IFC Export QA", $"Pre-flight: {categorySummary.Sum(c => c.Count)} element(s) across {categorySummary.Count} categories will be exported."));
+        root.Children.Add(OttawaWorkUi.TitleBar("🏗️", "IFC Export QA", $"Pre-flight: {categorySummary.Sum(c => c.Count)} element(s) across {categorySummary.Count} categories will be exported.", Close));
 
         var versionStack = new StackPanel();
         versionStack.Children.Add(OttawaWorkUi.FieldLabel("IFC version"));

@@ -27,7 +27,7 @@ public class ScopeBoxSyncWindow : OttawaWorkWindow
         _scopeBoxes = scopeBoxes;
 
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("📦", "Scope Box Sync", "Apply one scope box to a set of views in one pass."));
+        root.Children.Add(OttawaWorkUi.TitleBar("📦", "Scope Box Sync", "Apply one scope box to a set of views in one pass.", Close));
 
         var scopeStack = new StackPanel();
         scopeStack.Children.Add(OttawaWorkUi.FieldLabel("Scope box to apply"));

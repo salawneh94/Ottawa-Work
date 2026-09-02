@@ -20,7 +20,7 @@ public class PointCloudHeatmapResultsWindow : OttawaWorkWindow
         var noCoverage = results.Count(r => r.Status == HeatmapStatus.NoCoverage);
 
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("🌡️", "Point Cloud Heatmap", $"{results.Count} wall(s) analysed against scan data."));
+        root.Children.Add(OttawaWorkUi.TitleBar("🌡️", "Point Cloud Heatmap", $"{results.Count} wall(s) analysed against scan data.", Close));
 
         var statsRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 16) };
         statsRow.Children.Add(Spaced(OttawaWorkUi.StatTile(ok.ToString(), "WITHIN TOLERANCE", OttawaWorkUi.Success)));

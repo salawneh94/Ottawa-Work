@@ -50,7 +50,7 @@ public class PointCloudColorWindow : OttawaWorkWindow
     public PointCloudColorWindow(bool hasSelection) : base("Ottawa Tools — Point Cloud Color", minWidth: 380)
     {
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("🌈", "Point Cloud Color", "Override point cloud display color in the active view."));
+        root.Children.Add(OttawaWorkUi.TitleBar("🌈", "Point Cloud Color", "Override point cloud display color in the active view.", Close));
 
         var paletteStack = new StackPanel();
         paletteStack.Children.Add(OttawaWorkUi.SectionHeader("Colour palette"));

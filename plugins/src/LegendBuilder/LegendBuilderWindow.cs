@@ -86,7 +86,7 @@ public class LegendBuilderWindow : OttawaWorkWindow
         _doc = doc;
 
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("📗", "Legend Builder", "Scan a category, assign colors, then generate a color legend."));
+        root.Children.Add(OttawaWorkUi.TitleBar("📗", "Legend Builder", "Scan a category, assign colors, then generate a color legend.", Close));
 
         var columns = new StackPanel { Orientation = Orientation.Horizontal };
 

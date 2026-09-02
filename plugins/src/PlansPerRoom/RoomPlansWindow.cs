@@ -131,7 +131,7 @@ public class RoomPlansWindow : OttawaWorkWindow
             .ToDictionary(g => g.Key, g => g.First().Id);
 
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("🗺️", "Plans Per Room", "Create cropped plan views per room and place them on individual sheets."));
+        root.Children.Add(OttawaWorkUi.TitleBar("🗺️", "Plans Per Room", "Create cropped plan views per room and place them on individual sheets.", Close));
         root.Children.Add(BuildStatRow());
 
         var columns = new StackPanel { Orientation = Orientation.Horizontal };

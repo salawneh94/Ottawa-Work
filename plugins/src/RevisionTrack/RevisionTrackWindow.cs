@@ -37,7 +37,7 @@ public class RevisionTrackWindow : OttawaWorkWindow
         _revisions = revisions;
 
         var root = new StackPanel();
-        root.Children.Add(OttawaWorkUi.TitleBar("📝", "Revision Track", "Add a revision to a chosen set of sheets in one pass."));
+        root.Children.Add(OttawaWorkUi.TitleBar("📝", "Revision Track", "Add a revision to a chosen set of sheets in one pass.", Close));
 
         var fieldsStack = new StackPanel();
         fieldsStack.Children.Add(OttawaWorkUi.FieldLabel("Existing revision (optional)"));

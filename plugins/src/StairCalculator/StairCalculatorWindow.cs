@@ -77,7 +77,8 @@ public class StairCalculatorWindow : OttawaWorkWindow
         root.Children.Add(OttawaWorkUi.TitleBar(
             "🪜",
             "Stair Calculator",
-            "Design against DIN 18065's reference riser/tread thresholds, or audit stairs already in this model — a design-proportion check, not a certified code compliance review."));
+            "Design against DIN 18065's reference riser/tread thresholds, or audit stairs already in this model — a design-proportion check, not a certified code compliance review.",
+            Close));
 
         var modeRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 16) };
         _calcModeButton = OttawaWorkUi.PrimaryButton("Design Calculator");
