@@ -187,7 +187,7 @@ public static class ExcelSyncEngine
         var bestScore = -1;
         foreach (var schedule in headerMatches)
         {
-            var keyIndex = FindKeyFieldIndex(schedule);
+            var keyIndex = FindKeyFieldIndex(doc, schedule);
             var keyHeader = importedHeaders.ElementAtOrDefault(keyIndex);
             if (keyHeader is null) continue;
 
@@ -211,17 +211,22 @@ public static class ExcelSyncEngine
         return best ?? headerMatches[0];
     }
 
-    /// <summary>The index (within FieldHeaders' own order) of the first field safe to use as the
-    /// row-matching key: one backed by a real per-element parameter (Instance or ElementType), skipping
-    /// calculated/aggregate fields. Count, Formula, and CombinedParameter fields never carry a real
-    /// per-element value — matching against them either finds nothing (every element's LookupParameter
-    /// comes back null, so nothing ever gets updated) or, worse, silently matches the same wrong element
-    /// for every row. Confirmed live (user-reported): a door schedule's first column was the built-in Count
-    /// field ("Anzahl" in this German project), so blindly treating column 0 as the key produced zero real
-    /// matches on any row and no visible error. Falls back to 0 if the schedule has no such field at all.</summary>
-    public static int FindKeyFieldIndex(ViewSchedule schedule)
+    /// <summary>The index (within FieldHeaders' own order) of the field safest to use as the row-matching
+    /// key: among every field backed by a real per-element parameter (Instance or ElementType — Count,
+    /// Formula, and CombinedParameter fields are never eligible, they carry no real per-element value at
+    /// all), the one whose actual values are the most distinct across the schedule's own elements. Being
+    /// "a real parameter" isn't enough on its own — confirmed live (user-reported): a door schedule's
+    /// second real-parameter field was "Ebene" (Level), a genuine parameter but the same value on nearly
+    /// every door, which collapsed ~165 rows onto a single matched element and crashed Revit outright under
+    /// the resulting flood of repeated writes to that one element. Preferring the field with the most
+    /// distinct values instead picks something like Mark — actually one distinct value per element. Falls
+    /// back to the first real-parameter field found if every candidate scores zero distinct values (nothing
+    /// on any element actually has that parameter set), and to 0 if the schedule has no real-parameter
+    /// field at all.</summary>
+    public static int FindKeyFieldIndex(Document doc, ViewSchedule schedule)
     {
         var definition = schedule.Definition;
+        var candidates = new List<(int Index, string ParamName)>();
         var visibleIndex = -1;
         for (var i = 0; i < definition.GetFieldCount(); i++)
         {
@@ -230,25 +235,48 @@ public static class ExcelSyncEngine
             visibleIndex++;
             if (field.IsCalculatedField) continue;
             if (field.FieldType is ScheduleFieldType.Instance or ScheduleFieldType.ElementType && field.ParameterId != ElementId.InvalidElementId)
-                return visibleIndex;
+                candidates.Add((visibleIndex, field.ColumnHeading));
         }
-        return 0;
+        if (candidates.Count == 0) return 0;
+        if (candidates.Count == 1) return candidates[0].Index;
+
+        var categoryId = definition.CategoryId;
+        var elements = categoryId != ElementId.InvalidElementId
+            ? new FilteredElementCollector(doc).OfCategoryId(categoryId).WhereElementIsNotElementType().ToList()
+            : new FilteredElementCollector(doc).WhereElementIsNotElementType().ToList();
+        if (elements.Count == 0) return candidates[0].Index;
+
+        var best = candidates[0];
+        var bestDistinct = -1;
+        foreach (var candidate in candidates)
+        {
+            var values = new HashSet<string>();
+            foreach (var element in elements)
+            {
+                var p = element.LookupParameter(candidate.ParamName);
+                if (p is null) continue;
+                var text = p.StorageType == StorageType.String ? p.AsString() : p.AsValueString();
+                if (!string.IsNullOrEmpty(text)) values.Add(text);
+            }
+            if (values.Count > bestDistinct) { bestDistinct = values.Count; best = candidate; }
+        }
+        return best.Index;
     }
 
     public record ImportResult(int UpdatedFields, int UpdatedRows);
 
     /// <summary>Matches each row back to an element by a key column, then writes every other column as a
     /// same-named parameter. When <paramref name="sourceSchedule"/> is known (the normal case — see
-    /// FindSourceSchedule), the key column is the schedule's own first real parameter field (see
-    /// FindKeyFieldIndex) rather than blindly column 0, and element candidates are narrowed to the
-    /// schedule's own category and indexed into a dictionary once, instead of a full unfiltered
-    /// document scan repeated for every row (confirmed live: on a large model this made import slow enough
-    /// to look hung, on top of it silently matching nothing). Without a matched schedule this falls back to
-    /// the old column-0 behavior. Must run inside a transaction — this is the one operation here that
-    /// touches the model.</summary>
+    /// FindSourceSchedule), the key column is whichever real parameter field actually has the most distinct
+    /// values across the schedule's elements (see FindKeyFieldIndex) rather than blindly column 0 or merely
+    /// the first real-parameter field, and element candidates are narrowed to the schedule's own category
+    /// and indexed into a dictionary once, instead of a full unfiltered document scan repeated for every
+    /// row (confirmed live: on a large model this made import slow enough to look hung, on top of it
+    /// silently matching nothing). Without a matched schedule this falls back to the old column-0 behavior.
+    /// Must run inside a transaction — this is the one operation here that touches the model.</summary>
     public static ImportResult ImportParameters(Document doc, List<string> headers, List<List<string>> rows, ViewSchedule? sourceSchedule)
     {
-        var keyIndex = sourceSchedule is not null ? FindKeyFieldIndex(sourceSchedule) : 0;
+        var keyIndex = sourceSchedule is not null ? FindKeyFieldIndex(doc, sourceSchedule) : 0;
         if (keyIndex >= headers.Count) keyIndex = 0;
         var keyHeader = headers[keyIndex];
         var paramColumns = headers.Select((h, i) => (Header: h, Index: i)).Where(t => t.Index != keyIndex).ToList();

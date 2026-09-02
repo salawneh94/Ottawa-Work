@@ -465,7 +465,7 @@ public class ExcelSyncWindow : OttawaWorkWindow
         // nothing at all — confirmed live, user-reported).
         _importSchedule = ExcelSyncEngine.FindSourceSchedule(_doc, headers, rows);
 
-        var keyIndex = _importSchedule is not null ? ExcelSyncEngine.FindKeyFieldIndex(_importSchedule) : 0;
+        var keyIndex = _importSchedule is not null ? ExcelSyncEngine.FindKeyFieldIndex(_doc, _importSchedule) : 0;
         var keyLabel = headers.ElementAtOrDefault(keyIndex) ?? headers[0];
         var paramLabels = string.Join(", ", headers.Where((h, i) => i != keyIndex));
 
