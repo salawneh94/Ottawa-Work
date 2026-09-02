@@ -147,10 +147,19 @@ public class ExcelSyncWindow : OttawaWorkWindow
         // scrolling horizontally here keeps that from stretching the whole
         // window (SizeToContent=WidthAndHeight) out to match the widest chip
         // row instead of the 460px this column is supposed to be.
+        //
+        // No fixed Height here — it was hardcoded to 32, but each chip
+        // button's real height (padding 8+8, border 1+1, plus its text) is
+        // taller than that, and with VerticalScrollBarVisibility.Disabled
+        // (only horizontal scrolling was ever intended) WPF constrains/clips
+        // to the declared height instead of just letting the overflow show.
+        // Confirmed live (user-reported, screenshot): only the active "All"
+        // chip's top sliver was visible, every other category chip was cut
+        // away entirely. Letting the row auto-size vertically to its real
+        // content height removes the mismatch outright.
         var chipScroll = new ScrollViewer
         {
             Width = 452,
-            Height = 32,
             HorizontalScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility.Auto,
             VerticalScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility.Disabled,
             Content = _categoryChipsPanel,
