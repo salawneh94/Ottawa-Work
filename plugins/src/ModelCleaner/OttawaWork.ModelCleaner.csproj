@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OttawaWork.ModelCleaner</RootNamespace>
+    <AssemblyName>OttawaWork.ModelCleaner</AssemblyName>
+    <!-- WPF for the dark-themed dialog (ModelCleanerWindow); see OttawaWork.Shared's csproj comment. -->
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\OttawaWork.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

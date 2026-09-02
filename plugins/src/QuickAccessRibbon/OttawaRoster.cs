@@ -95,8 +95,9 @@ public static class OttawaRoster
 
         // Panel 7: Model QA/QC
         new("PurgePro", "Model QA/QC", "Purge Pro", "Repeat Revit's purge-unused until the model stops shrinking.", false),
+        new("ModelCleaner", "Model QA/QC", "Model Cleaner", "Deep audit across 7 categories — in-place families, unplaced views, unused templates/filters, duplicate text types, broken links, orphan materials, blank sheets — with select, blast-radius preview, and delete.", false),
         new("NamingConventionAudit", "Model QA/QC", "Naming Audit", "Check view, sheet, or family type names against a regex pattern you define.", false),
-        new("StairCalculator", "Model QA/QC", "Stair Calculator", "Check stair riser/tread proportions against the 2R+G comfort rule.", false),
+        new("StairCalculator", "Model QA/QC", "Stair Calculator", "Design against DIN 18065's reference riser/tread thresholds, or audit stairs already in the model.", false),
         new("UnplacedCleaner", "Model QA/QC", "Unplaced Cleaner", "Find unplaced rooms (never placed on a plan) and delete them in one pass.", false),
         new("ScopeBoxSync", "Model QA/QC", "Scope Box Sync", "Apply a scope box to a batch of selected views.", false),
         new("TitleBlockUpdater", "Model QA/QC", "Title Block Updater", "Batch-update title block info across sheets and linked projects.", false),

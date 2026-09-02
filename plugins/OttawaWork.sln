@@ -30,6 +30,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OttawaWork.ParamPowerSuite"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OttawaWork.PurgePro", "src\PurgePro\OttawaWork.PurgePro.csproj", "{E0AED422-2FEE-41BE-97B3-80B9ACC93CFA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OttawaWork.ModelCleaner", "src\ModelCleaner\OttawaWork.ModelCleaner.csproj", "{9EC99618-1CAF-4E84-B253-0B695C9FA0D9}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OttawaWork.RevisionTrack", "src\RevisionTrack\OttawaWork.RevisionTrack.csproj", "{61B1E508-E6CE-4603-97CE-8189605969C5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OttawaWork.UniqueNumbering", "src\UniqueNumbering\OttawaWork.UniqueNumbering.csproj", "{25B84042-10EC-4243-B3A4-7571238BCD54}"
@@ -142,6 +144,10 @@ Global
 		{E0AED422-2FEE-41BE-97B3-80B9ACC93CFA}.Debug|x64.Build.0 = Debug|x64
 		{E0AED422-2FEE-41BE-97B3-80B9ACC93CFA}.Release|x64.ActiveCfg = Release|x64
 		{E0AED422-2FEE-41BE-97B3-80B9ACC93CFA}.Release|x64.Build.0 = Release|x64
+		{9EC99618-1CAF-4E84-B253-0B695C9FA0D9}.Debug|x64.ActiveCfg = Debug|x64
+		{9EC99618-1CAF-4E84-B253-0B695C9FA0D9}.Debug|x64.Build.0 = Debug|x64
+		{9EC99618-1CAF-4E84-B253-0B695C9FA0D9}.Release|x64.ActiveCfg = Release|x64
+		{9EC99618-1CAF-4E84-B253-0B695C9FA0D9}.Release|x64.Build.0 = Release|x64
 		{61B1E508-E6CE-4603-97CE-8189605969C5}.Debug|x64.ActiveCfg = Debug|x64
 		{61B1E508-E6CE-4603-97CE-8189605969C5}.Debug|x64.Build.0 = Debug|x64
 		{61B1E508-E6CE-4603-97CE-8189605969C5}.Release|x64.ActiveCfg = Release|x64
