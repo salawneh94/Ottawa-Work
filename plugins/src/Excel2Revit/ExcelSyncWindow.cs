@@ -463,7 +463,7 @@ public class ExcelSyncWindow : OttawaWorkWindow
         // real parameter-backed key column instead of blindly trusting whichever field happens to be
         // first (which, for a schedule whose first column is a calculated field like Count, matched
         // nothing at all — confirmed live, user-reported).
-        _importSchedule = ExcelSyncEngine.FindSourceSchedule(_doc, headers);
+        _importSchedule = ExcelSyncEngine.FindSourceSchedule(_doc, headers, rows);
 
         var keyIndex = _importSchedule is not null ? ExcelSyncEngine.FindKeyFieldIndex(_importSchedule) : 0;
         var keyLabel = headers.ElementAtOrDefault(keyIndex) ?? headers[0];

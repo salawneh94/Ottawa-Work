@@ -161,15 +161,55 @@ public static class ExcelSyncEngine
         return headers;
     }
 
-    /// <summary>Finds which of the model's schedules produced a given exported header row, by comparing
-    /// column headings (see FieldHeaders) — an exact sequence match is, in practice, always the file's real
-    /// source. Returns null if nothing matches (the schedule was renamed/deleted since export, or the
-    /// header row was hand-edited); the caller then has to fall back to a weaker match instead of silently
-    /// assuming the wrong schedule.</summary>
-    public static ViewSchedule? FindSourceSchedule(Document doc, List<string> importedHeaders) =>
-        ListSchedules(doc)
+    /// <summary>Finds which of the model's schedules produced a given exported header row. A pure header-
+    /// text match isn't reliable on its own — firm templates commonly reuse the exact same shared-parameter
+    /// columns (O-G_Etage, O-G_Feuerwiderstandsklasse, ...) across totally different categories, so two
+    /// unrelated schedules (e.g. a door schedule and a structural-column schedule) can have byte-identical
+    /// column headings. Picking merely the first such match by name order silently chose the wrong schedule
+    /// outright — confirmed live (user-reported): a door-schedule import reported real field updates, but
+    /// none of the actually-edited door cells changed, because the update landed on a same-headers
+    /// structural schedule's 165 elements instead. When more than one schedule's headers match, this
+    /// disambiguates by checking the DATA: for each candidate, how many of the imported rows' key values
+    /// (see FindKeyFieldIndex) actually resolve to a real element in that candidate's own category — the
+    /// true source schedule matches nearly all of them, an unrelated same-headers schedule matches
+    /// essentially none. Returns null if no schedule's headers match at all (renamed/deleted schedule, or a
+    /// hand-edited header row).</summary>
+    public static ViewSchedule? FindSourceSchedule(Document doc, List<string> importedHeaders, List<List<string>> rows)
+    {
+        var headerMatches = ListSchedules(doc)
             .Select(info => info.Schedule)
-            .FirstOrDefault(s => FieldHeaders(s).SequenceEqual(importedHeaders, StringComparer.Ordinal));
+            .Where(s => FieldHeaders(s).SequenceEqual(importedHeaders, StringComparer.Ordinal))
+            .ToList();
+
+        if (headerMatches.Count <= 1) return headerMatches.FirstOrDefault();
+
+        ViewSchedule? best = null;
+        var bestScore = -1;
+        foreach (var schedule in headerMatches)
+        {
+            var keyIndex = FindKeyFieldIndex(schedule);
+            var keyHeader = importedHeaders.ElementAtOrDefault(keyIndex);
+            if (keyHeader is null) continue;
+
+            var categoryId = schedule.Definition.CategoryId;
+            var candidates = categoryId != ElementId.InvalidElementId
+                ? new FilteredElementCollector(doc).OfCategoryId(categoryId).WhereElementIsNotElementType()
+                : new FilteredElementCollector(doc).WhereElementIsNotElementType();
+            var realValues = candidates
+                .Select(e => e.LookupParameter(keyHeader))
+                .Where(p => p is not null)
+                .Select(p => p!.StorageType == StorageType.String ? p.AsString() : p.AsValueString())
+                .Where(v => !string.IsNullOrEmpty(v))
+                .ToHashSet();
+
+            var sample = rows.Select(r => r.ElementAtOrDefault(keyIndex)).Where(v => !string.IsNullOrWhiteSpace(v)).Take(20).ToList();
+            if (sample.Count == 0) continue;
+            var score = sample.Count(v => realValues.Contains(v!));
+            if (score > bestScore) { bestScore = score; best = schedule; }
+        }
+
+        return best ?? headerMatches[0];
+    }
 
     /// <summary>The index (within FieldHeaders' own order) of the first field safe to use as the
     /// row-matching key: one backed by a real per-element parameter (Instance or ElementType), skipping
