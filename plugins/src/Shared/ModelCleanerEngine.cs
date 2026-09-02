@@ -196,10 +196,18 @@ public static class ModelCleanerEngine
         return findings;
     }
 
-    /// <summary>Materials not referenced by any ElementId-storage parameter on any element or element type,
-    /// and not applied as a paint material on any element (Element.GetMaterialIds(true)) — the same two
-    /// signals Revit's own purge logic checks. A project-wide parameter scan, so this is the slowest of the
-    /// seven scans on a large model; still a single manual pass, not something run automatically.</summary>
+    /// <summary>Materials not referenced by any ElementId-storage parameter on any Model-category element
+    /// or element type, and not applied as a paint material on any Model-category element
+    /// (Element.GetMaterialIds(true)) — the same two signals Revit's own purge logic checks. Restricted to
+    /// CategoryType.Model (walls, floors, generic models, furniture, etc. — where material assignment is
+    /// actually meaningful) rather than every element in the document: an earlier unrestricted pass over
+    /// literally everything — including imports, point clouds, and other edge-case element types
+    /// GetMaterialIds()/Parameters can fault on at the native Revit API level, which a C# try/catch cannot
+    /// intercept (a genuine access violation is a corrupted-state exception, not an ordinary .NET one) —
+    /// crashed Revit outright on a large real project, confirmed live (user-reported, twice: once from the
+    /// old eager all-seven-scans-up-front version, and again from the lazy per-tab version specifically
+    /// while this scan itself was running). Still the slowest of the seven scans on a large model even
+    /// narrowed this way; still a single manual pass, not something run automatically.</summary>
     public static List<ModelCleanerFinding> ScanMaterials(Document doc)
     {
         var materials = new FilteredElementCollector(doc).OfClass(typeof(Material)).Cast<Material>().ToList();
@@ -217,13 +225,20 @@ public static class ModelCleanerEngine
             }
         }
 
-        foreach (var element in new FilteredElementCollector(doc).WhereElementIsNotElementType())
+        var modelCategoryIds = doc.Settings.Categories
+            .Cast<Category>()
+            .Where(c => c.CategoryType == CategoryType.Model)
+            .Select(c => c.Id)
+            .ToList();
+        var categoryFilter = new ElementMulticategoryFilter(modelCategoryIds);
+
+        foreach (var element in new FilteredElementCollector(doc).WherePasses(categoryFilter).WhereElementIsNotElementType())
         {
             ScanParams(element);
             try { foreach (var id in element.GetMaterialIds(true)) if (materialIds.Contains(id)) usedIds.Add(id); }
             catch (Exception) { /* not every element type supports paint materials */ }
         }
-        foreach (var element in new FilteredElementCollector(doc).WhereElementIsElementType())
+        foreach (var element in new FilteredElementCollector(doc).WherePasses(categoryFilter).WhereElementIsElementType())
             ScanParams(element);
 
         return materials

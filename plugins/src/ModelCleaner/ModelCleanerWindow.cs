@@ -108,7 +108,14 @@ public class ModelCleanerWindow : OttawaWorkWindow
         columns.Children.Add(leftCol);
 
         // ---- Right: tabs + results ----
-        var rightCol = new StackPanel { Width = 620 };
+        // No fixed Width here (unlike leftCol) — the seven tab buttons are a plain, unwrapped
+        // horizontal StackPanel, which never wraps or shrinks its children, only ever reports its
+        // true natural width. A hardcoded Width here that's narrower than that natural width doesn't
+        // clip the tabs, it just makes the window (SizeToContent.WidthAndHeight) size itself off the
+        // wrong number — confirmed live (user-reported, screenshot showed the last tab, "Sheets &
+        // Schedules", cut off past the window's right edge entirely). Leaving this unconstrained lets
+        // the window grow to whatever width the tab row actually needs.
+        var rightCol = new StackPanel();
 
         foreach (var (category, label) in Tabs)
         {
