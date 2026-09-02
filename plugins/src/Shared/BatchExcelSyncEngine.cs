@@ -124,6 +124,15 @@ public static class BatchExcelSyncEngine
         return (headers, rows);
     }
 
+    /// <summary>One row per (element, parameter) cell that actually differs from the model — cells that
+    /// match the model's current value (DiffStatus.Same) are never returned at all, not just filtered out
+    /// downstream. A real batch export is elements × parameters, and in the ordinary case where only a
+    /// handful of cells were actually edited, the overwhelming majority of that grid is unchanged — keeping
+    /// those rows made the caller build one real WPF control set (a CheckBox plus five TextBlocks) per cell
+    /// into a plain, non-virtualizing panel, which for a few hundred elements times a few dozen parameters
+    /// meant tens of thousands of live UI elements built synchronously on the UI thread. Confirmed live
+    /// (user-reported): Batch Excel Sync crashed on re-importing a large export. Dropping Same rows here
+    /// bounds the UI to however many cells actually changed, which for a real edit is normally small.</summary>
     public static List<DiffRow> ComputeDiff(Document doc, List<string> headers, List<List<string>> importRows, SyncScope scope, List<ParamColumn> knownColumns)
     {
         var results = new List<DiffRow>();
@@ -166,8 +175,9 @@ public static class BatchExcelSyncEngine
                 // apply there — it would just be a normal Changed edit. Only
                 // gate it on IsTypeParam when the user is actually looking at
                 // Instances (same guard ResolveParameter below already uses).
+                if (currentValue == newValue) continue;
+
                 var status =
-                    currentValue == newValue ? DiffStatus.Same :
                     param.IsReadOnly ? DiffStatus.Conflict :
                     (scope == SyncScope.Instances && col.IsTypeParam) ? DiffStatus.TypeChange :
                     DiffStatus.Changed;
