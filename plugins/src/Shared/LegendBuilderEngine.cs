@@ -200,8 +200,14 @@ public static class LegendBuilderEngine
         var originX = Feet(style.PlacementRightMm);
         var originY = -Feet(style.PlacementUpMm);
         var swatchWidth = Feet(style.SwatchSizeMm);
-        var swatchHeight = swatchWidth * 0.7;
         var rowHeight = Feet(style.RowHeightMm);
+        // Capped to a fraction of rowHeight, not just swatchWidth * 0.7: SwatchSizeMm and RowHeightMm are
+        // independent style sliders, and swatchWidth * 0.7 alone comes out taller than rowHeight at every
+        // size preset (e.g. Standard: 18mm swatch -> 12.6mm tall vs. a 10mm row) — confirmed live (user
+        // screenshot showed swatches overlapping into the row above/below, the overlapping boundary lines
+        // reading as stray tick marks, and the alt-row shading looking like it spanned two rows). Capping
+        // keeps the swatch inside its own row regardless of what the width slider is set to.
+        var swatchHeight = Math.Min(swatchWidth * 0.7, rowHeight * 0.82);
         var padding = Feet(style.PaddingMm);
 
         var longestLabel = rows.Count == 0 ? 10 : rows.Max(r => r.Value.Length + (style.ShowCount ? 8 : 0));
