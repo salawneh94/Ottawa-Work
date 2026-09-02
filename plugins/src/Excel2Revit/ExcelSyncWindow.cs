@@ -83,10 +83,12 @@ public class ExcelSyncWindow : OttawaWorkWindow
 
     private List<string>? _importHeaders;
     private List<List<string>>? _importRows;
+    private ViewSchedule? _importSchedule;
 
     public bool DoImport { get; private set; }
     public List<string> ImportHeaders => _importHeaders ?? new List<string>();
     public List<List<string>> ImportRows => _importRows ?? new List<List<string>>();
+    public ViewSchedule? ImportSchedule => _importSchedule;
 
     public ExcelSyncWindow(Document doc) : base("Ottawa Tools — Excel Sync", minWidth: 900)
     {
@@ -456,9 +458,21 @@ public class ExcelSyncWindow : OttawaWorkWindow
         var (headers, rows) = table.Value;
         _importHeaders = headers;
         _importRows = rows;
+        // Matched by comparing this file's header row against every live schedule's own column
+        // headings (ExcelSyncEngine.FindSourceSchedule) — this is what lets ImportParameters pick a
+        // real parameter-backed key column instead of blindly trusting whichever field happens to be
+        // first (which, for a schedule whose first column is a calculated field like Count, matched
+        // nothing at all — confirmed live, user-reported).
+        _importSchedule = ExcelSyncEngine.FindSourceSchedule(_doc, headers);
+
+        var keyIndex = _importSchedule is not null ? ExcelSyncEngine.FindKeyFieldIndex(_importSchedule) : 0;
+        var keyLabel = headers.ElementAtOrDefault(keyIndex) ?? headers[0];
+        var paramLabels = string.Join(", ", headers.Where((h, i) => i != keyIndex));
 
         _importFileText.Text = $"{Path.GetFileName(dialog.FileName)} — {rows.Count} row(s) loaded";
-        _importPreviewText.Text = $"Key column: \"{headers[0]}\"\nParameter columns: {string.Join(", ", headers.Skip(1))}\n{rows.Count} row(s) ready to match against the model.";
+        _importPreviewText.Text = _importSchedule is not null
+            ? $"Matched to schedule \"{_importSchedule.Name}\" — key column: \"{keyLabel}\"\nParameter columns: {paramLabels}\n{rows.Count} row(s) ready to match against the model."
+            : $"Couldn't match this file to a schedule still in the model (renamed, deleted, or a hand-edited header row) — falling back to the first column (\"{keyLabel}\") as the key, checked against the whole model instead of one category. Re-export from the live schedule for a reliable match.\n{rows.Count} row(s) ready to match against the model.";
         _importPreviewCard.Visibility = Visibility.Visible;
         _importCommitButton.IsEnabled = true;
     }

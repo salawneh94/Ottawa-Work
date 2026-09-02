@@ -34,7 +34,7 @@ public class Command : OttawaWorkCommand
             transaction.Start();
             try
             {
-                result = ExcelSyncEngine.ImportParameters(doc, window.ImportHeaders, window.ImportRows);
+                result = ExcelSyncEngine.ImportParameters(doc, window.ImportHeaders, window.ImportRows, window.ImportSchedule);
                 transaction.Commit();
             }
             catch (Exception)

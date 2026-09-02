@@ -144,16 +144,90 @@ public static class ExcelSyncEngine
         return BrandedXlsx.ReplaceCsvWithBrandedXlsx(textPath, schedule.Name, projectTitle);
     }
 
+    /// <summary>Every visible field's column heading, in field order — exactly what
+    /// ViewScheduleExportOptions.ColumnHeaders = OneRow writes as an export's header row, so this is how a
+    /// previously-exported file gets re-associated with its live source schedule at import time (see
+    /// FindSourceSchedule).</summary>
+    public static List<string> FieldHeaders(ViewSchedule schedule)
+    {
+        var definition = schedule.Definition;
+        var headers = new List<string>();
+        for (var i = 0; i < definition.GetFieldCount(); i++)
+        {
+            var field = definition.GetField(i);
+            if (field.IsHidden) continue;
+            headers.Add(field.ColumnHeading);
+        }
+        return headers;
+    }
+
+    /// <summary>Finds which of the model's schedules produced a given exported header row, by comparing
+    /// column headings (see FieldHeaders) — an exact sequence match is, in practice, always the file's real
+    /// source. Returns null if nothing matches (the schedule was renamed/deleted since export, or the
+    /// header row was hand-edited); the caller then has to fall back to a weaker match instead of silently
+    /// assuming the wrong schedule.</summary>
+    public static ViewSchedule? FindSourceSchedule(Document doc, List<string> importedHeaders) =>
+        ListSchedules(doc)
+            .Select(info => info.Schedule)
+            .FirstOrDefault(s => FieldHeaders(s).SequenceEqual(importedHeaders, StringComparer.Ordinal));
+
+    /// <summary>The index (within FieldHeaders' own order) of the first field safe to use as the
+    /// row-matching key: one backed by a real per-element parameter (Instance or ElementType), skipping
+    /// calculated/aggregate fields. Count, Formula, and CombinedParameter fields never carry a real
+    /// per-element value — matching against them either finds nothing (every element's LookupParameter
+    /// comes back null, so nothing ever gets updated) or, worse, silently matches the same wrong element
+    /// for every row. Confirmed live (user-reported): a door schedule's first column was the built-in Count
+    /// field ("Anzahl" in this German project), so blindly treating column 0 as the key produced zero real
+    /// matches on any row and no visible error. Falls back to 0 if the schedule has no such field at all.</summary>
+    public static int FindKeyFieldIndex(ViewSchedule schedule)
+    {
+        var definition = schedule.Definition;
+        var visibleIndex = -1;
+        for (var i = 0; i < definition.GetFieldCount(); i++)
+        {
+            var field = definition.GetField(i);
+            if (field.IsHidden) continue;
+            visibleIndex++;
+            if (field.IsCalculatedField) continue;
+            if (field.FieldType is ScheduleFieldType.Instance or ScheduleFieldType.ElementType && field.ParameterId != ElementId.InvalidElementId)
+                return visibleIndex;
+        }
+        return 0;
+    }
+
     public record ImportResult(int UpdatedFields, int UpdatedRows);
 
-    /// <summary>Matches each row back to an element by the table's first column (whatever that schedule's
-    /// leftmost field happens to be, e.g. Mark), then writes every other column as a same-named parameter.
-    /// Must run inside a transaction — this is the one operation here that touches the model.</summary>
-    public static ImportResult ImportParameters(Document doc, List<string> headers, List<List<string>> rows)
+    /// <summary>Matches each row back to an element by a key column, then writes every other column as a
+    /// same-named parameter. When <paramref name="sourceSchedule"/> is known (the normal case — see
+    /// FindSourceSchedule), the key column is the schedule's own first real parameter field (see
+    /// FindKeyFieldIndex) rather than blindly column 0, and element candidates are narrowed to the
+    /// schedule's own category and indexed into a dictionary once, instead of a full unfiltered
+    /// document scan repeated for every row (confirmed live: on a large model this made import slow enough
+    /// to look hung, on top of it silently matching nothing). Without a matched schedule this falls back to
+    /// the old column-0 behavior. Must run inside a transaction — this is the one operation here that
+    /// touches the model.</summary>
+    public static ImportResult ImportParameters(Document doc, List<string> headers, List<List<string>> rows, ViewSchedule? sourceSchedule)
     {
-        const int keyIndex = 0;
+        var keyIndex = sourceSchedule is not null ? FindKeyFieldIndex(sourceSchedule) : 0;
+        if (keyIndex >= headers.Count) keyIndex = 0;
         var keyHeader = headers[keyIndex];
         var paramColumns = headers.Select((h, i) => (Header: h, Index: i)).Where(t => t.Index != keyIndex).ToList();
+
+        var categoryId = sourceSchedule?.Definition.CategoryId;
+        var candidates = categoryId is { } cid && cid != ElementId.InvalidElementId
+            ? new FilteredElementCollector(doc).OfCategoryId(cid).WhereElementIsNotElementType()
+            : new FilteredElementCollector(doc).WhereElementIsNotElementType();
+
+        var byKey = new Dictionary<string, Element>();
+        foreach (var element in candidates)
+        {
+            var p = element.LookupParameter(keyHeader);
+            if (p is null) continue;
+            var text = p.StorageType == StorageType.String ? p.AsString() : p.AsValueString();
+            if (string.IsNullOrEmpty(text) || byKey.ContainsKey(text)) continue;
+            byKey[text] = element;
+        }
+
         var updatedRows = 0;
         var updatedFields = 0;
 
@@ -161,9 +235,7 @@ public static class ExcelSyncEngine
         {
             var keyValue = fields.ElementAtOrDefault(keyIndex);
             if (string.IsNullOrWhiteSpace(keyValue)) continue;
-
-            var element = FindElementByParameterValue(doc, keyHeader, keyValue);
-            if (element is null) continue;
+            if (!byKey.TryGetValue(keyValue, out var element)) continue;
 
             var rowChanged = false;
             foreach (var (columnHeader, columnIndex) in paramColumns)
@@ -196,18 +268,5 @@ public static class ExcelSyncEngine
         }
 
         return new ImportResult(updatedFields, updatedRows);
-    }
-
-    private static Element? FindElementByParameterValue(Document doc, string paramName, string value)
-    {
-        return new FilteredElementCollector(doc)
-            .WhereElementIsNotElementType()
-            .FirstOrDefault(e =>
-            {
-                var p = e.LookupParameter(paramName);
-                if (p is null) return false;
-                var text = p.StorageType == StorageType.String ? p.AsString() : p.AsValueString();
-                return text == value;
-            });
     }
 }
