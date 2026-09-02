@@ -140,6 +140,32 @@ public static class LegendBuilderEngine
         return newType.Id;
     }
 
+    /// <summary>Finds (or duplicates, on first use) a TextNoteType at the given paper text size — same
+    /// find-or-duplicate-and-cache-by-name pattern as FindOrCreateSwatchType. TEXT_SIZE is the
+    /// BuiltInParameter backing a text type's font size; TextNoteType itself exposes no direct .TextSize
+    /// property (confirmed via reflection — everything about it is parameter-based, unlike
+    /// FilledRegionType's own ForegroundPatternColor property).</summary>
+    private static ElementId FindOrCreateTextType(Document doc, double textSizeMm)
+    {
+        var name = $"Ottawa Legend {textSizeMm:0.0}mm";
+        var existing = new FilteredElementCollector(doc)
+            .OfClass(typeof(TextNoteType))
+            .Cast<TextNoteType>()
+            .FirstOrDefault(t => t.Name == name);
+        if (existing is not null) return existing.Id;
+
+        var baseType = doc.GetElement(doc.GetDefaultElementTypeId(ElementTypeGroup.TextNoteType)) as TextNoteType
+            ?? new FilteredElementCollector(doc).OfClass(typeof(TextNoteType)).Cast<TextNoteType>().FirstOrDefault();
+        if (baseType is null) throw new InvalidOperationException("No text note type found in this project.");
+
+        var newType = (TextNoteType)baseType.Duplicate(name);
+        var sizeParam = newType.get_Parameter(BuiltInParameter.TEXT_SIZE);
+        if (sizeParam is not null && !sizeParam.IsReadOnly)
+            sizeParam.Set(UnitUtils.ConvertToInternalUnits(textSizeMm, UnitTypeId.Millimeters));
+
+        return newType.Id;
+    }
+
     private static CurveLoop RectangleLoop(XYZ topLeft, double width, double height)
     {
         var p1 = topLeft;
@@ -152,19 +178,34 @@ public static class LegendBuilderEngine
     /// <summary>Builds every swatch/label/title/fill element for the legend, top to bottom. Row width for
     /// the header-fill/alt-row bands is a heuristic (not measured — Revit has no simple "how wide will this
     /// TextNote render" query without creating it first) based on the longest value's character count, not
-    /// pixel-exact.</summary>
+    /// pixel-exact.
+    ///
+    /// Every model-space distance (swatch size, row spacing, padding, placement offset) is multiplied by
+    /// the legend view's own Scale before converting mm to internal feet — confirmed live (user-reported,
+    /// screenshot showed every row's swatch and text collapsed on top of each other into one unreadable
+    /// smear). Root cause: FilledRegion geometry is real model-space geometry, which prints at
+    /// (model distance) / (view scale) — exactly like a wall drawn 1m long prints smaller on a 1:50 view
+    /// than a 1:10 one — but TextNote's own font size (TEXT_SIZE) is a fixed PAPER size that does NOT
+    /// scale with the view, by design (so annotation text reads the same size on the sheet regardless of
+    /// which scale the underlying view happens to be drawn at). The style values here are meant as "this
+    /// many mm on the printed sheet", so the GEOMETRY has to be inflated by the view's scale factor to
+    /// still measure that many mm once scaled back down at print time; the TEXT SIZE itself must NOT get
+    /// that same multiplication, since it already prints at its real, unscaled size.</summary>
     public static void GenerateLegendContent(Document doc, View legendView, LegendStyleOptions style, List<LegendValueRow> rows)
     {
-        var textTypeId = doc.GetDefaultElementTypeId(ElementTypeGroup.TextNoteType);
-        var originX = UnitUtils.ConvertToInternalUnits(style.PlacementRightMm, UnitTypeId.Millimeters);
-        var originY = -UnitUtils.ConvertToInternalUnits(style.PlacementUpMm, UnitTypeId.Millimeters);
-        var swatchWidth = UnitUtils.ConvertToInternalUnits(style.SwatchSizeMm, UnitTypeId.Millimeters);
+        var textTypeId = FindOrCreateTextType(doc, style.TextSizeMm);
+        var scale = Math.Max(1, legendView.Scale);
+        double Feet(double mm) => UnitUtils.ConvertToInternalUnits(mm * scale, UnitTypeId.Millimeters);
+
+        var originX = Feet(style.PlacementRightMm);
+        var originY = -Feet(style.PlacementUpMm);
+        var swatchWidth = Feet(style.SwatchSizeMm);
         var swatchHeight = swatchWidth * 0.7;
-        var rowHeight = UnitUtils.ConvertToInternalUnits(style.RowHeightMm, UnitTypeId.Millimeters);
-        var padding = UnitUtils.ConvertToInternalUnits(style.PaddingMm, UnitTypeId.Millimeters);
+        var rowHeight = Feet(style.RowHeightMm);
+        var padding = Feet(style.PaddingMm);
 
         var longestLabel = rows.Count == 0 ? 10 : rows.Max(r => r.Value.Length + (style.ShowCount ? 8 : 0));
-        var rowWidth = swatchWidth + padding + UnitUtils.ConvertToInternalUnits(longestLabel * 2.2, UnitTypeId.Millimeters);
+        var rowWidth = swatchWidth + padding + Feet(longestLabel * 2.2);
 
         var y = originY;
 
