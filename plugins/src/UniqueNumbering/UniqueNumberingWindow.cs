@@ -213,7 +213,16 @@ public class UniqueNumberingWindow : OttawaWorkWindow
     {
         if (SelectedCategoryLabel() is not { } name || !_categoriesByName.TryGetValue(name, out var category)) return new();
 
-        var sample = CollectElements(category).FirstOrDefault();
+        // Sampled from the WHOLE category in the project, not CollectElements(category) — that
+        // honors "Scope to selection only", so whenever the current Revit selection didn't happen
+        // to include anything of the chosen category, the sample came back null and the Parameter
+        // dropdown was left with zero options and no explanation why. Confirmed live (user-reported):
+        // "0 element(s) found" for Walls with "Scope to selection only" checked, dropdown empty,
+        // reported as "cannot edit the parameter". Which elements actually get numbered still
+        // respects the scope checkbox (CollectElements, used by GeneratePreview) — only the set of
+        // available PARAMETER NAMES shouldn't depend on which subset happens to be selected, since
+        // every element of a category shares essentially the same parameter schema regardless.
+        var sample = new FilteredElementCollector(_doc).WhereElementIsNotElementType().OfCategoryId(category.Id).FirstOrDefault();
         if (sample is null) return new();
 
         return sample.Parameters.Cast<Parameter>()
