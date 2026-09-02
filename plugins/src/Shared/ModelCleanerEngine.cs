@@ -29,18 +29,25 @@ public record ModelCleanerFinding(
 /// </summary>
 public static class ModelCleanerEngine
 {
-    public static List<ModelCleanerFinding> ScanAll(Document doc)
+    /// <summary>Dispatches to exactly one category's scan — the window calls this lazily, one category at
+    /// a time, on first visit to each tab, rather than eagerly running all seven up front. Confirmed live
+    /// (user-reported, screenshot showed Revit's own crash dialog after clicking Model Cleaner, with the
+    /// window never having appeared at all): running all seven synchronously before any UI renders — on a
+    /// large real project, with Materials alone walking every parameter of every element and every element
+    /// type in the whole document, unfiltered — pushed a real production model hard enough to bring Revit
+    /// down before the window ever got to paint a single frame. Scanning one category at a time, only when
+    /// its tab is actually opened, bounds the worst case to whichever single category the user picks.</summary>
+    public static List<ModelCleanerFinding> ScanCategory(Document doc, ModelCleanerCategory category) => category switch
     {
-        var findings = new List<ModelCleanerFinding>();
-        findings.AddRange(ScanInPlace(doc));
-        findings.AddRange(ScanUnplacedViews(doc));
-        findings.AddRange(ScanTemplatesAndFilters(doc));
-        findings.AddRange(ScanDuplicates(doc));
-        findings.AddRange(ScanRogueLinks(doc));
-        findings.AddRange(ScanMaterials(doc));
-        findings.AddRange(ScanSheetsAndSchedules(doc));
-        return findings;
-    }
+        ModelCleanerCategory.InPlace => ScanInPlace(doc),
+        ModelCleanerCategory.UnplacedViews => ScanUnplacedViews(doc),
+        ModelCleanerCategory.TemplatesAndFilters => ScanTemplatesAndFilters(doc),
+        ModelCleanerCategory.Duplicates => ScanDuplicates(doc),
+        ModelCleanerCategory.RogueLinks => ScanRogueLinks(doc),
+        ModelCleanerCategory.Materials => ScanMaterials(doc),
+        ModelCleanerCategory.SheetsAndSchedules => ScanSheetsAndSchedules(doc),
+        _ => new List<ModelCleanerFinding>(),
+    };
 
     /// <summary>In-place families — modeled directly in the project instead of loaded, can't be scheduled
     /// or reused across models, and hurt regen/open performance. One finding per family, carrying both the

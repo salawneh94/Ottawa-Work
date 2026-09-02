@@ -11,6 +11,7 @@ using FontWeights = System.Windows.FontWeights;
 using TextTrimming = System.Windows.TextTrimming;
 using TextWrapping = System.Windows.TextWrapping;
 using Cursors = System.Windows.Input.Cursors;
+using DispatcherPriority = System.Windows.Threading.DispatcherPriority;
 
 using Autodesk.Revit.DB;
 using OttawaWork.Shared;
@@ -41,7 +42,11 @@ public class ModelCleanerWindow : OttawaWorkWindow
     };
 
     private readonly Document _doc;
-    private List<ModelCleanerFinding> _allFindings = new();
+    // Each category is scanned at most once per window session, lazily, the first time its tab is
+    // opened — see GetOrScan and ModelCleanerEngine.ScanCategory's doc comment for why (an eager scan of
+    // all seven up front, including the Materials scan's full-document parameter walk, crashed Revit
+    // outright on a large real project before this window ever got to render).
+    private readonly Dictionary<ModelCleanerCategory, List<ModelCleanerFinding>> _scanned = new();
     private ModelCleanerCategory _activeTab = ModelCleanerCategory.InPlace;
 
     private readonly StackPanel _tabRow = new() { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 10) };
@@ -172,12 +177,33 @@ public class ModelCleanerWindow : OttawaWorkWindow
         SetContent(root, padding: 24);
 
         SetTab(ModelCleanerCategory.InPlace);
-        Rescan();
+    }
+
+    /// <summary>Runs (and caches) exactly one category's scan, the first time it's needed — never all
+    /// seven at once. Pumps the dispatcher once after posting a "Scanning…" label so that text actually
+    /// paints before the scan call below blocks the UI thread (Revit API calls have to stay on this
+    /// thread, so this can't be a background Task — Application.Idling isn't usable either since this
+    /// window is already modal). Materials in particular can take real time on a large model; every other
+    /// category scan is bounded and fast (family/view/filter/link/sheet counts are always small relative
+    /// to total model size), so most tab switches will feel instant even without a spinner.</summary>
+    private List<ModelCleanerFinding> GetOrScan(ModelCleanerCategory category)
+    {
+        if (_scanned.TryGetValue(category, out var cached)) return cached;
+
+        var label = Tabs.First(t => t.Category == category).Label;
+        _tabTitle.Text = $"{label.ToUpperInvariant()} — SCANNING…";
+        _footerText.Text = "Scanning — this can take a while on large models...";
+        Dispatcher.Invoke(() => { }, DispatcherPriority.Render);
+
+        var findings = ModelCleanerEngine.ScanCategory(_doc, category);
+        _scanned[category] = findings;
+        return findings;
     }
 
     private void Rescan()
     {
-        _allFindings = ModelCleanerEngine.ScanAll(_doc);
+        _scanned.Remove(_activeTab);
+        GetOrScan(_activeTab);
         RefreshSummary();
         RefreshResults();
     }
@@ -185,10 +211,11 @@ public class ModelCleanerWindow : OttawaWorkWindow
     private void RefreshSummary()
     {
         _statRow.Children.Clear();
-        var total = _allFindings.Count;
-        var inPlaceInstances = _allFindings.Where(f => f.Category == ModelCleanerCategory.InPlace).Sum(f => f.InstanceCount);
-        var unplacedViews = _allFindings.Count(f => f.Category == ModelCleanerCategory.UnplacedViews);
-        var duplicates = _allFindings.Count(f => f.Category == ModelCleanerCategory.Duplicates);
+        var scannedFindings = _scanned.Values.SelectMany(f => f).ToList();
+        var total = scannedFindings.Count;
+        var inPlaceInstances = scannedFindings.Where(f => f.Category == ModelCleanerCategory.InPlace).Sum(f => f.InstanceCount);
+        var unplacedViews = scannedFindings.Count(f => f.Category == ModelCleanerCategory.UnplacedViews);
+        var duplicates = scannedFindings.Count(f => f.Category == ModelCleanerCategory.Duplicates);
 
         void AddTile(string value, string label, System.Windows.Media.Color? color)
         {
@@ -202,7 +229,10 @@ public class ModelCleanerWindow : OttawaWorkWindow
         AddTile(unplacedViews.ToString(), "Unplaced Views", null);
         AddTile(duplicates.ToString(), "Duplicates", null);
 
-        _summaryBanner.Text = total > 0 ? $"⚠ Light Cleanup — {total} finding(s)" : "✓ Nothing flagged";
+        var unscanned = Tabs.Length - _scanned.Count;
+        _summaryBanner.Text = unscanned > 0
+            ? $"⚠ {total} finding(s) so far — {unscanned} tab(s) not yet scanned"
+            : total > 0 ? $"⚠ Light Cleanup — {total} finding(s)" : "✓ Nothing flagged";
         _summaryBanner.Foreground = OttawaWorkUi.BrushOf(total > 0 ? OttawaWorkUi.Warning : OttawaWorkUi.Success);
     }
 
@@ -212,6 +242,8 @@ public class ModelCleanerWindow : OttawaWorkWindow
         foreach (var (cat, button) in _tabButtons)
             OttawaWorkUi.SetToggleActive(button, cat == category);
         _selectedIndices.Clear();
+        GetOrScan(category);
+        RefreshSummary();
         RefreshResults();
     }
 
@@ -224,8 +256,7 @@ public class ModelCleanerWindow : OttawaWorkWindow
         _tabTitle.Text = label.ToUpperInvariant();
 
         var search = _searchBox.Text?.Trim() ?? "";
-        var visible = _allFindings
-            .Where(f => f.Category == _activeTab)
+        var visible = GetOrScan(_activeTab)
             .Where(f => string.IsNullOrEmpty(search) || f.Name.Contains(search, StringComparison.OrdinalIgnoreCase) || f.Category2.Contains(search, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
