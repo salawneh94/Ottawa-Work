@@ -102,6 +102,7 @@ public static class OttawaRoster
         new("ScopeBoxSync", "Model QA/QC", "Scope Box Sync", "Apply a scope box to a batch of selected views.", false),
         new("TitleBlockUpdater", "Model QA/QC", "Title Block Updater", "Batch-update title block info across sheets and linked projects.", false),
         new("RevisionTrack", "Model QA/QC", "Revision Track", "Automate revision clouds and revision schedules across sheet sets.", false),
+        new("SheetTracker", "Model QA/QC", "Sheet Tracker", "List every sheet with its issue status from Revit's Revisions table — issued, previously issued, or never issued — with full revision history, Excel export, and jump-to-sheet.", false),
 
         // Panel 8: Parameters
         // ParamBatchEditor's old spreadsheet-grid bulk edit is superseded by
