@@ -74,12 +74,9 @@ public static partial class ParamPowerSuiteEngine
                     familyTransaction.Commit();
                 }
 
-                using (var reloadTransaction = new Transaction(doc, "Reload jammed family"))
-                {
-                    reloadTransaction.Start();
-                    familyDoc.LoadFamily(doc, new JammerLoadOptions());
-                    reloadTransaction.Commit();
-                }
+                // No transaction here: LoadFamily throws when the target document is modifiable
+                // ("there is an uncommitted transaction", per RevitAPI.xml) — it manages its own.
+                familyDoc.LoadFamily(doc, new JammerLoadOptions());
 
                 jammed++;
             }
