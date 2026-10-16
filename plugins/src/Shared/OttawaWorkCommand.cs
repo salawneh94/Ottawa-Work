@@ -34,7 +34,20 @@ public abstract class OttawaWorkCommand : IExternalCommand
         catch (Exception ex)
         {
             message = ex.Message;
-            TaskDialog.Show("Ottawa Tools — Error", $"{GetType().Name} hit an unexpected error:\n\n{ex.Message}");
+            // Named by tool (every plugin's class is just "Command", which told nobody which tool failed)
+            // and with the first Ottawa Tools stack frame, so a screenshot of this dialog is enough to
+            // find the line that threw.
+            var tool = GetType().Namespace?.Split('.').LastOrDefault() ?? GetType().Name;
+            var where = ex.StackTrace?
+                .Split('\n')
+                .Select(line => line.Trim())
+                .FirstOrDefault(line => line.Contains("OttawaWork."));
+            new TaskDialog("Ottawa Tools — Error")
+            {
+                MainInstruction = $"{tool} hit an unexpected error",
+                MainContent = ex.Message,
+                ExpandedContent = $"{ex.GetType().Name}\n{where ?? ex.StackTrace ?? ""}",
+            }.Show();
             return Result.Failed;
         }
     }

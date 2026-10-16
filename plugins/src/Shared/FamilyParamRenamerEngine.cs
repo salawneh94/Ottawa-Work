@@ -217,8 +217,16 @@ public static class FamilyParamRenamerEngine
 
             foreach (var familyId in familyIds)
             {
-                if (doc.GetElement(familyId) is not Family family) continue;
-                results.Add(RunOne(doc, family, map, definitions));
+                // Name read up front and every family isolated: reloading one family can replace other
+                // families' managed objects (and its own), so nothing may touch a Family object after a
+                // LoadFamily, and one failure must never stop the rest of the batch.
+                string familyName;
+                try { familyName = (doc.GetElement(familyId) as Family)?.Name ?? ""; }
+                catch (Exception) { continue; }
+                if (familyName.Length == 0) continue;
+
+                try { results.Add(RunOne(doc, familyId, familyName, map, definitions)); }
+                catch (Exception ex) { results.Add(new FamilyRenameResult(familyName, 0, new List<string> { $"Family not updated: {ex.Message}" }, true)); }
             }
         }
         finally
@@ -228,48 +236,64 @@ public static class FamilyParamRenamerEngine
         return results;
     }
 
-    private static FamilyRenameResult RunOne(Document doc, Family family, IReadOnlyDictionary<Guid, Guid> map, Dictionary<Guid, ExternalDefinition> definitions)
+    /// <summary>Confirmed live (user-reported "The referenced object is not valid, possibly because it
+    /// has been deleted"): the first version read Family.Name after LoadFamily, which can replace the
+    /// family's managed object — and read it again in the catch, so the error escaped and stopped the whole
+    /// batch after the first family. Everything here now works from the id/name captured before the edit,
+    /// and each parameter is re-fetched by GUID right before its swap, since earlier ReplaceParameter calls
+    /// in the same family can invalidate FamilyParameter objects gathered up front.</summary>
+    private static FamilyRenameResult RunOne(Document doc, ElementId familyId, string familyName, IReadOnlyDictionary<Guid, Guid> map, Dictionary<Guid, ExternalDefinition> definitions)
     {
         var messages = new List<string>();
         var swapped = 0;
         Document? familyDoc = null;
         try
         {
+            if (doc.GetElement(familyId) is not Family family)
+                return new FamilyRenameResult(familyName, 0, new List<string> { "Family no longer in the project." }, true);
+
             familyDoc = doc.EditFamily(family);
             var manager = familyDoc.FamilyManager;
-            var targets = manager.GetParameters()
+            var targetGuids = manager.GetParameters()
                 .Where(p => p.IsShared && map.ContainsKey(p.GUID))
+                .Select(p => p.GUID)
                 .ToList();
-            if (targets.Count == 0)
-                return new FamilyRenameResult(family.Name, 0, new List<string> { "No mapped parameters in this family." }, false);
+            if (targetGuids.Count == 0)
+                return new FamilyRenameResult(familyName, 0, new List<string> { "No mapped parameters in this family." }, false);
 
             using (var transaction = new Transaction(familyDoc, "Swap shared parameters"))
             {
                 transaction.Start();
                 var tempIndex = 0;
-                foreach (var parameter in targets)
+                foreach (var oldGuid in targetGuids)
                 {
-                    var oldName = parameter.Definition.Name;
-                    if (!definitions.TryGetValue(map[parameter.GUID], out var newDefinition))
-                    {
-                        messages.Add($"{oldName}: target not found in the shared parameter file — skipped.");
-                        continue;
-                    }
-                    if (manager.get_Parameter(newDefinition.GUID) is not null || manager.get_Parameter(newDefinition.Name) is not null)
-                    {
-                        messages.Add($"{oldName}: family already has {newDefinition.Name} — skipped.");
-                        continue;
-                    }
-
-                    var group = parameter.Definition is InternalDefinition internalDefinition ? internalDefinition.GetGroupTypeId() : new ForgeTypeId();
-                    var isInstance = parameter.IsInstance;
-                    string tempName;
-                    do { tempName = $"OttawaSwapTemp_{tempIndex++}"; } while (manager.get_Parameter(tempName) is not null);
-
+                    var oldName = oldGuid.ToString();
                     using var step = new SubTransaction(familyDoc);
                     step.Start();
                     try
                     {
+                        var parameter = manager.get_Parameter(oldGuid);
+                        if (parameter is null) { step.RollBack(); messages.Add($"{oldName}: no longer in the family — skipped."); continue; }
+                        oldName = parameter.Definition.Name;
+
+                        if (!definitions.TryGetValue(map[oldGuid], out var newDefinition))
+                        {
+                            step.RollBack();
+                            messages.Add($"{oldName}: target not found in the shared parameter file — skipped.");
+                            continue;
+                        }
+                        if (manager.get_Parameter(newDefinition.GUID) is not null || manager.get_Parameter(newDefinition.Name) is not null)
+                        {
+                            step.RollBack();
+                            messages.Add($"{oldName}: family already has {newDefinition.Name} — skipped.");
+                            continue;
+                        }
+
+                        var group = parameter.Definition is InternalDefinition internalDefinition ? internalDefinition.GetGroupTypeId() : new ForgeTypeId();
+                        var isInstance = parameter.IsInstance;
+                        string tempName;
+                        do { tempName = $"OttawaSwapTemp_{tempIndex++}"; } while (manager.get_Parameter(tempName) is not null);
+
                         var temporary = manager.ReplaceParameter(parameter, tempName, group, isInstance);
                         manager.ReplaceParameter(temporary, newDefinition, group, isInstance);
                         step.Commit();
@@ -278,7 +302,7 @@ public static class FamilyParamRenamerEngine
                     }
                     catch (Exception ex)
                     {
-                        step.RollBack();
+                        if (step.HasStarted() && !step.HasEnded()) step.RollBack();
                         messages.Add($"{oldName}: {ex.Message}");
                     }
                 }
@@ -286,22 +310,23 @@ public static class FamilyParamRenamerEngine
                 if (swapped == 0)
                 {
                     transaction.RollBack();
-                    return new FamilyRenameResult(family.Name, 0, messages, false);
+                    return new FamilyRenameResult(familyName, 0, messages, false);
                 }
                 transaction.Commit();
             }
 
             familyDoc.LoadFamily(doc, new OverwriteLoadOptions());
-            return new FamilyRenameResult(family.Name, swapped, messages, false);
+            return new FamilyRenameResult(familyName, swapped, messages, false);
         }
         catch (Exception ex)
         {
             messages.Add($"Family not updated: {ex.Message}");
-            return new FamilyRenameResult(family.Name, 0, messages, true);
+            return new FamilyRenameResult(familyName, 0, messages, true);
         }
         finally
         {
-            familyDoc?.Close(false);
+            try { familyDoc?.Close(false); }
+            catch (Exception) { /* the edit copy is discarded either way */ }
         }
     }
 
