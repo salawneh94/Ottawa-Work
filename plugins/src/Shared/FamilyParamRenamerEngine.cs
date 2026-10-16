@@ -1,6 +1,8 @@
 // Explicit aliases, not "using System.IO;" — Shared has both UseWPF and UseWindowsForms, which drops
 // System.IO from the implicit global usings.
 using File = System.IO.File;
+using Path = System.IO.Path;
+using System.Text;
 
 using Autodesk.Revit.DB;
 using RevitApplication = Autodesk.Revit.ApplicationServices.Application;
@@ -316,6 +318,94 @@ public static class FamilyParamRenamerEngine
             source = FamilySource.Family;
             overwriteParameterValues = true;
             return true;
+        }
+    }
+
+    // ---- Shared parameter file IDs ----
+    //
+    // A shared parameter file made by find/replacing names in a copy of another file keeps every
+    // parameter's GUID, so Revit sees "OI_X" as the same parameter as "OMC_X" — and Revit can't rename a
+    // shared parameter, so the swap needs the new names to have their own GUIDs. The Revit API can't
+    // change a definition's GUID, so this edits the file's text directly: only the GUID column of PARAM
+    // lines, keeping the file's own encoding, line endings and every other column byte-for-byte.
+
+    /// <summary>GUID → name for every PARAM line, read straight from the file's text.</summary>
+    public static Dictionary<Guid, string> ReadParamNames(string path)
+    {
+        var (text, _) = ReadText(path);
+        var result = new Dictionary<Guid, string>();
+        var (guidColumn, nameColumn) = (1, 2);
+        foreach (var rawLine in text.Split('\n'))
+        {
+            var columns = rawLine.TrimEnd('\r').Split('\t');
+            if (columns[0] == "*PARAM") (guidColumn, nameColumn) = (Array.IndexOf(columns, "GUID"), Array.IndexOf(columns, "NAME"));
+            if (columns[0] != "PARAM" || guidColumn < 0 || nameColumn < 0 || columns.Length <= Math.Max(guidColumn, nameColumn)) continue;
+            if (Guid.TryParse(columns[guidColumn], out var guid)) result[guid] = columns[nameColumn];
+        }
+        return result;
+    }
+
+    /// <summary>GUIDs that appear in both files under different names — renamed copies.</summary>
+    public static HashSet<Guid> RenamedCopies(string oldFilePath, string newFilePath)
+    {
+        var oldNames = ReadParamNames(oldFilePath);
+        return ReadParamNames(newFilePath)
+            .Where(entry => oldNames.TryGetValue(entry.Key, out var oldName) && !string.Equals(oldName, entry.Value, StringComparison.Ordinal))
+            .Select(entry => entry.Key)
+            .ToHashSet();
+    }
+
+    /// <summary>Gives every PARAM line whose GUID is in <paramref name="guids"/> a fresh GUID, after
+    /// copying the file to a timestamped backup next to it. Returns old → new GUID for each change.</summary>
+    public static (Dictionary<Guid, Guid> Changed, string BackupPath) RegenerateGuids(string path, ISet<Guid> guids)
+    {
+        var (text, encoding) = ReadText(path);
+        var changed = new Dictionary<Guid, Guid>();
+        var lines = text.Split('\n');
+        var guidColumn = 1;
+        for (var i = 0; i < lines.Length; i++)
+        {
+            var hasCarriageReturn = lines[i].EndsWith('\r');
+            var columns = lines[i].TrimEnd('\r').Split('\t');
+            if (columns[0] == "*PARAM") guidColumn = Array.IndexOf(columns, "GUID");
+            if (columns[0] != "PARAM" || guidColumn < 0 || columns.Length <= guidColumn) continue;
+            if (!Guid.TryParse(columns[guidColumn], out var oldGuid) || !guids.Contains(oldGuid)) continue;
+
+            if (!changed.TryGetValue(oldGuid, out var newGuid)) changed[oldGuid] = newGuid = Guid.NewGuid();
+            columns[guidColumn] = newGuid.ToString("D");
+            lines[i] = string.Join('\t', columns) + (hasCarriageReturn ? "\r" : "");
+        }
+
+        if (changed.Count == 0) return (changed, "");
+
+        var stem = Path.Combine(Path.GetDirectoryName(path) ?? "", $"{Path.GetFileNameWithoutExtension(path)}.backup-{DateTime.Now:yyyyMMdd-HHmmss}");
+        var backupPath = stem + Path.GetExtension(path);
+        for (var n = 2; File.Exists(backupPath); n++) backupPath = $"{stem}-{n}{Path.GetExtension(path)}";
+        File.Copy(path, backupPath, overwrite: false);
+
+        File.WriteAllText(path, string.Join('\n', lines), encoding);
+        return (changed, backupPath);
+    }
+
+    /// <summary>Reads text in the file's own encoding so it can be written back unchanged: Revit writes
+    /// shared parameter files as UTF-16 with a BOM, but hand-edited or tool-made ones are often UTF-8 or
+    /// Windows-1252 — and German names (ä, ö, ü, ß) get corrupted if the wrong one is assumed.</summary>
+    private static (string Text, Encoding Encoding) ReadText(string path)
+    {
+        var bytes = File.ReadAllBytes(path);
+        if (bytes.Length >= 2 && bytes[0] == 0xFF && bytes[1] == 0xFE) return (Encoding.Unicode.GetString(bytes, 2, bytes.Length - 2), Encoding.Unicode);
+        if (bytes.Length >= 2 && bytes[0] == 0xFE && bytes[1] == 0xFF) return (Encoding.BigEndianUnicode.GetString(bytes, 2, bytes.Length - 2), Encoding.BigEndianUnicode);
+        if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF) return (Encoding.UTF8.GetString(bytes, 3, bytes.Length - 3), new UTF8Encoding(true));
+
+        try
+        {
+            return (new UTF8Encoding(false, throwOnInvalidBytes: true).GetString(bytes), new UTF8Encoding(false));
+        }
+        catch (DecoderFallbackException)
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            var windows1252 = Encoding.GetEncoding(1252);
+            return (windows1252.GetString(bytes), windows1252);
         }
     }
 

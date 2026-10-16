@@ -152,9 +152,14 @@ public class FamilyParamRenamerWindow : OttawaWorkWindow
         load.Click += (_, _) => LoadMapping();
         var save = OttawaWorkUi.SecondaryButton("Save mapping...");
         save.Click += (_, _) => SaveMapping();
+        save.Margin = new Thickness(0, 0, 6, 0);
+        var fixIds = OttawaWorkUi.SecondaryButton("Give new IDs...");
+        fixIds.ToolTip = "For a new shared parameter file made by renaming a copy of the old one: gives every renamed parameter its own ID so it can replace the old one. Makes a backup first.";
+        fixIds.Click += (_, _) => GiveNewIds();
         mappingButtons.Children.Add(auto);
         mappingButtons.Children.Add(load);
         mappingButtons.Children.Add(save);
+        mappingButtons.Children.Add(fixIds);
         right.Children.Add(mappingButtons);
 
         var header = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(8, 0, 8, 4) };
@@ -375,6 +380,67 @@ public class FamilyParamRenamerWindow : OttawaWorkWindow
         if (dialog.ShowDialog() != WinFormsDialogResult.OK) return;
         FamilyParamRenamerEngine.SaveMapping(dialog.FileName, pairs);
         SetStatus($"Saved {pairs.Count} mapping(s) to {dialog.FileName} — reuse it with Load mapping in other projects.");
+    }
+
+    /// <summary>Fixes a new shared parameter file that was made by renaming entries in a copy of the old
+    /// one: every renamed entry still carries its old GUID, so Revit sees it as the same parameter. Finds
+    /// those by comparing against the old file (same GUID, different name) plus any "Same ID" rows, gives
+    /// them fresh GUIDs in the file (backup first), then reloads the mapping.</summary>
+    private void GiveNewIds()
+    {
+        const string title = "Ottawa Tools — Family Parameter Renamer";
+        if (string.IsNullOrWhiteSpace(_sharedFilePath) || !System.IO.File.Exists(_sharedFilePath))
+        {
+            MessageBox.Show("Choose the new shared parameter file first (Browse...).", title);
+            return;
+        }
+
+        var projectFile = _doc.Application.SharedParametersFilename ?? "";
+        using var dialog = new OpenFileDialog
+        {
+            Title = "Choose the OLD shared parameter file (the company file the new one was copied from)",
+            Filter = "Shared parameter file (*.txt)|*.txt|All files (*.*)|*.*",
+        };
+        if (System.IO.File.Exists(projectFile) && !string.Equals(projectFile, _sharedFilePath, StringComparison.OrdinalIgnoreCase))
+        {
+            dialog.InitialDirectory = System.IO.Path.GetDirectoryName(projectFile);
+            dialog.FileName = System.IO.Path.GetFileName(projectFile);
+        }
+        if (dialog.ShowDialog() != WinFormsDialogResult.OK) return;
+        if (string.Equals(dialog.FileName, _sharedFilePath, StringComparison.OrdinalIgnoreCase))
+        {
+            MessageBox.Show("That's the new file — pick the old company file it was copied from.", title);
+            return;
+        }
+
+        var copies = FamilyParamRenamerEngine.RenamedCopies(dialog.FileName, _sharedFilePath);
+        foreach (var row in _mappingRows.Where(r => r.Status == MappingStatus.SameId)) copies.Add(row.Source.Guid);
+        if (copies.Count == 0)
+        {
+            MessageBox.Show("No renamed copies found — every parameter in the new file already has its own ID. Nothing to fix.", title);
+            return;
+        }
+
+        var confirm = MessageBox.Show(
+            $"Give {copies.Count} renamed parameter(s) in the new file their own IDs?\n\n" +
+            "Names, data types and groups stay exactly the same. Parameters you didn't rename are left alone. " +
+            "A backup copy of the file is saved next to it first.\n\n" +
+            "From now on, use this new file (and share it with colleagues) — not any earlier copy of it.",
+            title, System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
+        if (confirm != System.Windows.MessageBoxResult.Yes) return;
+
+        try
+        {
+            var (changed, backup) = FamilyParamRenamerEngine.RegenerateGuids(_sharedFilePath, copies);
+            LoadDefinitions();
+            RebuildMapping(keepSelections: true);
+            AutoMatchAll();
+            SetStatus($"Gave {changed.Count} parameter(s) new IDs. Backup of the original: {backup}");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Couldn't update the file — it was not changed.\n\n{ex.Message}", title);
+        }
     }
 
     private void ApplyFamilySearch()
