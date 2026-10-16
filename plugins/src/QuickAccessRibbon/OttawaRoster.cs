@@ -110,7 +110,7 @@ public static class OttawaRoster
         // duplicated; the ParamBatchEditor plugin files themselves are left
         // on disk untouched, just no longer wired into this ribbon.
         new("ParamPowerSuite", "Parameters", "Param Power Suite", "Bulk-edit parameters across every loaded element: set, find/replace, transform, copy, combine, jam to shared, or create a new bound parameter — all in one tabbed workbench.", true),
-        new("FamilyParamRenamer", "Parameters", "Family Param Renamer", "Swap shared parameters inside families for new ones (e.g. OMC → OI) — auto-match by prefix or map by hand, keep values and formulas, reload every family.", false),
+        new("FamilyParamRenamer", "Parameters", "Family Param Renamer", "Swap shared parameters for new ones (e.g. OMC → OI) inside families and in Project Parameters — auto-match by prefix or map by hand, values and formulas kept.", false),
         new("Din276CostEstimator", "Parameters", "DIN 276 Costs", "Classify elements into DIN 276 Kostengruppen and price them against your own unit rates — live quantities, editable rates, exportable report.", true),
     };
 }

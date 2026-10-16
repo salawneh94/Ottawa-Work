@@ -5,20 +5,31 @@ using Path = System.IO.Path;
 using System.Text;
 
 using Autodesk.Revit.DB;
+// Shared has UseWindowsForms too, so the bare name "Binding" is ambiguous with System.Windows.Forms.Binding.
+using RevitBinding = Autodesk.Revit.DB.Binding;
 using RevitApplication = Autodesk.Revit.ApplicationServices.Application;
 
 namespace OttawaWork.Shared;
 
 public record SharedParamDefinition(string Name, Guid Guid, string Group, ForgeTypeId DataType);
 
-/// <summary>One shared parameter found in the scanned families, with every family it appears in.</summary>
-public record FoundSharedParam(string Name, Guid Guid, ForgeTypeId DataType, SortedSet<string> FamilyNames);
+/// <summary>How a shared parameter is bound in Manage → Project Parameters.</summary>
+public record ProjectParamInfo(bool IsInstance, ISet<ElementId> CategoryIds, IReadOnlyList<string> CategoryNames);
+
+/// <summary>One shared parameter found by a scan: every family that contains it, and its project
+/// binding if it's also (or only) a project parameter.</summary>
+public record FoundSharedParam(string Name, Guid Guid, ForgeTypeId DataType, SortedSet<string> FamilyNames)
+{
+    public ProjectParamInfo? Project { get; init; }
+}
 
 public record RenameFamily(ElementId FamilyId, string Name, string Category);
 
 public enum MappingStatus { Ready, Skip, NoTarget, TypeMismatch, SameId }
 
 public record FamilyRenameResult(string FamilyName, int Swapped, List<string> Messages, bool Failed);
+
+public record ProjectParamResult(string OldName, string NewName, int Copied, bool Removed, List<string> Messages, bool Failed);
 
 /// <summary>
 /// Swaps shared parameters inside loaded families for different shared parameters (e.g. OMC_* → OI_*),
@@ -79,16 +90,66 @@ public static class FamilyParamRenamerEngine
         entry.FamilyNames.Add(familyName);
     }
 
+    /// <summary>A shared parameter bound in Manage → Project Parameters. Key and Binding are the binding
+    /// map's own objects — re-read after any change to the map, never reused across one.</summary>
+    private sealed record SharedBinding(Definition Key, ElementBinding Binding, InternalDefinition Definition, Guid Guid);
+
+    private static List<SharedBinding> SharedBindings(Document doc)
+    {
+        var result = new List<SharedBinding>();
+        var iterator = doc.ParameterBindings.ForwardIterator();
+        while (iterator.MoveNext())
+        {
+            if (iterator.Key is not InternalDefinition definition || iterator.Current is not ElementBinding binding) continue;
+            if (doc.GetElement(definition.Id) is SharedParameterElement shared)
+                result.Add(new SharedBinding(iterator.Key, binding, definition, shared.GuidValue));
+        }
+        return result;
+    }
+
+    private static ProjectParamInfo InfoOf(ElementBinding binding)
+    {
+        var categories = binding.Categories.Cast<Category>().ToList();
+        return new ProjectParamInfo(
+            binding is InstanceBinding,
+            categories.Select(c => c.Id).ToHashSet(),
+            categories.Select(c => c.Name).OrderBy(n => n, StringComparer.OrdinalIgnoreCase).ToList());
+    }
+
+    /// <summary>Every shared parameter with the prefix that's bound as a project parameter. These never
+    /// live inside a family, so swapping families can't reach them — RunProjectParameters replaces them.</summary>
+    private static Dictionary<Guid, FoundSharedParam> ProjectParameters(Document doc, string prefix)
+    {
+        var result = new Dictionary<Guid, FoundSharedParam>();
+        foreach (var bound in SharedBindings(doc))
+        {
+            if (!HasPrefix(bound.Definition.Name, prefix)) continue;
+            result[bound.Guid] = new FoundSharedParam(bound.Definition.Name, bound.Guid, bound.Definition.GetDataType(), new SortedSet<string>(StringComparer.OrdinalIgnoreCase))
+            {
+                Project = InfoOf(bound.Binding),
+            };
+        }
+        return result;
+    }
+
     /// <summary>Fast scan without opening any family: reads shared parameters off each family's types
     /// and one placed instance per type. Instance parameters of families with no placed instance aren't
-    /// visible this way — DeepScan opens each family to find those.</summary>
+    /// visible this way — DeepScan opens each family to find those.
+    ///
+    /// Confirmed live (user-reported "Swapped 131 parameter(s) in 30 of 200 families"): a project
+    /// parameter shows up on every element of its categories exactly like a family's own parameter, so
+    /// the first version listed 170 families whose OMC values all came from Project Parameters — and the
+    /// swap had nothing to change in them. A value that a project binding explains (same category, same
+    /// instance/type) is now credited to the project parameter, not the family. A family that also
+    /// contains that same parameter itself can't be told apart without opening it — DeepScan does.</summary>
     public static (List<RenameFamily> Families, List<FoundSharedParam> Params) QuickScan(Document doc, string prefix)
     {
         var instanceBySymbol = new Dictionary<ElementId, Element>();
         foreach (var instance in new FilteredElementCollector(doc).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>())
             instanceBySymbol.TryAdd(instance.GetTypeId(), instance);
 
-        var found = new Dictionary<Guid, FoundSharedParam>();
+        var project = ProjectParameters(doc, prefix);
+        var found = new Dictionary<Guid, FoundSharedParam>(project);
         var families = new List<RenameFamily>();
         foreach (var family in EditableFamilies(doc))
         {
@@ -103,6 +164,10 @@ public static class FamilyParamRenamerEngine
                     foreach (Parameter parameter in source.Parameters)
                     {
                         if (!parameter.IsShared || !HasPrefix(parameter.Definition.Name, prefix)) continue;
+                        if (project.TryGetValue(parameter.GUID, out var bound)
+                            && bound.Project!.IsInstance == (source is not ElementType)
+                            && source.Category is { } category
+                            && bound.Project.CategoryIds.Contains(category.Id)) continue;
                         Record(found, parameter.Definition.Name, parameter.GUID, parameter.Definition.GetDataType(), family.Name);
                         hit = true;
                     }
@@ -117,7 +182,7 @@ public static class FamilyParamRenamerEngine
     /// slow on a large project. Must be called with no open transaction on <paramref name="doc"/>.</summary>
     public static (List<RenameFamily> Families, List<FoundSharedParam> Params) DeepScan(Document doc, string prefix, Action<int, int>? progress = null)
     {
-        var found = new Dictionary<Guid, FoundSharedParam>();
+        var found = ProjectParameters(doc, prefix);
         var families = new List<RenameFamily>();
         var all = EditableFamilies(doc);
         for (var i = 0; i < all.Count; i++)
@@ -207,13 +272,7 @@ public static class FamilyParamRenamerEngine
         try
         {
             app.SharedParametersFilename = sharedParameterFilePath;
-            var file = app.OpenSharedParameterFile()
-                ?? throw new InvalidOperationException($"Couldn't open the shared parameter file:\n{sharedParameterFilePath}");
-
-            var definitions = new Dictionary<Guid, ExternalDefinition>();
-            foreach (var group in file.Groups)
-                foreach (var definition in group.Definitions)
-                    if (definition is ExternalDefinition external) definitions.TryAdd(external.GUID, external);
+            var definitions = OpenDefinitions(app, sharedParameterFilePath);
 
             foreach (var familyId in familyIds)
             {
@@ -234,6 +293,19 @@ public static class FamilyParamRenamerEngine
             app.SharedParametersFilename = previous;
         }
         return results;
+    }
+
+    /// <summary>ExternalDefinitions by GUID from the shared parameter file Revit currently points at —
+    /// callers switch SharedParametersFilename first and restore it after.</summary>
+    private static Dictionary<Guid, ExternalDefinition> OpenDefinitions(RevitApplication app, string path)
+    {
+        var file = app.OpenSharedParameterFile()
+            ?? throw new InvalidOperationException($"Couldn't open the shared parameter file:\n{path}");
+        var definitions = new Dictionary<Guid, ExternalDefinition>();
+        foreach (var group in file.Groups)
+            foreach (var definition in group.Definitions)
+                if (definition is ExternalDefinition external) definitions.TryAdd(external.GUID, external);
+        return definitions;
     }
 
     /// <summary>Confirmed live (user-reported "The referenced object is not valid, possibly because it
@@ -329,6 +401,209 @@ public static class FamilyParamRenamerEngine
             catch (Exception) { /* the edit copy is discarded either way */ }
         }
     }
+
+    // ---- Project parameters ----
+    //
+    // A shared parameter bound in Manage → Project Parameters isn't inside any family, so the family swap
+    // can't touch it. The project-level equivalent of the swap: bind the new parameter to the same
+    // categories (same instance/type, group and vary-by-group setting), copy every element's value
+    // across, then remove the old binding. All in one transaction, so it's a single Ctrl+Z.
+
+    /// <summary>Replaces each mapped project parameter (old GUID → new GUID). Must be called with no open
+    /// transaction on <paramref name="doc"/> — it opens its own.</summary>
+    public static List<ProjectParamResult> RunProjectParameters(Document doc, string sharedParameterFilePath, IReadOnlyDictionary<Guid, Guid> map)
+    {
+        var results = new List<ProjectParamResult>();
+        if (map.Count == 0) return results;
+
+        var app = doc.Application;
+        var previous = app.SharedParametersFilename;
+        try
+        {
+            app.SharedParametersFilename = sharedParameterFilePath;
+            var definitions = OpenDefinitions(app, sharedParameterFilePath);
+
+            using var transaction = new Transaction(doc, "Replace project parameters");
+            transaction.Start();
+            foreach (var (oldGuid, newGuid) in map)
+                results.Add(ReplaceProjectParameter(doc, oldGuid, newGuid, definitions));
+
+            // Each parameter ran in its own SubTransaction, and a failed one already rolled itself back —
+            // so committing keeps exactly the ones that worked.
+            if (transaction.Commit() != TransactionStatus.Committed)
+                return results
+                    .Select(r => r with { Copied = 0, Removed = false, Failed = true, Messages = r.Messages.Append("Revit rolled the change back — nothing was changed.").ToList() })
+                    .ToList();
+        }
+        finally
+        {
+            app.SharedParametersFilename = previous;
+        }
+        return results;
+    }
+
+    private static ProjectParamResult ReplaceProjectParameter(Document doc, Guid oldGuid, Guid newGuid, Dictionary<Guid, ExternalDefinition> definitions)
+    {
+        var messages = new List<string>();
+        var old = SharedBindings(doc).FirstOrDefault(b => b.Guid == oldGuid);
+        if (old is null)
+            return new ProjectParamResult(oldGuid.ToString(), "", 0, false, new List<string> { "Not a project parameter in this model — nothing to do." }, false);
+        var oldName = old.Definition.Name;
+        if (!definitions.TryGetValue(newGuid, out var newDefinition))
+            return new ProjectParamResult(oldName, "", 0, false, new List<string> { "New parameter not found in the shared parameter file — skipped." }, true);
+        var newName = newDefinition.Name;
+
+        // Everything needed from the old binding is read up front: any change to the binding map can
+        // invalidate the Definition/Binding objects it handed out.
+        var isInstance = old.Binding is InstanceBinding;
+        var categoryIds = old.Binding.Categories.Cast<Category>().Select(c => c.Id).ToList();
+        var group = old.Definition.GetGroupTypeId();
+        var variesAcrossGroups = old.Definition.VariesAcrossGroups;
+
+        using var step = new SubTransaction(doc);
+        step.Start();
+        try
+        {
+            var existing = SharedBindings(doc).FirstOrDefault(b => b.Guid == newGuid);
+            var freshBinding = existing is null;
+            if (existing is not null)
+            {
+                if ((existing.Binding is InstanceBinding) != isInstance)
+                {
+                    step.RollBack();
+                    return new ProjectParamResult(oldName, newName, 0, false, new List<string>
+                    {
+                        $"{newName} is already a project parameter, but as a {(isInstance ? "type" : "instance")} parameter and {oldName} is {(isInstance ? "instance" : "type")} — Revit can't bind one parameter both ways. Skipped; change one of them in Project Parameters first.",
+                    }, true);
+                }
+                var merged = doc.Application.Create.NewCategorySet();
+                foreach (Category category in existing.Binding.Categories) merged.Insert(category);
+                var added = 0;
+                foreach (var id in categoryIds)
+                    if (Category.GetCategory(doc, id) is { } category && !merged.Contains(category)) { merged.Insert(category); added++; }
+                if (added > 0)
+                {
+                    if (!doc.ParameterBindings.ReInsert(existing.Key, NewBinding(doc, merged, isInstance), existing.Definition.GetGroupTypeId()))
+                        throw new InvalidOperationException($"Revit refused to add {oldName}'s categories to {newName}.");
+                    messages.Add($"{newName} was already a project parameter — added {added} of {oldName}'s categories to it.");
+                }
+            }
+            else
+            {
+                if (AnyBindingNamed(doc, newName))
+                {
+                    step.RollBack();
+                    return new ProjectParamResult(oldName, newName, 0, false, new List<string>
+                    {
+                        $"A different project parameter is already called {newName} — skipped, so the model doesn't end up with two parameters of the same name.",
+                    }, true);
+                }
+                var categories = doc.Application.Create.NewCategorySet();
+                foreach (var id in categoryIds)
+                    if (Category.GetCategory(doc, id) is { } category) categories.Insert(category);
+                if (categories.IsEmpty || !doc.ParameterBindings.Insert(newDefinition, NewBinding(doc, categories, isInstance), group))
+                    throw new InvalidOperationException($"Revit refused to bind {newName}.");
+                messages.Add($"Bound {newName} to {categoryIds.Count} categor{(categoryIds.Count == 1 ? "y" : "ies")} as {(isInstance ? "an instance" : "a type")} parameter.");
+            }
+
+            // Before copying: a value per group instance can only be written once the parameter is
+            // allowed to vary between groups, the way the old one was.
+            if (isInstance && variesAcrossGroups && SharedParameterElement.Lookup(doc, newGuid)?.GetDefinition() is { VariesAcrossGroups: false } newInternal)
+            {
+                try { newInternal.SetAllowVaryBetweenGroups(doc, true); }
+                catch (Exception ex) { messages.Add($"Couldn't set \"values can vary by group instance\": {ex.Message}"); }
+            }
+
+            doc.Regenerate();
+            var (copied, kept, failed) = CopyValues(doc, categoryIds, isInstance, oldGuid, newGuid, overwrite: freshBinding);
+            messages.Add($"Copied {copied} value(s) from {oldName}.");
+            if (kept > 0) messages.Add($"{kept} element(s) already had a different {newName} value — kept that value.");
+            if (failed > 0) messages.Add($"{failed} value(s) couldn't be copied (read-only, or in a group that doesn't allow different values).");
+
+            var removed = false;
+            if (kept == 0 && failed == 0)
+            {
+                // Re-read: the Insert/ReInsert above can invalidate the old key object.
+                var oldKey = SharedBindings(doc).FirstOrDefault(b => b.Guid == oldGuid)?.Key;
+                removed = oldKey is not null && doc.ParameterBindings.Remove(oldKey);
+                messages.Add(removed ? $"Removed {oldName} from Project Parameters." : $"Couldn't remove {oldName} from Project Parameters — remove it by hand.");
+            }
+            else
+            {
+                messages.Add($"{oldName} kept in Project Parameters so no value is lost — check the elements above, then remove it by hand.");
+            }
+
+            step.Commit();
+            return new ProjectParamResult(oldName, newName, copied, removed, messages, false);
+        }
+        catch (Exception ex)
+        {
+            if (step.HasStarted() && !step.HasEnded()) step.RollBack();
+            messages.Add($"Not replaced: {ex.Message}");
+            return new ProjectParamResult(oldName, newName, 0, false, messages, true);
+        }
+    }
+
+    private static RevitBinding NewBinding(Document doc, CategorySet categories, bool isInstance) =>
+        isInstance ? doc.Application.Create.NewInstanceBinding(categories) : doc.Application.Create.NewTypeBinding(categories);
+
+    private static bool AnyBindingNamed(Document doc, string name)
+    {
+        var iterator = doc.ParameterBindings.ForwardIterator();
+        while (iterator.MoveNext())
+            if (string.Equals(iterator.Key.Name, name, StringComparison.OrdinalIgnoreCase)) return true;
+        return false;
+    }
+
+    /// <summary>Copies old → new on every element (or element type) of the categories. With
+    /// <paramref name="overwrite"/> (the new parameter was just bound) the old value always wins — it's
+    /// the value people saw until now, while the new parameter can only hold a family default. Without it
+    /// (the new parameter was already in use), a different non-empty new value is kept and counted.</summary>
+    private static (int Copied, int Kept, int Failed) CopyValues(Document doc, ICollection<ElementId> categoryIds, bool isInstance, Guid oldGuid, Guid newGuid, bool overwrite)
+    {
+        if (categoryIds.Count == 0) return (0, 0, 0);
+        var collector = new FilteredElementCollector(doc).WherePasses(new ElementMulticategoryFilter(categoryIds));
+        var elements = isInstance ? collector.WhereElementIsNotElementType() : collector.WhereElementIsElementType();
+
+        int copied = 0, kept = 0, failed = 0;
+        foreach (var element in elements)
+        {
+            var source = element.get_Parameter(oldGuid);
+            if (source is null || !HasContent(source)) continue;
+            var target = element.get_Parameter(newGuid);
+            if (target is null) { failed++; continue; }
+            if (SameValue(source, target)) continue;
+            if (!overwrite && HasContent(target)) { kept++; continue; }
+            if (target.IsReadOnly) { failed++; continue; }
+            try
+            {
+                var ok = source.StorageType switch
+                {
+                    StorageType.String => target.Set(source.AsString() ?? ""),
+                    StorageType.Integer => target.Set(source.AsInteger()),
+                    StorageType.Double => target.Set(source.AsDouble()),
+                    StorageType.ElementId => target.Set(source.AsElementId()),
+                    _ => false,
+                };
+                if (ok) copied++; else failed++;
+            }
+            catch (Exception) { failed++; }
+        }
+        return (copied, kept, failed);
+    }
+
+    private static bool HasContent(Parameter parameter) =>
+        parameter.HasValue && (parameter.StorageType != StorageType.String || !string.IsNullOrEmpty(parameter.AsString()));
+
+    private static bool SameValue(Parameter a, Parameter b) =>
+        a.StorageType == b.StorageType && a.HasValue == b.HasValue && a.StorageType switch
+        {
+            StorageType.String => string.Equals(a.AsString() ?? "", b.AsString() ?? "", StringComparison.Ordinal),
+            StorageType.Integer => a.AsInteger() == b.AsInteger(),
+            StorageType.Double => Math.Abs(a.AsDouble() - b.AsDouble()) < 1e-9,
+            StorageType.ElementId => a.AsElementId() == b.AsElementId(),
+            _ => true,
+        };
 
     private class OverwriteLoadOptions : IFamilyLoadOptions
     {

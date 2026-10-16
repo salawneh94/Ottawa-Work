@@ -28,8 +28,10 @@ namespace OttawaWork.FamilyParamRenamer;
 /// <summary>
 /// Swap shared parameters inside loaded families for new ones (e.g. OMC_* → OI_*): scan the families,
 /// map each old parameter to one in the new shared parameter file (auto-matched by prefix, picked by
-/// hand where the name changes more, or loaded from a saved mapping), preview, then run. The run itself
-/// happens in Command.cs after this window closes — EditFamily/LoadFamily need the project to have no
+/// hand where the name changes more, or loaded from a saved mapping), preview, then run. Parameters
+/// bound in Manage → Project Parameters are shown as such and replaced at project level (new one bound
+/// to the same categories, values copied, old one removed). The run itself happens in Command.cs after
+/// this window closes — EditFamily/LoadFamily need the project to have no
 /// open transaction and the modal dialog out of the way.
 /// </summary>
 public class FamilyParamRenamerWindow : OttawaWorkWindow
@@ -69,20 +71,23 @@ public class FamilyParamRenamerWindow : OttawaWorkWindow
     private readonly List<MappingRow> _mappingRows = new();
     private readonly TextBlock _affectedText = new() { FontSize = 11, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.Warning), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 10, 0, 0) };
     private readonly Button _runButton = OttawaWorkUi.PrimaryButton("Swap parameters");
+    private readonly CheckBox _projectBox = OttawaWorkUi.CheckBoxItem("Also replace project parameters", isChecked: true);
 
     public bool RunRequested { get; private set; }
     public List<ElementId> SelectedFamilyIds { get; private set; } = new();
     public Dictionary<Guid, Guid> Map { get; private set; } = new();
+    /// <summary>The mapped parameters that are project parameters — replaced at project level.</summary>
+    public Dictionary<Guid, Guid> ProjectMap { get; private set; } = new();
     public string SharedFilePath => _sharedFilePath;
 
-    public FamilyParamRenamerWindow(Document doc) : base("Ottawa Tools — Family Parameter Renamer", minWidth: 1000)
+    public FamilyParamRenamerWindow(Document doc) : base("Ottawa Tools — Family Parameter Renamer", minWidth: 1120)
     {
         _doc = doc;
         _sharedFilePath = doc.Application.SharedParametersFilename ?? "";
 
         var root = new StackPanel();
         root.Children.Add(OttawaWorkUi.TitleBar("🔁", "Family Parameter Renamer",
-            "Swap shared parameters inside families for new ones (e.g. OMC → OI). Values and formulas are kept; each family is edited and reloaded.", Close));
+            "Swap shared parameters for new ones (e.g. OMC → OI) — inside families (values and formulas kept, each family reloaded) and in Project Parameters (new one bound to the same categories, values copied, old one removed).", Close));
 
         // ---- Settings ----
         var settings = new StackPanel();
@@ -163,7 +168,7 @@ public class FamilyParamRenamerWindow : OttawaWorkWindow
         right.Children.Add(mappingButtons);
 
         var header = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(8, 0, 8, 4) };
-        foreach (var (text, width) in new[] { ("OLD PARAMETER", 210.0), ("TYPE", 90.0), ("NEW PARAMETER", 240.0), ("STATUS", 120.0) })
+        foreach (var (text, width) in new[] { ("OLD PARAMETER", 210.0), ("TYPE", 90.0), ("WHERE", 120.0), ("NEW PARAMETER", 250.0), ("STATUS", 120.0) })
             header.Children.Add(new TextBlock { Text = text, Width = width, FontSize = 9, Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary) });
         right.Children.Add(header);
         right.Children.Add(OttawaWorkUi.Card(new ScrollViewer { MaxHeight = 380, Content = _mappingPanel }, padding: 8));
@@ -176,6 +181,11 @@ public class FamilyParamRenamerWindow : OttawaWorkWindow
         close.Margin = new Thickness(0, 0, 8, 0);
         close.Click += (_, _) => { DialogResult = false; Close(); };
         _runButton.Click += (_, _) => ConfirmAndRun();
+        _projectBox.VerticalAlignment = VerticalAlignment.Center;
+        _projectBox.Margin = new Thickness(0, 0, 16, 0);
+        _projectBox.ToolTip = "For parameters in Manage → Project Parameters: bind the new parameter to the same categories (instance/type kept), copy every element's value, then remove the old one.";
+        _projectBox.Click += (_, _) => RefreshRunButton();
+        actions.Children.Add(_projectBox);
         actions.Children.Add(close);
         actions.Children.Add(_runButton);
         root.Children.Add(actions);
@@ -232,15 +242,22 @@ public class FamilyParamRenamerWindow : OttawaWorkWindow
             _familyRows.Add((family, box));
             _familyPanel.Children.Add(box);
         }
+        var projectCount = parameters.Count(p => p.Project is not null);
         if (families.Count == 0)
-            _familyPanel.Children.Add(Note($"No families with shared parameters starting with \"{prefix}\"." + (deep ? "" : " Try Deep scan if some families aren't placed in the model.")));
+            _familyPanel.Children.Add(Note($"No families contain shared parameters starting with \"{prefix}\" themselves." +
+                (projectCount > 0 ? $" The {projectCount} found are project parameters — they're replaced at project level." : "") +
+                (deep ? "" : " Try Deep scan if some families aren't placed in the model.")));
 
         _found = parameters;
         RebuildMapping(keepSelections: false);
         AutoMatchAll();
         ApplyFamilySearch();
 
-        SetStatus($"{families.Count} famil{(families.Count == 1 ? "y" : "ies")} with {parameters.Count} \"{prefix}\" shared parameter(s) found{(deep ? " (deep scan)" : " — Deep scan also finds families that aren't placed")}.");
+        var inFamilies = parameters.Count(p => p.FamilyNames.Count > 0);
+        SetStatus(
+            $"{parameters.Count} \"{prefix}\" shared parameter(s): {inFamilies} inside {families.Count} famil{(families.Count == 1 ? "y" : "ies")}, " +
+            $"{projectCount} in Project Parameters (Manage → Project Parameters)." +
+            (deep ? " (deep scan)" : " Deep scan also opens families that aren't placed, or that contain a project parameter themselves."));
     }
 
     private List<FoundSharedParam> _found = new();
@@ -261,7 +278,7 @@ public class FamilyParamRenamerWindow : OttawaWorkWindow
         {
             var options = _definitions.Where(d => FamilyParamRenamerEngine.SameDataType(d.DataType, source.DataType)).ToList();
             var box = OttawaWorkUi.ComboBox();
-            box.Width = 240;
+            box.Width = 250;
             box.Margin = new Thickness(0);
             box.Items.Add(SkipLabel);
             foreach (var option in options) box.Items.Add(option.Name);
@@ -282,12 +299,19 @@ public class FamilyParamRenamerWindow : OttawaWorkWindow
             {
                 Text = source.Name, Width = 210, FontSize = 12, VerticalAlignment = VerticalAlignment.Center,
                 Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextPrimary), TextTrimming = TextTrimming.CharacterEllipsis,
-                ToolTip = $"{source.Name}\nUsed in: {string.Join(", ", source.FamilyNames)}",
+                ToolTip = source.Name,
             });
             line.Children.Add(new TextBlock
             {
                 Text = FamilyParamRenamerEngine.DataTypeLabel(source.DataType), Width = 90, FontSize = 11, VerticalAlignment = VerticalAlignment.Center,
                 Foreground = OttawaWorkUi.BrushOf(OttawaWorkUi.TextSecondary), TextTrimming = TextTrimming.CharacterEllipsis,
+            });
+            var (where, whereTip) = WhereLabel(source);
+            line.Children.Add(new TextBlock
+            {
+                Text = where, Width = 120, FontSize = 11, VerticalAlignment = VerticalAlignment.Center,
+                Foreground = OttawaWorkUi.BrushOf(source.Project is not null ? OttawaWorkUi.Accent : OttawaWorkUi.TextSecondary),
+                TextTrimming = TextTrimming.CharacterEllipsis, ToolTip = whereTip,
             });
             line.Children.Add(box);
             line.Children.Add(new Border { Width = 10 });
@@ -302,6 +326,22 @@ public class FamilyParamRenamerWindow : OttawaWorkWindow
         if (_found.Count == 0)
             _mappingPanel.Children.Add(Note("Nothing to map yet — scan first."));
         RefreshRunButton();
+    }
+
+    private static (string Text, string Tip) WhereLabel(FoundSharedParam source)
+    {
+        var families = source.FamilyNames.Count;
+        var familyText = $"{families} famil{(families == 1 ? "y" : "ies")}";
+        var familyTip = families == 0 ? "" : $"Inside families: {string.Join(", ", source.FamilyNames)}";
+        if (source.Project is not { } project) return (familyText, familyTip);
+
+        var projectTip =
+            $"Project parameter (Manage → Project Parameters), {(project.IsInstance ? "instance" : "type")}, " +
+            $"bound to: {string.Join(", ", project.CategoryNames)}.\n" +
+            "Replaced at project level: the new parameter is bound to the same categories, values are copied, the old one is removed.";
+        return families == 0
+            ? ("Project", projectTip)
+            : ($"Project + {familyText}", projectTip + "\n\n" + familyTip);
     }
 
     /// <summary>Selects <paramref name="name"/> if it's a same-type option; if the name only exists with a
@@ -457,12 +497,24 @@ public class FamilyParamRenamerWindow : OttawaWorkWindow
 
     private List<RenameFamily> CheckedFamilies() => _familyRows.Where(r => r.Box.IsChecked == true).Select(r => r.Family).ToList();
 
+    private List<RenameFamily> FamiliesToRun(Dictionary<Guid, Guid> map) =>
+        CheckedFamilies().Where(f => _found.Any(p => map.ContainsKey(p.Guid) && p.FamilyNames.Contains(f.Name))).ToList();
+
+    private Dictionary<Guid, Guid> ProjectMapToRun(Dictionary<Guid, Guid> map) =>
+        _projectBox.IsChecked == true
+            ? _found.Where(p => p.Project is not null && map.ContainsKey(p.Guid)).ToDictionary(p => p.Guid, p => map[p.Guid])
+            : new Dictionary<Guid, Guid>();
+
     private void RefreshRunButton()
     {
         var map = ReadyMap();
-        var families = CheckedFamilies().Count(f => _found.Any(p => map.ContainsKey(p.Guid) && p.FamilyNames.Contains(f.Name)));
-        _runButton.Content = $"SWAP {map.Count} PARAMETER(S) IN {families} FAMIL{(families == 1 ? "Y" : "IES")}";
-        _runButton.IsEnabled = map.Count > 0 && families > 0;
+        var families = FamiliesToRun(map).Count;
+        var project = ProjectMapToRun(map).Count;
+        var parts = new List<string>();
+        if (families > 0 || project == 0) parts.Add($"IN {families} FAMIL{(families == 1 ? "Y" : "IES")}");
+        if (project > 0) parts.Add($"{project} PROJECT PARAMETER(S)");
+        _runButton.Content = $"SWAP {string.Join(" + ", parts)}";
+        _runButton.IsEnabled = map.Count > 0 && (families > 0 || project > 0);
 
         var affected = map.Count == 0 ? new List<string>() : FamilyParamRenamerEngine.AffectedViews(_doc, map.Keys);
         _affectedText.Text = affected.Count == 0
@@ -473,19 +525,24 @@ public class FamilyParamRenamerWindow : OttawaWorkWindow
     private void ConfirmAndRun()
     {
         var map = ReadyMap();
-        var families = CheckedFamilies().Where(f => _found.Any(p => map.ContainsKey(p.Guid) && p.FamilyNames.Contains(f.Name))).ToList();
-        if (map.Count == 0 || families.Count == 0) return;
+        var families = FamiliesToRun(map);
+        var projectMap = ProjectMapToRun(map);
+        if (map.Count == 0 || (families.Count == 0 && projectMap.Count == 0)) return;
 
+        var text = new System.Text.StringBuilder();
+        if (families.Count > 0)
+            text.Append($"• Inside {families.Count} famil{(families.Count == 1 ? "y" : "ies")}: each family is opened, its parameters swapped (values and formulas kept) and reloaded. Undo is per family (Ctrl+Z once per family).\n\n");
+        if (projectMap.Count > 0)
+            text.Append($"• {projectMap.Count} project parameter(s): the new parameter is bound to the same categories (instance/type kept), every element's value is copied over, then the old one is removed from Project Parameters — or kept, if any value couldn't be copied. One Ctrl+Z undoes this step.\n\n");
         var confirm = MessageBox.Show(
-            $"Swap {map.Count} shared parameter(s) in {families.Count} famil{(families.Count == 1 ? "y" : "ies")}?\n\n" +
-            "Each family is opened, updated and reloaded into the project. Values and formulas are kept. " +
-            "Undo works per family (Ctrl+Z once per family).",
+            "Swap shared parameters?\n\n" + text,
             "Ottawa Tools — Family Parameter Renamer",
             System.Windows.MessageBoxButton.YesNo,
             System.Windows.MessageBoxImage.Question);
         if (confirm != System.Windows.MessageBoxResult.Yes) return;
 
         Map = map;
+        ProjectMap = projectMap;
         SelectedFamilyIds = families.Select(f => f.FamilyId).ToList();
         RunRequested = true;
         DialogResult = true;
